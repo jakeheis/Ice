@@ -1,0 +1,18 @@
+{
+  "autoPin": true,
+  "pins": [
+    {
+      "package": "Files",
+      "reason": null,
+      "repositoryURL": "https://github.com/JohnSundell/Files",
+      "version": "1.10.0"
+    },
+    {
+      "package": "SwiftCLI",
+      "reason": null,
+      "repositoryURL": "https://github.com/jakeheis/SwiftCLI",
+      "version": "3.0.1"
+    }
+  ],
+  "version": 1
+}
