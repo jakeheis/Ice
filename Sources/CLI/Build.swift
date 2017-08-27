@@ -6,6 +6,7 @@
 //
 
 import SwiftCLI
+import Core
 
 class BuildCommand: Command {
     
@@ -16,7 +17,7 @@ class BuildCommand: Command {
     let watch = Flag("-w", "--watch")
     
     func execute() throws {
-        try SPM.execute(arguments: ["build"])
+        try SPM().build()
     }
     
 }

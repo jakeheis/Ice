@@ -27,7 +27,7 @@ class NewCommand: Command {
     let optionGroups = [InitializerOptions.typeGroup]
 
     func execute() throws {
-        Folder.current.createSubfolderIfNeeded(withName: projectName.value)
+//        Folder.current.createSubfolderIfNeeded(withName: projectName.value)
         // Change dir to new folder
         var initArgs: [String] = []
         if library.value {
@@ -36,7 +36,7 @@ class NewCommand: Command {
         if executable.value {
             initArgs.append(executable.names[0])
         }
-        InitCommand().manualExecute(initArgs)
+        // InitCommand().manualExecute(initArgs)
     }
 
 }

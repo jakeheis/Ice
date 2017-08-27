@@ -6,6 +6,7 @@
 //
 
 import SwiftCLI
+import Core
 
 class TestCommand: Command {
     

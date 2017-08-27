@@ -6,8 +6,9 @@
 //
 
 import SwiftCLI
+import Core
 
-class XcodeCommand: Command {
+class XcCommand: Command {
     
     let name = "xc"
     

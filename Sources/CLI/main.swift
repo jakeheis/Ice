@@ -1,3 +1,4 @@
+import Foundation
 import SwiftCLI
 
 CLI.setup(name: "ice")
@@ -18,4 +19,4 @@ CLI.register(commands: [
     XcCommand()
 ])
 
-CLI.go(exit: true)
+exit(CLI.go())

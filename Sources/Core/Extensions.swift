@@ -7,13 +7,13 @@
 
 import Foundation
 
-extension String {
+public extension String {
     var quoted: String {
         return "\"\(self)\""
     }
 }
 
-extension URLSession {
+public extension URLSession {
     static func synchronousDataTask(with url: URL) -> (data: Data?, response: URLResponse?, error: Error?) {
         let semaphore = DispatchSemaphore(value: 0)
         var retVal: (data: Data?, response: URLResponse?, error: Error?)? = nil

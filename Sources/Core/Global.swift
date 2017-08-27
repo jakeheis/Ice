@@ -5,7 +5,7 @@
 //  Created by Jake Heiser on 7/22/17.
 //
 
-import Files
+// import Files
 
 class Global {
 
@@ -20,36 +20,36 @@ class Global {
     }
 
     static func add(name: String, version: String? = nil) throws {
-        if let local = try? LocalPackage.find(name) {
+        if let local = try? LocalPackage.find(name: name) {
             guard let version = version else {
                 throw Error.alreadyInstalled
             }
-            if local.versions.contains(Version(version)) {
+            if local.versions.contains(Version(version)!) {
                 throw Error.alreadyInstalled
             }
-            try local.install(version: Version(version))
+            local.install(version: Version(version)!)
             return
         }
 
         let package = try RemotePackage.resolve(name: name, version: version)
         try package.install()
 
-        let path = Global.directory + package.name
+//        let path = Global.directory + package.name
         
-        let projectFolder = try FileSystem.createFolder(at: path)
-        let versionedFolderPath = projectFolder.path + "/" + package.version
+//        let projectFolder = try FileSystem.createFolder(at: path)
+//        let versionedFolderPath = projectFolder.path + "/" + package.version
         
         // Create dir
         // exec("git clone \(package.url) \(versionedFolderPath)")
 
-        let spm = SPM(path: versionedFolderPath)
-        spm.build()
+//        let spm = SPM(path: versionedFolderPath)
+//        spm.build()
 
         // exec("ln -s ")
     }
 
     static func remove(name: String) throws {
-        let package = try RemotePackage.resolveLocal(name: name)
+        _ = try RemotePackage.resolve(name: name)
 
     }
 

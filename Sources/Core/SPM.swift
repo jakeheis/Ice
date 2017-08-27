@@ -7,49 +7,52 @@
 
 import Foundation
 
-class SPM {
+public class SPM {
 
     let path: String
 
-    init(path: String = ".") {
+    public init(path: String = ".") {
         self.path = path
     }
+    
+    public enum InitType: String {
+        case executable
+        case library
+    }
+    
+    public func initPackage(type: InitType) throws {
+        try SwiftProcess.execute(arguments: ["init", "--type", type.rawValue])
+    }
 
-    func build() throws {
+    public func build() throws {
         
     }
 
-    func test() throws {
+    public func test() throws {
         
     }
 
-    func generateXcodeProject() throws {
-        
+    public func generateXcodeProject() throws {
+        try SwiftProcess.execute(arguments: ["package", "generate-xcodeproj"])
+    }
+
+    public func dumpPackage() throws -> Data {
+        let output = try SwiftProcess.capture(arguments: ["package", "dump-package"])
+        guard let jsonStart = output.index(of: UInt8("{".cString(using: .ascii)![0])) else {
+            throw SwiftProcess.Error.processFailed
+        }
+        return output.subdata(in: jsonStart..<output.endIndex)
     }
 
 }
 
-class SwiftProcess {
+public class SwiftProcess {
     
-    enum Error: Swift.Error {
+    public enum Error: Swift.Error {
         case processFailed
     }
     
     private static var buildProcess: Process?
-    
-    //    static func dump() throws -> [String: Any] {
-    //        var output = try capture(arguments: ["package", "dump-package"])
-    //        guard let jsonStart = output.index(of: UInt8("{".cString(using: .ascii)![0])) else {
-    //            throw Error.processFailed
-    //        }
-    //        output = output.subdata(in: jsonStart..<output.endIndex)
-    //        guard let json = try? JSONSerialization.jsonObject(with: output, options: []),
-    //            let dict = json as? [String: Any] else {
-    //                throw Error.processFailed
-    //        }
-    //
-    //        return dict
-    //    }
     
     static func execute(arguments: [String]) throws {
         _ = try run(arguments: arguments, capture: false)
@@ -73,7 +76,7 @@ class SwiftProcess {
         buildProcess = task
         
         signal(SIGINT) { (val) in
-            SPM.interruptBuild()
+            SwiftProcess.interruptBuild()
             
             // After interrupting SPM, interrupt Bark
             signal(SIGINT, SIG_DFL)

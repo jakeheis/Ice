@@ -6,30 +6,30 @@
 //
 
 import Foundation
-import Files
+// import Files
 
-class Package {
+public class Package {
     
-    var name: String
-    var dependencies: [Dependency]
-    var targets: [Target]
+    public var name: String
+    public var dependencies: [Dependency]
+    public var targets: [Target]
 
-    var folder: Folder {
+    // var folder: Folder {
 
-    }
+    // }
     
-    struct Dependency {
-        let url: String
-        let major: Int
-        let minor: Int
+    public struct Dependency {
+        public let url: String
+        public let major: Int
+        public let minor: Int
         
-        init(url: String, major: Int, minor: Int) {
+        public init(url: String, major: Int, minor: Int) {
             self.url = url
             self.major = major
             self.minor = minor
         }
         
-        init(dumped: DumpedPackage.Dependency) {
+        public init(dumped: DumpedPackage.Dependency) {
             self.url = dumped.url
             let version = Version(dumped.version.lowerBound)!
             self.major = version.major
@@ -37,19 +37,20 @@ class Package {
         }
     }
     
-    struct Target {
+    public struct Target {
 
     }
     
-    init(directory: String = ".") throws {
+    public init(directory: String = ".") throws {
         let dumped = try DumpedPackage.load(directory: directory)
         self.name = dumped.name
         self.dependencies = dumped.dependencies.map(Dependency.init)
+        self.targets = []
     }
 
-    func createTarget(name: String, dependencies: [String]) -> Target {
-        
-    }
+//    func createTarget(name: String, dependencies: [String]) -> Target {
+//
+//    }
 
     func write() throws {
         var lines = [
@@ -79,9 +80,9 @@ class Package {
     
 }
 
-struct DumpedPackage: Decodable {
+public struct DumpedPackage: Decodable {
     
-    struct Dependency: Decodable {
+    public struct Dependency: Decodable {
         let url: String
         let version: Version
         
@@ -97,9 +98,9 @@ struct DumpedPackage: Decodable {
     let exclude: [String]
     
     static func load(directory: String) throws -> DumpedPackage {
-        var output = try SPM.capture(arguments: ["package", "-C", directory, "dump-package"])
+        var output = try SPM(path: directory).dumpPackage()
         guard let jsonStart = output.index(of: UInt8("{".cString(using: .ascii)![0])) else {
-            throw SPM.Error.processFailed
+            throw SwiftProcess.Error.processFailed
         }
         output = output.subdata(in: jsonStart..<output.endIndex)
         

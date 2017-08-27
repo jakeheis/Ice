@@ -6,7 +6,8 @@
 //
 
 import SwiftCLI
-import Files
+import Core
+// import Files
 
 /*
  
@@ -71,26 +72,10 @@ class InitCommand: Command {
     let optionGroups = [InitializerOptions.typeGroup]
     
     func execute() throws {
-        var args = ["package"]
-
-        args.append("init")
+        let type: SPM.InitType = executable.value ? .executable : .library
+        try SPM().initPackage(type: type)
         
-        if executable.value {
-            args += ["--type", "executable"]
-        }
-        try SPM.execute(arguments: args)
-        
-        try Package(directory: projectName.value ?? ".").write()
-    }
-    
-}
-
-class TakeoverCommand: Command {
-    
-    let name = "takeover"
-    
-    func execute() throws {
-        try Package().write()
+//        try Package(directory: projectName.value ?? ".").write()
     }
     
 }
