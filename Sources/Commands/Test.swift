@@ -12,7 +12,7 @@ class TestCommand: Command {
     let name = "test"
     
     func execute() throws {
-        try SPM.execute(arguments: ["test"])
+        try SPM().test()
     }
     
 }

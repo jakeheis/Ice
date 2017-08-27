@@ -1,6 +1,6 @@
 //
 //  SPM.swift
-//  Bark
+//  Ice
 //
 //  Created by Jake Heiser on 7/21/17.
 //
@@ -8,6 +8,28 @@
 import Foundation
 
 class SPM {
+
+    let path: String
+
+    init(path: String = ".") {
+        self.path = path
+    }
+
+    func build() throws {
+        
+    }
+
+    func test() throws {
+        
+    }
+
+    func generateXcodeProject() throws {
+        
+    }
+
+}
+
+class SwiftProcess {
     
     enum Error: Swift.Error {
         case processFailed

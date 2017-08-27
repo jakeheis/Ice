@@ -6,6 +6,7 @@
 //
 
 import SwiftCLI
+import Files
 
 class ModuleCommand: Command {
     
@@ -15,7 +16,10 @@ class ModuleCommand: Command {
     let dependencies = Key<String>("-d", "--depends-on")
     
     func execute() throws {
-        
+        let package = Package()
+        package.folder.createSubfolder(moduleName.value)
+        let dependencies = dependencies.value?.componentsSeparated(by: ",") ?? []
+        try package.createTarget(name: moduleName.value, dependencies: dependencies)
     }
     
 }

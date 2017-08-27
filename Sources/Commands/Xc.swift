@@ -12,7 +12,7 @@ class XcodeCommand: Command {
     let name = "xc"
     
     func execute() throws {
-        try SPM.execute(arguments: ["package", "generate-xcodeproj"])
+        try SPM().generateXcodeProject()
     }
     
 }
