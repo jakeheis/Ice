@@ -72,10 +72,13 @@ class InitCommand: Command {
     let optionGroups = [InitializerOptions.typeGroup]
     
     func execute() throws {
-        let type: SPM.InitType = executable.value ? .executable : .library
+        var type: SPM.InitType?
+        if library.value {
+            type = .library
+        } else if executable.value {
+            type = .executable
+        }
         try SPM().initPackage(type: type)
-        
-//        try Package(directory: projectName.value ?? ".").write()
     }
     
 }

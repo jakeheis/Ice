@@ -17,6 +17,9 @@ class BuildCommand: Command {
     let watch = Flag("-w", "--watch")
     
     func execute() throws {
+        if clean.value {
+            try SPM().clean()
+        }
         try SPM().build()
     }
     

@@ -20,16 +20,24 @@ public class SPM {
         case library
     }
     
-    public func initPackage(type: InitType) throws {
-        try SwiftProcess.execute(arguments: ["init", "--type", type.rawValue])
+    public func initPackage(type: InitType?) throws {
+        var args = ["package", "init"]
+        if let type = type {
+            args += ["--type", type.rawValue]
+        }
+        try SwiftProcess.execute(arguments: args)
     }
 
     public func build() throws {
-        
+        try SwiftProcess.execute(arguments: ["build"])
+    }
+    
+    public func clean() throws {
+        try SwiftProcess.execute(arguments: ["package", "clean"])
     }
 
     public func test() throws {
-        
+        try SwiftProcess.execute(arguments: ["test"])
     }
 
     public func generateXcodeProject() throws {
