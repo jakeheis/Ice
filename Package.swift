@@ -2,7 +2,7 @@
 
 import PackageDescription
 
-let package = Package(name: "Bark")
+let package = Package(name: "Ice")
 
 package.dependencies = [
     .Package(url: "https://github.com/jakeheis/SwiftCLI", majorVersion: 3, minor: 0),

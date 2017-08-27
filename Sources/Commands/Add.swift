@@ -1,6 +1,6 @@
 //
-//  AddCommand.swift
-//  Bark
+//  Add.swift
+//  Ice
 //
 //  Created by Jake Heiser on 7/21/17.
 //
@@ -16,6 +16,16 @@ class AddCommand: Command {
     
     let name = "add"
     let dependency = Parameter()
+    let version = OptionalParameter()
+
+    let test = Flag("-T", "--test-dependency")
+    let global = GlobalOption.global
+
+    var optionGroups: [OptionGroup] {
+        return [
+            OptionGroup(options: [test, global], restriction: .atMostOne)
+        ]
+    }
     
     func execute() throws {
         let dependency = self.dependency.value
@@ -46,7 +56,7 @@ class AddCommand: Command {
         if major == nil {
             print("Major version:", terminator: "")
             major = Int(readLine()!)
-            print("Minor version:", terminator: "")
+            print("Minor version (blank for any):", terminator: "")
             minor = Int(readLine()!)
         }
         
