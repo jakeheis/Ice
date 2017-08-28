@@ -21,14 +21,19 @@ class AddCommand: Command {
     
     var optionGroups: [OptionGroup] {
         return [
-            OptionGroup(options: [test, global], restriction: .atMostOne)
+            OptionGroup(options: [test, global], restriction: .atMostOne),
+            OptionGroup(options: [modules, global], restriction: .atMostOne)
         ]
     }
     
     func execute() throws {
-        let version = Remote.latestVersion(of: dependency.value)
+        guard let ref = RepositoryReference(dependency.value) else {
+            throw SwiftProcess.Error.processFailed
+        }
+        
+        let version = Remote.latestVersion(of: ref)
         if global.value {
-            try Global.add(name: dependency.value, version: version)
+            try Global.add(ref: ref, version: version)
         } else {
             func manualVersion() -> Version {
                 let major = Input.awaitInt(message: "Major version: ")
@@ -38,11 +43,10 @@ class AddCommand: Command {
             let actualVersion = version ?? manualVersion()
             
             var package = try Package.load(directory: ".")
-            package.addDependency(name: dependency.value, version: actualVersion)
+            package.addDependency(ref: ref, version: actualVersion)
             if let modulesString = modules.value {
                 let modules = modulesString.components(separatedBy: ",")
-                let depName = dependency.value.components(separatedBy: "/")[1]
-                try modules.forEach { try package.depend(target: $0, on: depName) }
+                try modules.forEach { try package.depend(target: $0, on: ref.name) }
             }
             try package.write()
         }

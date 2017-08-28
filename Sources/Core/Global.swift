@@ -5,13 +5,12 @@
 //  Created by Jake Heiser on 7/22/17.
 //
 
-// import Files
-
 import Foundation
+import Files
 
 public class Global {
 
-    static let directory = "/usr/local/Icebox/"
+    static let directory = FileSystem().homeFolder.path + ".icebox/"
 
     // static func inPackage(name: String) -> Bool {
         
@@ -20,37 +19,34 @@ public class Global {
     enum Error: Swift.Error {
         case alreadyInstalled
     }
+    
+    public static func setup() throws {
+        try FileSystem().createFolderIfNeeded(at: Global.directory)
+    }
 
-    public static func add(name: String, version: Version? = nil) throws {
-//        let url = "https://github.com/\(name)"
-//
-//        let clone = Process()
-////        if let local = try? LocalPackage.find(name: name) {
-//            guard let version = version else {
-//                throw Error.alreadyInstalled
-//            }
-//            if local.versions.contains(Version(version)!) {
-//                throw Error.alreadyInstalled
-//            }
-//            local.install(version: Version(version)!)
-//            return
-//        }
-//
-//        let package = try RemotePackage.resolve(name: name, version: version)
-//        try package.install()
-
-//        let path = Global.directory + package.name
+    public static func add(ref: RepositoryReference, version: Version? = nil) throws {
+        try setup()
         
-//        let projectFolder = try FileSystem.createFolder(at: path)
-//        let versionedFolderPath = projectFolder.path + "/" + package.version
+        let folder = Global.directory + ref.name
         
-        // Create dir
-        // exec("git clone \(package.url) \(versionedFolderPath)")
-
-//        let spm = SPM(path: versionedFolderPath)
-//        spm.build()
-
-        // exec("ln -s ")
+        if (try? Folder(path: folder)) != nil {
+            print("Project already downloaded")
+        } else {
+            let clone = Process()
+            clone.launchPath = "/usr/bin/env"
+            clone.arguments = ["git", "clone", ref.url, folder]
+            clone.launch()
+            clone.waitUntilExit()
+        }
+        
+        let spm = SPM(path: folder)
+        
+        try spm.build(release: true)
+        let bin = try spm.showBinPath(release: true)
+        
+        for file in try Folder(path: bin).files where FileManager.default.isExecutableFile(atPath: file.path) {
+            try FileManager.default.createSymbolicLink(atPath : "/usr/local/bin/\(file.name)", withDestinationPath: file.path)
+        }
     }
 
     static func remove(name: String) throws {

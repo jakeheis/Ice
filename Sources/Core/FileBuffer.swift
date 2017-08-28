@@ -38,8 +38,11 @@ class FileBuffer {
     
     func write() throws {
         let contents = lines.joined(separator: "\n")
-        print(contents)
-        //        try contents.write(toFile: path, atomically: true, encoding: .utf8)
+        try contents.write(toFile: path, atomically: true, encoding: .utf8)
+    }
+    
+    func print() {
+        Swift.print(lines.joined(separator: "\n"))
     }
     
     static func +=(buffer: FileBuffer, lines: [String]) {

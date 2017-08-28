@@ -50,9 +50,8 @@ public struct Package: Decodable {
         return try JSONDecoder().decode(Package.self, from: rawPackage)
     }
     
-    public mutating func addDependency(name: String, version: Version) {
-        let url = "https://github.com/\(name)"
-        dependencies.append(Dependency(url: url, version: version))
+    public mutating func addDependency(ref: RepositoryReference, version: Version) {
+        dependencies.append(Dependency(url: ref.url, version: version))
     }
     
     public mutating func depend(target: String, on lib: String) throws {
@@ -66,6 +65,7 @@ public struct Package: Decodable {
         let buffer = FileBuffer(path: "Package.swift")
         
         buffer += [
+            "// swift-tools-version:4.0",
             "// Managed by ice",
             "",
             "import PackageDescription",
@@ -75,7 +75,7 @@ public struct Package: Decodable {
         
         buffer.indent()
         
-        buffer += "name: \(name.quoted)"
+        buffer += "name: \(name.quoted),"
         
         if !products.isEmpty {
             buffer += "products: ["
@@ -85,7 +85,7 @@ public struct Package: Decodable {
                 buffer += ".\(product.product_type)(name: \(product.name.quoted), targets: [\(targetsPortion)]),"
             }
             buffer.unindent()
-            buffer += "]"
+            buffer += "],"
         }
         
         if !dependencies.isEmpty {
@@ -93,10 +93,10 @@ public struct Package: Decodable {
             buffer.indent()
             for dependency in dependencies {
                 let versionPortion = ".upToNextMinor(from: \"\(dependency.requirement.lowerBound)\")"
-                buffer += ".package(url: \(dependency.url.quoted), \(versionPortion),"
+                buffer += ".package(url: \(dependency.url.quoted), \(versionPortion)),"
             }
             buffer.unindent()
-            buffer += "]"
+            buffer += "],"
         }
         
         if !targets.isEmpty {
@@ -104,11 +104,15 @@ public struct Package: Decodable {
             buffer.indent()
             for target in targets {
                 let dependenciesPortion = target.dependencies.map { $0.name.quoted }.joined(separator: ", ")
-                buffer += ".target(name: \(target.name.quoted), dependencies: [\(dependenciesPortion)],"
+                buffer += ".target(name: \(target.name.quoted), dependencies: [\(dependenciesPortion)]),"
             }
             buffer.unindent()
-            buffer += "]"
+            buffer += "],"
         }
+        
+        var last = buffer.lines.removeLast()
+        last = String(last[..<last.index(before: last.endIndex)])
+        buffer.lines.append(last)
         
         buffer.unindent()
         buffer += ")"

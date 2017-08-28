@@ -25,33 +25,57 @@ public class SPM {
         if let type = type {
             args += ["--type", type.rawValue]
         }
-        try SwiftProcess.execute(arguments: args)
+        try execute(arguments: args)
     }
 
-    public func build() throws {
-        try SwiftProcess.execute(arguments: ["build"])
+    public func build(release: Bool = false) throws {
+        var args = ["build"]
+        if release {
+            args += ["-c", "release"]
+        }
+        try execute(arguments: args)
     }
     
     public func clean() throws {
-        try SwiftProcess.execute(arguments: ["package", "clean"])
+        try execute(arguments: ["package", "clean"])
     }
 
     public func test() throws {
-        try SwiftProcess.execute(arguments: ["test"])
+        try execute(arguments: ["test"])
     }
 
     public func generateXcodeProject() throws {
-        try SwiftProcess.execute(arguments: ["package", "generate-xcodeproj"])
+        try execute(arguments: ["package", "generate-xcodeproj"])
+    }
+    
+    func showBinPath(release: Bool = false) throws -> String {
+        var args = ["build", "--show-bin-path"]
+        if release {
+            args += ["-c", "release"]
+        }
+        let data = try capture(arguments: args)
+        guard let retVal = String(data: data, encoding: .utf8) else {
+            throw SwiftProcess.Error.processFailed
+        }
+        return retVal.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
     public func dumpPackage() throws -> Data {
-        let output = try SwiftProcess.capture(arguments: ["package", "dump-package"])
+        let output = try capture(arguments: ["package", "dump-package"])
         guard let jsonStart = output.index(of: UInt8("{".cString(using: .ascii)![0])) else {
             throw SwiftProcess.Error.processFailed
         }
         return output.subdata(in: jsonStart..<output.endIndex)
     }
 
+    private func execute(arguments: [String]) throws {
+        try SwiftProcess.execute(arguments: arguments, in: path)
+    }
+    
+    private func capture(arguments: [String]) throws -> Data {
+        return try SwiftProcess.capture(arguments: arguments, in: path)
+    }
+    
 }
 
 public class SwiftProcess {
@@ -62,19 +86,20 @@ public class SwiftProcess {
     
     private static var buildProcess: Process?
     
-    static func execute(arguments: [String]) throws {
-        _ = try run(arguments: arguments, capture: false)
+    static func execute(arguments: [String], in dir: String) throws {
+        _ = try run(arguments: arguments, capture: false, in: dir)
     }
     
-    static func capture(arguments: [String]) throws -> Data {
-        let value = try run(arguments: arguments, capture: true)
+    static func capture(arguments: [String], in dir: String) throws -> Data {
+        let value = try run(arguments: arguments, capture: true, in: dir)
         return value!
     }
     
-    private static func run(arguments: [String], capture: Bool) throws -> Data? {
+    private static func run(arguments: [String], capture: Bool, in dir: String) throws -> Data? {
         let task = Process()
         task.launchPath = "/usr/bin/env"
         task.arguments = ["swift"] + arguments
+        task.currentDirectoryPath = dir
         if capture {
             task.standardOutput = Pipe()
             task.standardError = Pipe()
