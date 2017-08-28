@@ -9,7 +9,7 @@ CLI.register(commands: [
     DependCommand(),
     DescribeCommand(),
     InitCommand(),
-    ModuleCommand(),
+    TargetCommand(),
     NewCommand(),
     RemoveCommand(),
     RunCommand(),

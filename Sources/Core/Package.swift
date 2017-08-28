@@ -54,6 +54,12 @@ public struct Package: Decodable {
         dependencies.append(Dependency(url: ref.url, version: version))
     }
     
+    public mutating func addTarget(name: String, isTest: Bool, dependencies: [String]) {
+        let dependencies = dependencies.map { Package.Target.Dependency(name: $0) }
+        let newTarget = Target(name: name, isTest: isTest, dependencies: dependencies)
+        targets.append(newTarget)
+    }
+    
     public mutating func depend(target: String, on lib: String) throws {
         guard let targetIndex = targets.index(where:  { $0.name == target }) else {
             throw SwiftProcess.Error.processFailed
@@ -61,7 +67,7 @@ public struct Package: Decodable {
         targets[targetIndex].dependencies.append(Target.Dependency(name: lib))
     }
     
-    public func write() throws {
+    public func write(print: Bool = false) throws {
         let buffer = FileBuffer(path: "Package.swift")
         
         buffer += [
@@ -103,8 +109,9 @@ public struct Package: Decodable {
             buffer += "targets: ["
             buffer.indent()
             for target in targets {
+                let type = target.isTest ? ".testTarget" : ".target"
                 let dependenciesPortion = target.dependencies.map { $0.name.quoted }.joined(separator: ", ")
-                buffer += ".target(name: \(target.name.quoted), dependencies: [\(dependenciesPortion)]),"
+                buffer += "\(type)(name: \(target.name.quoted), dependencies: [\(dependenciesPortion)]),"
             }
             buffer.unindent()
             buffer += "],"
@@ -117,7 +124,11 @@ public struct Package: Decodable {
         buffer.unindent()
         buffer += ")"
         
-        try buffer.write()
+        if print {
+            buffer.print()
+        } else {
+            try buffer.write()
+        }
     }
     
 }

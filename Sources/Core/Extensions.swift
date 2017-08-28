@@ -8,7 +8,13 @@
 import Foundation
 
 public extension String {
+    
     var quoted: String {
         return "\"\(self)\""
     }
+    
+    func commaSeparated() -> [String] {
+        return components(separatedBy: ",")
+    }
+    
 }
