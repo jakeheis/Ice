@@ -7,7 +7,9 @@
 
 // import Files
 
-class Global {
+import Foundation
+
+public class Global {
 
     static let directory = "/usr/local/Icebox/"
 
@@ -19,20 +21,23 @@ class Global {
         case alreadyInstalled
     }
 
-    static func add(name: String, version: String? = nil) throws {
-        if let local = try? LocalPackage.find(name: name) {
-            guard let version = version else {
-                throw Error.alreadyInstalled
-            }
-            if local.versions.contains(Version(version)!) {
-                throw Error.alreadyInstalled
-            }
-            local.install(version: Version(version)!)
-            return
-        }
-
-        let package = try RemotePackage.resolve(name: name, version: version)
-        try package.install()
+    public static func add(name: String, version: Version? = nil) throws {
+//        let url = "https://github.com/\(name)"
+//
+//        let clone = Process()
+////        if let local = try? LocalPackage.find(name: name) {
+//            guard let version = version else {
+//                throw Error.alreadyInstalled
+//            }
+//            if local.versions.contains(Version(version)!) {
+//                throw Error.alreadyInstalled
+//            }
+//            local.install(version: Version(version)!)
+//            return
+//        }
+//
+//        let package = try RemotePackage.resolve(name: name, version: version)
+//        try package.install()
 
 //        let path = Global.directory + package.name
         
@@ -49,7 +54,7 @@ class Global {
     }
 
     static func remove(name: String) throws {
-        _ = try RemotePackage.resolve(name: name)
+//        _ = try RemotePackage.resolve(name: name)
 
     }
 

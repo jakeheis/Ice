@@ -17,7 +17,8 @@ class AddCommand: Command {
 
     let test = Flag("-T", "--test-dependency")
     let global = GlobalOption.global
-
+    let modules = Key<String>("-m", "--modules")
+    
     var optionGroups: [OptionGroup] {
         return [
             OptionGroup(options: [test, global], restriction: .atMostOne)
@@ -25,44 +26,26 @@ class AddCommand: Command {
     }
     
     func execute() throws {
-        let dependency = self.dependency.value
-        
-        let package = try Package()
-        
-        let fullUrl = "https://github.com/\(dependency)"
-        if package.dependencies.contains(where: { $0.url == fullUrl }) {
-            print("Dependency already exists")
-            throw SwiftProcess.Error.processFailed
+        let version = Remote.latestVersion(of: dependency.value)
+        if global.value {
+            try Global.add(name: dependency.value, version: version)
+        } else {
+            func manualVersion() -> Version {
+                let major = Input.awaitInt(message: "Major version: ")
+                let minor = Input.awaitInt(message: "Minor version: ")
+                return Version(major, minor, 0)
+            }
+            let actualVersion = version ?? manualVersion()
+            
+            var package = try Package.load(directory: ".")
+            package.addDependency(name: dependency.value, version: actualVersion)
+            if let modulesString = modules.value {
+                let modules = modulesString.components(separatedBy: ",")
+                let depName = dependency.value.components(separatedBy: "/")[1]
+                try modules.forEach { try package.depend(target: $0, on: depName) }
+            }
+            try package.write()
         }
-        
-        var major: Int?
-        var minor: Int?
-        
-        if let tagUrl = URL(string: "https://api.github.com/repos/\(dependency)/tags") {
-            let (data, _, _) = URLSession.synchronousDataTask(with: tagUrl)
-//            if let data = data,
-//                let tags = try? JSONDecoder().decode([RepositoryTag].self, from: data) {
-//                let versions = tags.flatMap { Version.init($0.name) }.filter { $0.patch.index(of: "-") == nil }.sorted()
-//                if let mostRecent = versions.last {
-//                    major = mostRecent.major
-//                    minor = mostRecent.minor
-//                }
-//            }
-        }
-        
-        if major == nil {
-            print("Major version:", terminator: "")
-            major = Int(readLine()!)
-            print("Minor version (blank for any):", terminator: "")
-            minor = Int(readLine()!)
-        }
-        
-        let dependencyObject = Package.Dependency(url: fullUrl, major: major!, minor: minor!)
-        
-        package.dependencies.append(dependencyObject)
-//        try package.write()
-        
-//        _ = try SPM.capture(arguments: ["package", "show-dependencies"])
     }
     
 }

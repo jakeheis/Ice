@@ -9,12 +9,11 @@ let package = Package(
         .executable(name: "ice", targets: ["CLI"])
     ],
     dependencies: [
-        .package(url: "https://github.com/jakeheis/SwiftCLI", .upToNextMinor(from: "3.0.1"))
-        // Dependencies declare other packages that this package depends on.
-        // .package(url: /* package url */, from: "1.0.0"),
+        .package(url: "https://github.com/jakeheis/SwiftCLI", .upToNextMinor(from: "3.0.1")),
+        .package(url: "https://github.com/JustHTTP/Just", .upToNextMinor(from: "0.6.0"))
     ],
     targets: [
         .target(name: "CLI", dependencies: ["SwiftCLI", "Core"]),
-        .target(name: "Core", dependencies: []),
+        .target(name: "Core", dependencies: ["Just"]),
     ]
 )

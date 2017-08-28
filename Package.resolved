@@ -2,6 +2,15 @@
   "object": {
     "pins": [
       {
+        "package": "Just",
+        "repositoryURL": "https://github.com/JustHTTP/Just",
+        "state": {
+          "branch": null,
+          "revision": "3f64fda37dd11e50f410ba90d219fdb3ed927612",
+          "version": "0.6.0"
+        }
+      },
+      {
         "package": "SwiftCLI",
         "repositoryURL": "https://github.com/jakeheis/SwiftCLI",
         "state": {

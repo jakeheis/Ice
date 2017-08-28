@@ -5,33 +5,40 @@
 //  Created by Jake Heiser on 7/21/17.
 //
 
-struct Version {
-    let major: Int
-    let minor: Int
-    let patch: String
-    init?(_ str: String) {
-        let split = str.components(separatedBy: ".")
+public struct Version {
+    
+    public let major: Int
+    public let minor: Int
+    public let patch: Int
+    
+    public init?(_ str: String) {
+        var versionString = str
+        if versionString.hasPrefix("v") {
+            versionString = String(versionString[versionString.index(after: versionString.startIndex)...])
+        }
+        let split = versionString.components(separatedBy: ".")
         if split.count != 3 {
             return nil
         }
-        let majorStr: String
-        if split[0].hasPrefix("v") {
-            majorStr = split[0].substring(from: split[0].index(after: split[0].startIndex))
-        } else {
-            majorStr = split[0]
+        guard let major = Int(split[0]), let minor = Int(split[1]), let patch = Int(split[2]) else {
+            return nil
         }
-        guard let major = Int(majorStr),
-            let minor = Int(split[1]) else {
-                return nil
-        }
+        
         self.major = major
         self.minor = minor
-        self.patch = split[2]
+        self.patch = patch
     }
+    
+    public init(_ major: Int, _ minor: Int, _ patch: Int) {
+        self.major = major
+        self.minor = minor
+        self.patch = patch
+    }
+    
 }
 
 extension Version: Comparable {
-    static func <(lhs: Version, rhs: Version) -> Bool {
+    public static func <(lhs: Version, rhs: Version) -> Bool {
         if lhs.major != rhs.major {
             return lhs.major < rhs.major
         }
@@ -44,14 +51,14 @@ extension Version: Comparable {
         return false
     }
     
-    static func ==(lhs: Version, rhs: Version) -> Bool {
+    public static func ==(lhs: Version, rhs: Version) -> Bool {
         return lhs.major == rhs.major && lhs.minor == rhs.minor && lhs.patch == rhs.patch
     }
 }
 
 extension Version: CustomStringConvertible {
     
-    var description: String {
+    public var description: String {
         return "\(major).\(minor).\(patch)"
     }
     
