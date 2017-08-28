@@ -24,8 +24,13 @@ class TargetCommand: Command {
             throw SwiftProcess.Error.processFailed
         }
         
+        var testTarget = isTest.value
+        if !testTarget && targetName.value.contains("Test") {
+            testTarget = Input.awaitYesNoInput(message: "Warning: Target name contains the word `Tests` but --test was not passed.\n\nIs this target a test target? ")
+        }
+        
         let intermediateFolder: Folder
-        if isTest.value {
+        if testTarget {
             intermediateFolder = try Folder.current.createSubfolderIfNeeded(withName: "Tests")
         } else {
             intermediateFolder = try Folder.current.createSubfolderIfNeeded(withName: "Sources")
@@ -38,7 +43,7 @@ class TargetCommand: Command {
         
         package.addTarget(
             name: targetName.value,
-            isTest: isTest.value,
+            isTest: testTarget,
             dependencies: dependencies.value?.commaSeparated() ?? []
         )
         try package.write()
