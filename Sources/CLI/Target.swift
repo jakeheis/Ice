@@ -18,15 +18,24 @@ class TargetCommand: Command {
     let dependencies = Key<String>("-d", "--depends-on")
     
     func execute() throws {
+        var package = try Package.load(directory: ".")
+        
+        if package.targets.contains(where: { $0.name == targetName.value }) {
+            throw SwiftProcess.Error.processFailed
+        }
+        
         let intermediateFolder: Folder
         if isTest.value {
             intermediateFolder = try Folder.current.createSubfolderIfNeeded(withName: "Tests")
         } else {
             intermediateFolder = try Folder.current.createSubfolderIfNeeded(withName: "Sources")
         }
-        try intermediateFolder.createSubfolderIfNeeded(withName: targetName.value)
+        let targetFolder = try intermediateFolder.createSubfolderIfNeeded(withName: targetName.value)
+        if targetFolder.files.first == nil {
+            let initialFile = "//\n// \(targetName.value).swift\n//\n"
+            try targetFolder.createFile(named: targetName.value + ".swift", contents: initialFile)
+        }
         
-        var package = try Package.load(directory: ".")
         package.addTarget(
             name: targetName.value,
             isTest: isTest.value,

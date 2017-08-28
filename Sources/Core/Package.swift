@@ -9,14 +9,14 @@ import Foundation
 
 public struct Package: Decodable {
     
-    struct Dependency: Decodable {
-        struct Requirement: Decodable {
+    public struct Dependency: Decodable {
+        public struct Requirement: Decodable {
             let lowerBound: String
             let upperBound: String?
         }
         
-        let url: String
-        let requirement: Requirement
+        public let url: String
+        public let requirement: Requirement
         
         init(url: String, version: Version) {
             self.url = url
@@ -24,26 +24,26 @@ public struct Package: Decodable {
         }
     }
     
-    struct Product: Decodable {
-        let name: String
-        let product_type: String
-        let targets: [String]
+    public struct Product: Decodable {
+        public let name: String
+        public let product_type: String
+        public let targets: [String]
     }
     
-    struct Target: Decodable {
-        struct Dependency: Decodable {
+    public struct Target: Decodable {
+        public struct Dependency: Decodable {
             let name: String
         }
         
-        let name: String
-        let isTest: Bool
-        var dependencies: [Dependency]
+        public let name: String
+        public let isTest: Bool
+        public var dependencies: [Dependency]
     }
     
-    let name: String
-    private(set) var dependencies: [Dependency]
-    private(set) var products: [Product]
-    private(set) var targets: [Target]
+    public let name: String
+    public private(set) var dependencies: [Dependency]
+    public private(set) var products: [Product]
+    public private(set) var targets: [Target]
     
     public static func load(directory: String) throws -> Package {
         let rawPackage = try SPM(path: directory).dumpPackage()
