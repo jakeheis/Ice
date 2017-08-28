@@ -11,10 +11,7 @@ import Files
 public class Global {
 
     static let directory = FileSystem().homeFolder.path + ".icebox/"
-
-    // static func inPackage(name: String) -> Bool {
-        
-    // }
+    static let defaultDir = "default"
 
     enum Error: Swift.Error {
         case alreadyInstalled
@@ -27,7 +24,13 @@ public class Global {
     public static func add(ref: RepositoryReference, version: Version? = nil) throws {
         try setup()
         
-        let folder = Global.directory + ref.name
+        let refDir: String
+        if let versioned = version ?? Remote.latestVersion(of: ref) {
+            refDir = String(describing: versioned)
+        } else {
+            refDir = Global.defaultDir
+        }
+        let folder = Global.directory + ref.name + "/\(refDir)"
         
         if (try? Folder(path: folder)) != nil {
             print("Project already downloaded")
@@ -49,9 +52,43 @@ public class Global {
         }
     }
 
-    static func remove(name: String) throws {
-//        _ = try RemotePackage.resolve(name: name)
-
+    public static func remove(name: String, purge: Bool) throws {
+        let dir = Global.directory + name
+        
+        guard let folder = try? Folder(path: dir) else {
+            throw SwiftProcess.Error.processFailed
+        }
+        
+        if purge {
+            for version in folder.subfolders {
+                try version.delete()
+            }
+            try folder.delete()
+        } else {
+            let sorted = folder.subfolders.sorted { (one ,two) in
+                if one.name == Global.defaultDir {
+                    return false
+                }
+                if two.name == Global.defaultDir {
+                    return true
+                }
+                guard let versionOne = Version(one.name), let versionTwo = Version(two.name) else {
+                    fatalError("Unrecognized folder: \(one.name) \(two.name)")
+                }
+                return versionOne < versionTwo
+            }
+            
+            guard let mostRecent = sorted.last else {
+                throw SwiftProcess.Error.processFailed
+            }
+            
+            try mostRecent.delete()
+            if folder.subfolders.count > 1 {
+                print("Removing most recent version (\(mostRecent.name)). Run --purge to remove all versions")
+            } else {
+                try folder.delete()
+            }
+        }
     }
 
 

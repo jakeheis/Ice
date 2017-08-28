@@ -6,15 +6,20 @@
 //
 
 import SwiftCLI
+import Core
 
 class RemoveCommand: Command {
     
     let name = "remove"
+    let package = Parameter()
     
     let global = GlobalOption.global
+    let purge = Flag("-p", "--purge")
 
     func execute() throws {
-        
+        if global.value {
+            try Global.remove(name: package.value, purge: purge.value)
+        }
     }
     
 }
