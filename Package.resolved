@@ -20,6 +20,15 @@
         }
       },
       {
+        "package": "Regex",
+        "repositoryURL": "https://github.com/sharplet/Regex",
+        "state": {
+          "branch": null,
+          "revision": "3e671ed911b467c0d9c05e56f03d9e5bcb535f39",
+          "version": "1.1.0"
+        }
+      },
+      {
         "package": "SwiftCLI",
         "repositoryURL": "https://github.com/jakeheis/SwiftCLI",
         "state": {

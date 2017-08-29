@@ -25,7 +25,7 @@ public class Global {
         try setup()
         
         let refDir: String
-        if let versioned = version ?? Remote.latestVersion(of: ref) {
+        if let versioned = version ?? ref.latestVersion() {
             refDir = String(describing: versioned)
         } else {
             refDir = Global.defaultDir

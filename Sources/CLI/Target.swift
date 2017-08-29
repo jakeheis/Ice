@@ -37,7 +37,7 @@ class TargetCommand: Command {
         }
         let targetFolder = try intermediateFolder.createSubfolderIfNeeded(withName: targetName.value)
         if targetFolder.files.first == nil {
-            let initialFile = "//\n// \(targetName.value).swift\n//\n"
+            let initialFile = "//\n// \(targetName.value).swift\n// \(package.name)\n//\n"
             try targetFolder.createFile(named: targetName.value + ".swift", contents: initialFile)
         }
         

@@ -31,7 +31,7 @@ class AddCommand: Command {
             throw SwiftProcess.Error.processFailed
         }
         
-        let version = Remote.latestVersion(of: ref)
+        let version = ref.latestVersion()
         if global.value {
             try Global.add(ref: ref, version: version)
         } else {
