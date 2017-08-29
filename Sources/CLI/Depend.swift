@@ -6,12 +6,13 @@
 //
 
 import SwiftCLI
+import Core
 
 class DependCommand: Command {
 
     let name = "depend"
 
-    let module = Parameter()
+    let target = Parameter()
     
     let on = Key<String>("-o", "--on")
     var optionGroups: [OptionGroup] {
@@ -19,7 +20,10 @@ class DependCommand: Command {
     }
 
     func execute() throws {
-
+        var package = try Package.load(directory: ".")
+        let targets = on.value?.commaSeparated() ?? []
+        try targets.forEach { try package.depend(target: target.value, on: $0) }
+        try package.write()
     }
 
 }

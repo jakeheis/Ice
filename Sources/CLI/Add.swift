@@ -35,6 +35,8 @@ class AddCommand: Command {
         if global.value {
             try Global.add(ref: ref, version: version)
         } else {
+            var package = try Package.load(directory: ".")
+            
             func manualVersion() -> Version {
                 let major = Input.awaitInt(message: "Major version: ")
                 let minor = Input.awaitInt(message: "Minor version: ")
@@ -42,7 +44,6 @@ class AddCommand: Command {
             }
             let actualVersion = version ?? manualVersion()
             
-            var package = try Package.load(directory: ".")
             package.addDependency(ref: ref, version: actualVersion)
             if let modulesString = modules.value {
                 let modules = modulesString.components(separatedBy: ",")
