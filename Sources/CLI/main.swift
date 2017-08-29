@@ -6,6 +6,7 @@ CLI.setup(name: "ice")
 CLI.register(commands: [
     AddCommand(),
     BuildCommand(),
+    CleanCommand(),
     DependCommand(),
     DescribeCommand(),
     InitCommand(),
