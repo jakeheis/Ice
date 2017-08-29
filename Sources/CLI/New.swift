@@ -6,6 +6,8 @@
 //
 
 import SwiftCLI
+import Core
+import Files
 
 struct GlobalOption {
     static let global = Flag("-G", "--global")
@@ -27,16 +29,15 @@ class NewCommand: Command {
     let optionGroups = [InitializerOptions.typeGroup]
 
     func execute() throws {
-//        Folder.current.createSubfolderIfNeeded(withName: projectName.value)
-        // Change dir to new folder
-        var initArgs: [String] = []
+        try Folder.current.createSubfolderIfNeeded(withName: projectName.value)
+        
+        var type: SPM.InitType?
         if library.value {
-            initArgs.append(library.names[0])
+            type = .library
+        } else if executable.value {
+            type = .executable
         }
-        if executable.value {
-            initArgs.append(executable.names[0])
-        }
-        // InitCommand().manualExecute(initArgs)
+        try SPM(path: projectName.value).initPackage(type: type)
     }
 
 }

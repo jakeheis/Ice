@@ -77,6 +77,9 @@ public struct Package: Decodable {
         guard let targetIndex = targets.index(where:  { $0.name == target }) else {
             throw SwiftProcess.Error.processFailed
         }
+        if targets[targetIndex].dependencies.contains(where: { $0.name == lib }) {
+            return
+        }
         targets[targetIndex].dependencies.append(Target.Dependency(name: lib))
     }
     
