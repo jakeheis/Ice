@@ -1,5 +1,5 @@
 //
-// RemoteTests.swift
+// RepositoryReferenceTests.swift
 // Ice
 //
 
@@ -8,7 +8,7 @@ import Core
 
 class RemoteTests: XCTestCase {
     
-    func testGithubRepositoryReference() {
+    func testGithub() {
         let short = RepositoryReference("jakeheis/SwiftCLI")
         XCTAssert(short?.url == "https://github.com/jakeheis/SwiftCLI")
         XCTAssert(short?.name == "SwiftCLI")
@@ -30,7 +30,7 @@ class RemoteTests: XCTestCase {
         XCTAssert(ssh?.name == "SwiftCLI")
     }
     
-    func testGitlabRepositoryReference() {
+    func testGitlab() {
         let mid = RepositoryReference("gl:jakeheis/SwiftCLI")
         XCTAssert(mid?.url == "https://gitlab.com/jakeheis/SwiftCLI")
         XCTAssert(mid?.name == "SwiftCLI")
@@ -42,6 +42,12 @@ class RemoteTests: XCTestCase {
         let ssh = RepositoryReference("git@gitlab.com:jakeheis/SwiftCLI.git")
         XCTAssert(ssh?.url == "git@gitlab.com:jakeheis/SwiftCLI.git")
         XCTAssert(ssh?.name == "SwiftCLI")
+    }
+    
+    func testMostRecentVersion() {
+        let ref = RepositoryReference("jakeheis/Alamofire")
+        let latest = ref?.latestVersion()
+        XCTAssert(latest == Version("3.4.1"))
     }
     
 }

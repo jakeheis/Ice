@@ -44,7 +44,7 @@ public struct RepositoryReference {
         
         let clone = Process()
         clone.launchPath = "/usr/bin/env"
-        clone.arguments = ["git", "ls-remote", url, "--tags"]
+        clone.arguments = ["git", "ls-remote", "--tags", url]
         clone.standardOutput = output
         clone.launch()
         clone.waitUntilExit()
@@ -53,10 +53,10 @@ public struct RepositoryReference {
             return nil
         }
         let tags = tagOutput.components(separatedBy: "\n").flatMap { (line) in
-            guard let index = line.index(of: "/") else {
+            guard let index = line.index(of: "\t") else {
                 return nil
             }
-            return String(line[line.index(index, offsetBy: "tags/".characters.count)...])
+            return String(line[line.index(index, offsetBy: "refs/tags/".characters.count + 1)...])
         }
         return tags.flatMap { Version($0) }.sorted().last
     }
