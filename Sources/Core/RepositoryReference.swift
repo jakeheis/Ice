@@ -12,12 +12,15 @@ import Regex
 
 public struct RepositoryReference {
     
-    public let name: String
     public let url: String
+    public var name: String {
+        let trimmed = url.hasSuffix(".git") ? String(url[..<url.index(url.endIndex, offsetBy: -4)]) : url
+        return trimmed.components(separatedBy: "/").last!
+    }
     
     public init?(_ blob: String) {
         if Regex("^[a-zA-Z]+/[a-zA-Z]+$").matches(blob) {
-            self.init(name: blob.components(separatedBy: "/")[1], url: "https://github.com/\(blob)")
+            self.init(url: "https://github.com/\(blob)")
         } else if Regex("^(gh|gl):[a-zA-Z]+/[a-zA-Z]+$").matches(blob)  {
             let path = blob[blob.index(blob.startIndex, offsetBy: 3)...]
             let url: String
@@ -26,16 +29,13 @@ public struct RepositoryReference {
             } else {
                 url = "https://gitlab.com/\(path)"
             }
-            self.init(name: blob.components(separatedBy: "/")[1], url: url)
+            self.init(url: url)
         } else {
-            let trimmed = blob.hasSuffix(".git") ? String(blob[..<blob.index(blob.endIndex, offsetBy: -4)]) : blob
-            let name = trimmed.components(separatedBy: "/").last!
-            self.init(name: name, url: blob)
+            self.init(url: blob)
         }
     }
     
-    init(name: String, url: String) {
-        self.name = name
+    public init(url: String) {
         self.url = url
     }
     

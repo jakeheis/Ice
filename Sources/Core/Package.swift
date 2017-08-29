@@ -54,6 +54,19 @@ public struct Package: Decodable {
         dependencies.append(Dependency(url: ref.url, version: version))
     }
     
+    public mutating func removeDependency(named name: String) throws {
+        guard let index = dependencies.index(where: { RepositoryReference(url: $0.url).name == name }) else {
+            throw SwiftProcess.Error.processFailed
+        }
+        dependencies.remove(at: index)
+        
+        targets = targets.map { (oldTarget) in
+            var newTarget = oldTarget
+            newTarget.dependencies = newTarget.dependencies.filter { $0.name != name }
+            return newTarget
+        }
+    }
+    
     public mutating func addTarget(name: String, isTest: Bool, dependencies: [String]) {
         let dependencies = dependencies.map { Package.Target.Dependency(name: $0) }
         let newTarget = Target(name: name, isTest: isTest, dependencies: dependencies)

@@ -19,6 +19,10 @@ class RemoveCommand: Command {
     func execute() throws {
         if global.value {
             try Global.remove(name: package.value, purge: purge.value)
+        } else {
+            var project = try Package.load(directory: ".")
+            try project.removeDependency(named: package.value)
+            try project.write()
         }
     }
     
