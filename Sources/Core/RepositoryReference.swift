@@ -30,8 +30,10 @@ public struct RepositoryReference {
                 url = "https://gitlab.com/\(path)"
             }
             self.init(url: url)
-        } else {
+        } else if !Regex("^[a-zA-Z]+$").matches(blob) {
             self.init(url: blob)
+        } else {
+            return nil
         }
     }
     
@@ -39,19 +41,8 @@ public struct RepositoryReference {
         self.url = url
     }
     
-    public func latestVersion() -> Version? {
-        let output = Pipe()
-        
-        let clone = Process()
-        clone.launchPath = "/usr/bin/env"
-        clone.arguments = ["git", "ls-remote", "--tags", url]
-        clone.standardOutput = output
-        clone.launch()
-        clone.waitUntilExit()
-        
-        guard let tagOutput = String(data: output.fileHandleForReading.availableData, encoding: .utf8) else {
-            return nil
-        }
+    public func latestVersion() throws -> Version? {
+        let tagOutput = try Git.lsRemote(url: url) 
         let tags = tagOutput.components(separatedBy: "\n").flatMap { (line) in
             guard let index = line.index(of: "\t") else {
                 return nil

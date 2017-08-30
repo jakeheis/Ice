@@ -20,4 +20,5 @@ CLI.register(commands: [
     XcCommand()
 ])
 
+//exit(CLI.debugGo(with: "ice upgrade -G FlockCLI"))
 exit(CLI.go())

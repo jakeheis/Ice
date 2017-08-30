@@ -11,6 +11,10 @@ public struct Version {
     public let minor: Int
     public let patch: Int
     
+    var raw: String {
+        return description
+    }
+    
     public init?(_ str: String) {
         var versionString = str
         if versionString.hasPrefix("v") {
