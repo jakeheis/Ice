@@ -10,44 +10,19 @@ import Foundation
 class Git {
     
     static func clone(url: String, to path: String) throws {
-        try execute(["clone", url, path])
+        try exec(arguments: ["clone", url, path]).execute()
     }
     
     static func getRemoteUrl(of path: String) throws -> String {
-        return try capture(["-C", path, "remote", "get-url", "origin"])
+        return try exec(arguments: ["-C", path, "remote", "get-url", "origin"]).capture()
     }
     
     static func lsRemote(url: String) throws -> String {
-        return try capture(["ls-remote", "--tags", url])
+        return try exec(arguments: ["ls-remote", "--tags", url]).capture()
     }
     
-    private static func execute(_ arguments: [String]) throws {
-        let process = Process()
-        process.launchPath = "/usr/bin/env"
-        process.arguments = ["git"] + arguments
-        process.launch()
-        process.waitUntilExit()
-        
-        guard process.terminationStatus == 0 else {
-            throw IceError(exitStatus: process.terminationStatus)
-        }
-    }
-    
-    private static func capture(_ arguments: [String]) throws -> String {
-        let output = Pipe()
-        
-        let process = Process()
-        process.launchPath = "/usr/bin/env"
-        process.arguments = ["git"] + arguments
-        process.standardOutput = output
-        process.launch()
-        process.waitUntilExit()
-        
-        guard process.terminationStatus == 0 else {
-            throw IceError(exitStatus: process.terminationStatus)
-        }
-        
-        return String(data: output.fileHandleForReading.availableData, encoding: .utf8) ?? ""
+    private static func exec(arguments: [String]) -> Exec {
+        return Exec(command: "swift", args: arguments)
     }
     
 }

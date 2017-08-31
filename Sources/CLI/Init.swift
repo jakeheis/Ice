@@ -7,7 +7,7 @@
 
 import SwiftCLI
 import Core
-// import Files
+import Rainbow
 
 /*
  
