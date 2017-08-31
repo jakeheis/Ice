@@ -29,22 +29,22 @@ class Git {
         process.waitUntilExit()
         
         guard process.terminationStatus == 0 else {
-            throw SwiftProcess.Error.processFailed
+            throw IceError(exitStatus: process.terminationStatus)
         }
     }
     
     private static func capture(_ arguments: [String]) throws -> String {
         let output = Pipe()
         
-        let clone = Process()
-        clone.launchPath = "/usr/bin/env"
-        clone.arguments = ["git"] + arguments
-        clone.standardOutput = output
-        clone.launch()
-        clone.waitUntilExit()
+        let process = Process()
+        process.launchPath = "/usr/bin/env"
+        process.arguments = ["git"] + arguments
+        process.standardOutput = output
+        process.launch()
+        process.waitUntilExit()
         
-        guard clone.terminationStatus == 0 else {
-            throw SwiftProcess.Error.processFailed
+        guard process.terminationStatus == 0 else {
+            throw IceError(exitStatus: process.terminationStatus)
         }
         
         return String(data: output.fileHandleForReading.availableData, encoding: .utf8) ?? ""

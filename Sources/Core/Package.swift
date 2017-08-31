@@ -46,6 +46,7 @@ public struct Package: Decodable {
     public private(set) var targets: [Target]
     
     public static func load(directory: String) throws -> Package {
+        
         let rawPackage = try SPM(path: directory).dumpPackage()
         return try JSONDecoder().decode(Package.self, from: rawPackage)
     }
@@ -56,7 +57,7 @@ public struct Package: Decodable {
     
     public mutating func removeDependency(named name: String) throws {
         guard let index = dependencies.index(where: { RepositoryReference(url: $0.url).name == name }) else {
-            throw SwiftProcess.Error.processFailed
+            throw IceError(message: "can't remove dependency \(name)")
         }
         dependencies.remove(at: index)
         
@@ -75,7 +76,7 @@ public struct Package: Decodable {
     
     public mutating func depend(target: String, on lib: String) throws {
         guard let targetIndex = targets.index(where:  { $0.name == target }) else {
-            throw SwiftProcess.Error.processFailed
+            throw IceError(message: "target \(target) not found")
         }
         if targets[targetIndex].dependencies.contains(where: { $0.name == lib }) {
             return

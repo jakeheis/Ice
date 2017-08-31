@@ -6,12 +6,16 @@
 //
 
 import Foundation
+import Files
 
 public class SPM {
 
     let path: String
-
-    public init(path: String = ".") {
+    
+    public init(path: String = ".") throws {
+        guard try Folder(path: path).containsFile(named: "Package.swift") else {
+            throw IceError(message: "must execute in Swift package directory")
+        }
         self.path = path
     }
     
@@ -55,7 +59,7 @@ public class SPM {
         }
         let data = try capture(arguments: args)
         guard let retVal = String(data: data, encoding: .utf8) else {
-            throw SwiftProcess.Error.processFailed
+            throw IceError(message: "couldn't retrieve executable path")
         }
         return retVal.trimmingCharacters(in: .whitespacesAndNewlines)
     }
@@ -63,7 +67,7 @@ public class SPM {
     public func dumpPackage() throws -> Data {
         let output = try capture(arguments: ["package", "dump-package"])
         guard let jsonStart = output.index(of: UInt8("{".cString(using: .ascii)![0])) else {
-            throw SwiftProcess.Error.processFailed
+            throw IceError(message: "couldn't parse package")
         }
         return output.subdata(in: jsonStart..<output.endIndex)
     }
@@ -80,7 +84,7 @@ public class SPM {
 
 public class SwiftProcess {
     
-    public enum Error: Swift.Error {
+    private enum Error: Swift.Error {
         case processFailed
     }
     

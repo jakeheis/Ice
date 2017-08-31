@@ -42,7 +42,12 @@ public struct RepositoryReference {
     }
     
     public func latestVersion() throws -> Version? {
-        let tagOutput = try Git.lsRemote(url: url) 
+        let tagOutput: String
+        do {
+            tagOutput = try Git.lsRemote(url: url)
+        } catch let error as IceError {
+            throw IceError(message: "not a valid package reference", exitStatus: error.exitStatus)
+        }
         let tags = tagOutput.components(separatedBy: "\n").flatMap { (line) in
             guard let index = line.index(of: "\t") else {
                 return nil

@@ -28,7 +28,7 @@ class AddCommand: Command {
     
     func execute() throws {
         guard let ref = RepositoryReference(dependency.value) else {
-            throw SwiftProcess.Error.processFailed
+            throw IceError(message: "not a valid package reference")
         }
         
         let version = try ref.latestVersion()

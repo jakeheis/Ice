@@ -20,6 +20,15 @@
         }
       },
       {
+        "package": "Rainbow",
+        "repositoryURL": "https://github.com/onevcat/Rainbow",
+        "state": {
+          "branch": null,
+          "revision": "df197437d8acefb2ae01ab073be1d531fe7781ef",
+          "version": "2.1.0"
+        }
+      },
+      {
         "package": "Regex",
         "repositoryURL": "https://github.com/sharplet/Regex",
         "state": {
@@ -33,8 +42,8 @@
         "repositoryURL": "https://github.com/jakeheis/SwiftCLI",
         "state": {
           "branch": null,
-          "revision": "6ad6d95ce0eb5247553ccb056b2064b5a9765f9e",
-          "version": "3.0.1"
+          "revision": "7d79b041ffca72ca55e35f1f97d31fe04d9736e2",
+          "version": "3.0.2"
         }
       }
     ]

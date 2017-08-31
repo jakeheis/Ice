@@ -21,7 +21,7 @@ class TargetCommand: Command {
         var package = try Package.load(directory: ".")
         
         if package.targets.contains(where: { $0.name == targetName.value }) {
-            throw SwiftProcess.Error.processFailed
+            throw IceError(message: "target \(targetName.value) already exists")
         }
         
         var testTarget = isTest.value

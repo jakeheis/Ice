@@ -45,9 +45,13 @@ public class Global {
             print("Project already downloaded")
             return
         } else {
-            try Git.clone(url: ref.url, to: folder)
+            do {
+                try Git.clone(url: ref.url, to: folder)
+            } catch let error as IceError {
+                throw IceError(message: "clone failed", exitStatus: error.exitStatus)
+            }
         }
-        let spm = SPM(path: folder)
+        let spm = try SPM(path: folder)
         try spm.build(release: true)
         
         let any = try addExecutables(at: folder)
@@ -71,7 +75,7 @@ public class Global {
     
     @discardableResult
     private static func addExecutables(at path: String) throws -> Bool {
-        let spm = SPM(path: path)
+        let spm = try SPM(path: path)
         return try iterateExecutables(of: spm) { (executable) in
             let path = Global.symlinkPath + executable.name
             print("Linking \(executable.name) to \(path)")
@@ -80,7 +84,7 @@ public class Global {
     }
     
     private static func removeExecutables(at path: String) throws {
-        let spm = SPM(path: path)
+        let spm = try SPM(path: path)
         try iterateExecutables(of: spm) { (executable) in
             let potentialPath = Global.symlinkPath + executable.name
             if let destination = try? FileManager.default.destinationOfSymbolicLink(atPath: potentialPath), destination == executable.path {
@@ -92,14 +96,19 @@ public class Global {
     
     public static func upgrade(name: String, version: Version?) throws {
         guard let project = try? Folder(path: path(to: name)), let current = try? project.subfolder(named: "current") else {
-            throw SwiftProcess.Error.processFailed
+            throw IceError(message: "\(name) not already installed")
         }
         
         let ref: RepositoryReference
         if let entered = RepositoryReference(name) {
             ref = entered
         } else {
-            let url = try Git.getRemoteUrl(of: current.path).trimmed
+            let url: String
+            do {
+                url = try Git.getRemoteUrl(of: current.path).trimmed
+            } catch let error as IceError {
+                throw IceError(message: "couldn't get remote url of package", exitStatus: error.exitStatus)
+            }
             ref = RepositoryReference(url: url)
         }
         
@@ -109,8 +118,7 @@ public class Global {
         }
         if let installVersion = installVersion {
             if project.containsSubfolder(named: installVersion.raw) {
-                print("Error: already donwloaded version \(installVersion)")
-                throw SwiftProcess.Error.processFailed
+                throw IceError(message: "already donwloaded version \(installVersion)")
             }
         }
         
@@ -118,23 +126,6 @@ public class Global {
         
         try add(ref: ref, version: installVersion)
     }
-    
-//    private static func mostRecentVersion(in dir: Folder) -> Folder? {
-//        let sorted = dir.subfolders.sorted { (one ,two) in
-//            if one.name == Global.defaultDir {
-//                return false
-//            }
-//            if two.name == Global.defaultDir {
-//                return true
-//            }
-//            guard let versionOne = Version(one.name), let versionTwo = Version(two.name) else {
-//                fatalError("Unrecognized folder: \(one.name) \(two.name)")
-//            }
-//            return versionOne < versionTwo
-//        }
-//
-//        return sorted.last
-//    }
 
     public static func remove(name: String, purge: Bool) throws {
         let packageName: String
@@ -147,7 +138,7 @@ public class Global {
         let dir = Global.directory + packageName
         
         guard let folder = try? Folder(path: dir) else {
-            throw SwiftProcess.Error.processFailed
+            throw IceError(message: "\(name) not installed")
         }
         
         if let mostRecent = try? folder.subfolder(named: "current") {
