@@ -7,6 +7,7 @@
 
 import Foundation
 import Regex
+import CLISpinner
 
 class OutputTransformer {
     
@@ -16,7 +17,8 @@ class OutputTransformer {
     
     var prefix: String? = nil
     var suffix: String? = nil
-    var translations: [(Regex, Translation)] = []
+    private var responses: [OutputResponse] = []
+    private var currentResponse: OutputResponse?
     
     init() {
         self.output = Pipe()
@@ -31,7 +33,7 @@ class OutputTransformer {
                 lines.removeLast()
             }
             
-            lines.forEach { self.translate(line: $0) }
+            lines.forEach { self.respond(line: $0) }
         }
     }
     
@@ -41,7 +43,12 @@ class OutputTransformer {
     
     func on(_ matcher: StaticString, yield: @escaping Translation) {
         let regex = Regex(matcher)
-        translations.append((regex, yield))
+        responses.append(TranslateResponse(regex: regex, translation: yield))
+    }
+    
+    func on(_ matcher: StaticString, spinPattern: CLISpinner.Pattern, translation: @escaping OutputTransformer.Translation) {
+        let regex = Regex(matcher)
+        responses.append(SpinResponse(regex: regex, spinPattern: spinPattern, translation: translation))
     }
     
     func last(_ str: String) {
@@ -52,14 +59,72 @@ class OutputTransformer {
         process.standardOutput = output
     }
     
-    func translate(line: String) {
-        for translation in self.translations {
-            if let match = translation.0.firstMatch(in: line) {
-                print(translation.1(match.captures.flatMap { $0 }))
+    func respond(line: String) {
+        currentResponse?.end()
+        for response in self.responses {
+            if let match = response.regex.firstMatch(in: line) {
+                response.respond(captures: match.captures.flatMap { $0 })
+                currentResponse = response
                 return
             }
         }
         print(line)
+    }
+    
+}
+
+private protocol OutputResponse: class {
+    var regex: Regex { get }
+    func respond(captures: [String])
+    func end()
+}
+
+private class TranslateResponse: OutputResponse {
+    
+    let regex: Regex
+    let translation: OutputTransformer.Translation
+    
+    init(regex: Regex, translation: @escaping OutputTransformer.Translation) {
+        self.regex = regex
+        self.translation = translation
+    }
+    
+    func respond(captures: [String]) {
+        print(translation(captures))
+    }
+    
+    func end() {}
+    
+}
+
+private class SpinResponse: OutputResponse {
+    
+    let regex: Regex
+    let spinPattern: CLISpinner.Pattern
+    let translation: OutputTransformer.Translation?
+    
+    private var spinner: Spinner?
+    
+    init(regex: Regex, spinPattern: CLISpinner.Pattern) {
+        self.regex = regex
+        self.spinPattern = spinPattern
+        self.translation = nil
+    }
+    
+    init(regex: Regex, spinPattern: CLISpinner.Pattern, translation: @escaping OutputTransformer.Translation) {
+        self.regex = regex
+        self.spinPattern = spinPattern
+        self.translation = translation
+    }
+    
+    func respond(captures: [String]) {
+        let newSpinner = Spinner(pattern: spinPattern, text: translation?(captures) ?? "")
+        newSpinner.start()
+        spinner = newSpinner
+    }
+    
+    func end() {
+        spinner?.stop()
     }
     
 }

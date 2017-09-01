@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import CLISpinner
 
 class Git {
     
@@ -22,7 +23,7 @@ class Git {
     }
     
     private static func exec(arguments: [String]) -> Exec {
-        return Exec(command: "swift", args: arguments)
+        return Exec(command: "git", args: arguments)
     }
     
 }

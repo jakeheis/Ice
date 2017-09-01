@@ -14,10 +14,11 @@ let package = Package(
         .package(url: "https://github.com/JohnSundell/Files", .upToNextMinor(from: "1.11.0")),
         .package(url: "https://github.com/sharplet/Regex", .upToNextMinor(from: "1.1.0")),
         .package(url: "https://github.com/onevcat/Rainbow", .upToNextMinor(from: "2.1.0")),
+        .package(url: "https://github.com/kiliankoe/CLISpinner", .upToNextMinor(from: "0.3.4")),
     ],
     targets: [
         .target(name: "CLI", dependencies: ["SwiftCLI", "Core"]),
-        .target(name: "Core", dependencies: ["Just", "Files", "Regex", "Rainbow"]),
+        .target(name: "Core", dependencies: ["Just", "Files", "Regex", "Rainbow", "CLISpinner"]),
         .testTarget(name: "CoreTests", dependencies: ["Core"]),
     ]
 )

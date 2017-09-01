@@ -2,6 +2,15 @@
   "object": {
     "pins": [
       {
+        "package": "CLISpinner",
+        "repositoryURL": "https://github.com/kiliankoe/CLISpinner",
+        "state": {
+          "branch": null,
+          "revision": "75242aa49a7b9543be3d7f7eeda574216f165165",
+          "version": "0.3.4"
+        }
+      },
+      {
         "package": "Files",
         "repositoryURL": "https://github.com/JohnSundell/Files",
         "state": {

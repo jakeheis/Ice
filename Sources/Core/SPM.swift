@@ -7,6 +7,7 @@
 
 import Foundation
 import Files
+import CLISpinner
 
 public class SPM {
 
@@ -14,6 +15,7 @@ public class SPM {
     
     public init(path: String = ".") throws {
         self.path = path
+        
     }
     
     public enum InitType: String {
@@ -39,7 +41,9 @@ public class SPM {
         if release {
             args += ["-c", "release"]
         }
-        try exec(arguments: args).execute()
+        try exec(arguments: args).execute(transform: { (t) in
+            t.on("Compile Swift Module '(.*)'", spinPattern: .dots, translation: { "Compiling " + $0[0] })
+        })
     }
     
     public func clean() throws {
