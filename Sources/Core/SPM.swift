@@ -42,7 +42,7 @@ public class SPM {
             args += ["-c", "release"]
         }
         try exec(arguments: args).execute(transform: { (t) in
-            t.spin("Compile Swift Module '(.*)' (\\([0-9]+ sources\\))", during: { "Compiling " + $0[0] + " " + $0[1] }, done: { $0.succeed(text: "Compiled " + $1[0]) })
+            t.spin("Compile Swift Module '(.*)'", { "Compiling " + $0[0] }, { $0.succeed(text: "Compiled " + $1[0]) })
         })
     }
     

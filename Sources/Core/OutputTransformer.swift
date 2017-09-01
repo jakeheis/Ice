@@ -19,11 +19,9 @@ class OutputTransformer {
     
     var prefix: String? = nil
     var suffix: String? = nil
-//    private var responses: [OutputResponse] = []
-//    private var currentResponse: OutputResponse?
     
     private var responseGenerators: [ResponseGenerator] = []
-    var currentResponse: Response?
+    private var currentResponse: Response?
     
     init() {
         self.output = Pipe()
@@ -51,11 +49,11 @@ class OutputTransformer {
         self.prefix = str
     }
     
-    func replace(_ matcher: StaticString, yield: @escaping Translation) {
+    func replace(_ matcher: StaticString, _ yield: @escaping Translation) {
         responseGenerators.append(ResponseGenerator(matcher: matcher, replace: yield))
     }
     
-    func spin(_ matcher: StaticString, during: @escaping OutputTransformer.Translation, done: @escaping OutputTransformer.SpinnerDone) {
+    func spin(_ matcher: StaticString, _ during: @escaping OutputTransformer.Translation, _ done: @escaping OutputTransformer.SpinnerDone) {
         responseGenerators.append(ResponseGenerator(matcher: matcher, during: during, after: done))
     }
     
@@ -79,6 +77,10 @@ class OutputTransformer {
             }
         }
         print(line)
+    }
+    
+    deinit {
+        currentResponse?.stop()
     }
     
 }
