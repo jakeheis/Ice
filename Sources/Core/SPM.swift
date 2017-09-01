@@ -42,7 +42,7 @@ public class SPM {
             args += ["-c", "release"]
         }
         try exec(arguments: args).execute(transform: { (t) in
-            t.on("Compile Swift Module '(.*)'", spinPattern: .dots, translation: { "Compiling " + $0[0] })
+            t.on("Compile Swift Module '(.*)'", spinPattern: .dots, translation: { "Compiling " + $0[0] }, done: { $0.succeed(text: "Compiled " + $1[0]) })
         })
     }
     

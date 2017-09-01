@@ -12,6 +12,7 @@ import CLISpinner
 class OutputTransformer {
     
     typealias Translation = (_ captures: [String]) -> String
+    typealias SpinnerDone = (_ spinner: Spinner, _ capture: [String]) -> ()
     
     let output: Pipe
     
@@ -46,9 +47,9 @@ class OutputTransformer {
         responses.append(TranslateResponse(regex: regex, translation: yield))
     }
     
-    func on(_ matcher: StaticString, spinPattern: CLISpinner.Pattern, translation: @escaping OutputTransformer.Translation) {
+    func on(_ matcher: StaticString, spinPattern: CLISpinner.Pattern, translation: @escaping OutputTransformer.Translation, done: @escaping OutputTransformer.SpinnerDone) {
         let regex = Regex(matcher)
-        responses.append(SpinResponse(regex: regex, spinPattern: spinPattern, translation: translation))
+        responses.append(SpinResponse(regex: regex, spinPattern: spinPattern, translation: translation, done: done))
     }
     
     func last(_ str: String) {
@@ -102,6 +103,8 @@ private class SpinResponse: OutputResponse {
     let regex: Regex
     let spinPattern: CLISpinner.Pattern
     let translation: OutputTransformer.Translation?
+    let done: OutputTransformer.SpinnerDone?
+    var captures: [String] = []
     
     private var spinner: Spinner?
     
@@ -109,22 +112,31 @@ private class SpinResponse: OutputResponse {
         self.regex = regex
         self.spinPattern = spinPattern
         self.translation = nil
+        self.done = nil
     }
     
-    init(regex: Regex, spinPattern: CLISpinner.Pattern, translation: @escaping OutputTransformer.Translation) {
+    init(regex: Regex, spinPattern: CLISpinner.Pattern, translation: @escaping OutputTransformer.Translation, done: @escaping OutputTransformer.SpinnerDone) {
         self.regex = regex
         self.spinPattern = spinPattern
         self.translation = translation
+        self.done = done
     }
     
     func respond(captures: [String]) {
         let newSpinner = Spinner(pattern: spinPattern, text: translation?(captures) ?? "")
         newSpinner.start()
         spinner = newSpinner
+        self.captures = captures
     }
     
     func end() {
-        spinner?.stop()
+        if let spinner = spinner {
+            if let done = done {
+                done(spinner, captures)
+            } else {
+                spinner.stopAndClear()
+            }
+        }
     }
     
 }
