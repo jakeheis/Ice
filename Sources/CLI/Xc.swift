@@ -23,11 +23,9 @@ class XcCommand: Command {
         }
         
         let package = try Package.load(directory: ".")
-        let open = Process()
-        open.launchPath = "/usr/bin/env"
-        open.arguments = ["open", "\(package.name).xcodeproj"]
-        open.launch()
-        open.waitUntilExit()
+        do {
+            try Exec(command: "open", args: ["\(package.name).xcodeproj"]).execute()
+        } catch {}
     }
     
 }

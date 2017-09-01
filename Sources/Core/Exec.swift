@@ -7,15 +7,15 @@
 
 import Foundation
 
-class Exec {
+public class Exec {
     
-    struct Error: Swift.Error {
+    public struct Error: Swift.Error {
         let exitStatus: Int32
     }
     
     private let process: Process
     
-    init(command: String, args: [String], in currentDirectory: String? = nil) {
+    public init(command: String, args: [String], in currentDirectory: String? = nil) {
         self.process = Process()
         self.process.launchPath = "/usr/bin/env"
         self.process.arguments = [command] + args
@@ -24,7 +24,7 @@ class Exec {
         }
     }
     
-    func execute(transform: ((_ transformer: OutputTransformer) -> ())? = nil) throws {
+    public func execute(transform: ((_ transformer: OutputTransformer) -> ())? = nil) throws {
         var transformer: OutputTransformer?
         if let transform = transform {
             let newTransformer = OutputTransformer()
@@ -34,7 +34,7 @@ class Exec {
         }
         
         InterruptCatcher.start(process: process)
-        
+                
         print(transformer?.prefix ?? "", terminator: "")
         process.launch()
         process.waitUntilExit()
@@ -47,7 +47,7 @@ class Exec {
         }
     }
     
-    func captureData() throws -> Data {
+    public func captureData() throws -> Data {
         let output = Pipe()
         process.standardOutput = output
         
@@ -65,7 +65,7 @@ class Exec {
         return output.fileHandleForReading.availableData
     }
     
-    func capture() throws -> String {
+    public func capture() throws -> String {
         let data = try captureData()
         
         return String(data: data, encoding: .utf8) ?? ""

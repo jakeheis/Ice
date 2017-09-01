@@ -10,10 +10,10 @@ import Regex
 import CLISpinner
 import Dispatch
 
-class OutputTransformer {
+public class OutputTransformer {
     
-    typealias Translation = (_ captures: [String]) -> String
-    typealias SpinnerDone = (_ spinner: Spinner, _ capture: [String]) -> ()
+    public typealias Translation = (_ captures: [String]) -> String
+    public typealias SpinnerDone = (_ spinner: Spinner, _ capture: [String]) -> ()
     
     let output: Pipe
     
@@ -45,27 +45,27 @@ class OutputTransformer {
         }
     }
     
-    func first(_ str: String) {
+    public func first(_ str: String) {
         self.prefix = str
     }
     
-    func replace(_ matcher: StaticString, _ yield: @escaping Translation) {
+    public func replace(_ matcher: StaticString, _ yield: @escaping Translation) {
         responseGenerators.append(ResponseGenerator(matcher: matcher, replace: yield))
     }
     
-    func spin(_ matcher: StaticString, _ during: @escaping OutputTransformer.Translation, _ done: @escaping OutputTransformer.SpinnerDone) {
+    public func spin(_ matcher: StaticString, _ during: @escaping OutputTransformer.Translation, _ done: @escaping OutputTransformer.SpinnerDone) {
         responseGenerators.append(ResponseGenerator(matcher: matcher, during: during, after: done))
     }
     
-    func last(_ str: String) {
+    public func last(_ str: String) {
         self.suffix = str
     }
     
-    func attach(_ process: Process) {
+    public func attach(_ process: Process) {
         process.standardOutput = output
     }
     
-    func respond(line: String, stopImmediately: Bool) {
+    private func respond(line: String, stopImmediately: Bool) {
         for responseGenerator in self.responseGenerators {
             if let match = responseGenerator.regex.firstMatch(in: line) {
                 let response = responseGenerator.respond(captures: match.captures.flatMap { $0 })
@@ -85,7 +85,7 @@ class OutputTransformer {
     
 }
 
-class ResponseGenerator {
+private class ResponseGenerator {
     let regex: Regex
     
     let internalResponse: (_ captures: [String]) -> Response?
@@ -112,7 +112,7 @@ class ResponseGenerator {
     }
 }
 
-class Response {
+private class Response {
     let spinner: Spinner
     let after: (_ spinner: Spinner, _ captures: [String]) -> ()
     let captures: [String]
