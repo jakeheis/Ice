@@ -8,6 +8,7 @@
 import Foundation
 import Regex
 import CLISpinner
+import Dispatch
 
 class OutputTransformer {
     
@@ -18,23 +19,31 @@ class OutputTransformer {
     
     var prefix: String? = nil
     var suffix: String? = nil
-    private var responses: [OutputResponse] = []
-    private var currentResponse: OutputResponse?
+//    private var responses: [OutputResponse] = []
+//    private var currentResponse: OutputResponse?
+    
+    private var responseGenerators: [ResponseGenerator] = []
+    var currentResponse: Response?
     
     init() {
         self.output = Pipe()
         
         output.fileHandleForReading.readabilityHandler = { (handle) in
-            guard let str = String(data:handle.availableData, encoding: .utf8) else {
+            guard let str = String(data:handle.availableData, encoding: .utf8), !str.isEmpty else {
                 return
             }
             
-            var lines = str.components(separatedBy: "\n")
-            if let last = lines.last, last.isEmpty {
-                lines.removeLast()
-            }
+            DispatchQueue.main.async {
+                var lines = str.components(separatedBy: "\n")
+                if let last = lines.last, last.isEmpty {
+                    lines.removeLast()
+                }
             
-            lines.forEach { self.respond(line: $0) }
+                self.currentResponse?.stop()
+                for (index, line) in lines.enumerated() {
+                    self.respond(line: line, stopImmediately: index < lines.endIndex - 1)
+                }
+            }
         }
     }
     
@@ -43,13 +52,13 @@ class OutputTransformer {
     }
     
     func on(_ matcher: StaticString, yield: @escaping Translation) {
-        let regex = Regex(matcher)
-        responses.append(TranslateResponse(regex: regex, translation: yield))
+        responseGenerators.append(ResponseGenerator(matcher: matcher, replace: yield))
     }
     
     func on(_ matcher: StaticString, spinPattern: CLISpinner.Pattern, translation: @escaping OutputTransformer.Translation, done: @escaping OutputTransformer.SpinnerDone) {
-        let regex = Regex(matcher)
-        responses.append(SpinResponse(regex: regex, spinPattern: spinPattern, translation: translation, done: done))
+        responseGenerators.append(ResponseGenerator(matcher: matcher, pattern: spinPattern, during: translation, after: done))
+//        let regex = Regex(matcher)
+//        responses.append(SpinResponse(regex: regex, spinPattern: spinPattern, translation: translation, done: done))
     }
     
     func last(_ str: String) {
@@ -60,11 +69,13 @@ class OutputTransformer {
         process.standardOutput = output
     }
     
-    func respond(line: String) {
-        currentResponse?.end()
-        for response in self.responses {
-            if let match = response.regex.firstMatch(in: line) {
-                response.respond(captures: match.captures.flatMap { $0 })
+    func respond(line: String, stopImmediately: Bool) {
+        for responseGenerator in self.responseGenerators {
+            if let match = responseGenerator.regex.firstMatch(in: line) {
+                let response = responseGenerator.respond(captures: match.captures.flatMap { $0 })
+                if stopImmediately {
+                    response?.stop()
+                }
                 currentResponse = response
                 return
             }
@@ -72,6 +83,49 @@ class OutputTransformer {
         print(line)
     }
     
+}
+
+class ResponseGenerator {
+    let regex: Regex
+    
+    let internalResponse: (_ captures: [String]) -> Response?
+    
+    init(matcher: StaticString, replace: @escaping (_ captures: [String]) -> String) {
+        self.regex = Regex(matcher)
+        self.internalResponse = { (captures) in
+            print(replace(captures))
+            return nil
+        }
+    }
+    
+    init(matcher: StaticString, pattern: CLISpinner.Pattern, during: @escaping (_ captures: [String]) -> String, after: @escaping (_ spinner: Spinner, _ captures: [String]) -> ()) {
+        self.regex = Regex(matcher)
+        self.internalResponse = { (captures) in
+            let spinner = Spinner(pattern: pattern, text: during(captures))
+            spinner.start()
+            return Response(spinner: spinner, after: after, captures: captures)
+        }
+    }
+    
+    func respond(captures: [String]) -> Response? {
+        return internalResponse(captures)
+    }
+}
+
+class Response {
+    let spinner: Spinner
+    let after: (_ spinner: Spinner, _ captures: [String]) -> ()
+    let captures: [String]
+    
+    init(spinner: Spinner, after: @escaping (_ spinner: Spinner, _ captures: [String]) -> (), captures: [String]) {
+        self.spinner = spinner
+        self.after = after
+        self.captures = captures
+    }
+    
+    func stop() {
+        after(spinner, captures)
+    }
 }
 
 private protocol OutputResponse: class {

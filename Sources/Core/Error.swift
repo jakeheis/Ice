@@ -7,6 +7,7 @@
 
 import SwiftCLI
 import Rainbow
+import Files
 
 public struct IceError: SwiftCLI.ProcessError {
     public let message: String?

@@ -37,6 +37,9 @@ public class SPM {
     }
 
     public func build(release: Bool = false) throws {
+//        try Exec(command: "ice_try", args: []).execute(transform: { (t) in
+//            t.on("Compile Swift Module '(.*)'", spinPattern: .dots, translation: { "Compiling " + $0[0] }, done: { $0.succeed(text: "Compiled " + $1[0]) })
+//        })
         var args = ["build"]
         if release {
             args += ["-c", "release"]
