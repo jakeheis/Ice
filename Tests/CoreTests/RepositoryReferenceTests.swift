@@ -46,7 +46,7 @@ class RemoteTests: XCTestCase {
     
     func testMostRecentVersion() {
         let ref = RepositoryReference("jakeheis/Alamofire")
-        let latest = ref?.latestVersion()
+        let latest = try! ref?.latestVersion()
         XCTAssert(latest == Version("3.4.1"))
     }
     

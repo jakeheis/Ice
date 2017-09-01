@@ -13,9 +13,8 @@ public class SPM {
 
     let path: String
     
-    public init(path: String = ".") throws {
+    public init(path: String = ".") {
         self.path = path
-        
     }
     
     public enum InitType: String {
