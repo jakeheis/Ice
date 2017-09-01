@@ -1,7 +1,6 @@
 import Foundation
 import Rainbow
 import Dispatch
-import Files
 
 public class Spinner {
     /// The pattern the spinner uses.
@@ -29,12 +28,12 @@ public class Spinner {
             }
         }
     }
-
+    
     var _text = ""
     var isRunning = true
     var frameIdx = 0
     let queue = DispatchQueue(label: "io.kilian.CLISpinner")
-
+    
     /// Create a new `Spinner`.
     ///
     /// - Parameters:
@@ -47,12 +46,11 @@ public class Spinner {
         self._text = text
         self.speed = speed ?? pattern.recommendedSpeed
     }
-
+    
     /// Start the spinner.
     public func start() {
         print()
         isRunning = true
-        
         queue.async { [weak self] in
             guard let `self` = self else { return }
             
@@ -68,7 +66,7 @@ public class Spinner {
             }
         }
     }
-
+    
     /// Stop the spinner.
     ///
     /// - Parameters:
@@ -86,79 +84,65 @@ public class Spinner {
         self.isRunning = false
         print(terminator: terminator)
     }
-
+    
     /// Stop the spinner and remove it entirely.
     public func stopAndClear() {
         self.stop(text: "", symbol: " ", terminator: "")
         self.output("\r")
     }
-
+    
     /// Stop the spinner, change it to a green '✔' and persist the current or provided text.
     ///
     /// - Parameter text: Text to persist if not the one already set
     public func succeed(text: String? = nil) {
         self.stop(text: text, symbol: "✔".green)
     }
-
+    
     /// Stop the spinner, change it to a red '✖' and persist the current or provided text.
     ///
     /// - Parameter text: Text to persist if not the one already set
     public func fail(text: String? = nil) {
         self.stop(text: text, symbol: "✖".red)
     }
-
+    
     /// Stop the spinner, change it to a yellow '⚠' and persist the current or provided text.
     ///
     /// - Parameter text: Text to persist if not the one already set
     public func warn(text: String? = nil) {
         self.stop(text: text, symbol: "⚠".yellow)
     }
-
+    
     /// Stop the spinner, change it to a blue 'ℹ' and persist the current or provided text.
     ///
     /// - Parameter text: Text to persist if not the one already set
     public func info(text: String? = nil) {
         self.stop(text: text, symbol: "ℹ".blue)
     }
-
+    
     func wait(seconds: Double) {
         usleep(useconds_t(seconds * 1_000_000))
     }
-
+    
     func frame() -> String {
         let frame = self.pattern.symbols[self.frameIdx]
         self.frameIdx = (self.frameIdx + 1) % self.pattern.symbols.count
         return "\(frame) \(self._text)"
     }
-
+    
     func resetCursor() {
         print("\u{001B}[F", terminator: "")
         print("\r", terminator: "")
     }
-
+    
     func render() {
         self.resetCursor()
         self.output(self.frame())
     }
-
+    
     func output(_ value: String) {
         print(value)
         fflush(stdout) // necessary for the carriage return in start()
     }
-
-    func hideCursor(_ hide: Bool) {
-        if hide {
-            self.output("\u{001B}[?25l")
-        } else {
-            self.output("\u{001B}[?25h")
-        }
-    }
-
-    /// Unhide the cursor.
-    ///
-    /// - Note: This should most definitely be called on a SIGINT in your project.
-    public func unhideCursor() {
-        self.hideCursor(false)
-    }
+    
 }
 

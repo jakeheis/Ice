@@ -30,22 +30,19 @@ public class SPM {
         }
         try exec(arguments: args).execute(transform: { (t) in
             t.first("\n")
-            t.on("(Creating .* package): (.*)") { $0[0] + ": " + $0[1].blue + "\n" }
-            t.on("Creating ([^:]+)$") { "    create ".blue + $0[0] }
+            t.replace("(Creating .* package): (.*)") { $0[0] + ": " + $0[1].blue + "\n" }
+            t.replace("Creating ([^:]+)$") { "    create ".blue + $0[0] }
             t.last("\n")
         })
     }
 
     public func build(release: Bool = false) throws {
-//        try Exec(command: "ice_try", args: []).execute(transform: { (t) in
-//            t.on("Compile Swift Module '(.*)'", spinPattern: .dots, translation: { "Compiling " + $0[0] }, done: { $0.succeed(text: "Compiled " + $1[0]) })
-//        })
         var args = ["build"]
         if release {
             args += ["-c", "release"]
         }
         try exec(arguments: args).execute(transform: { (t) in
-            t.on("Compile Swift Module '(.*)'", spinPattern: .dots, translation: { "Compiling " + $0[0] }, done: { $0.succeed(text: "Compiled " + $1[0]) })
+            t.spin("Compile Swift Module '(.*)' (\\([0-9]+ sources\\))", during: { "Compiling " + $0[0] + " " + $0[1] }, done: { $0.succeed(text: "Compiled " + $1[0]) })
         })
     }
     
