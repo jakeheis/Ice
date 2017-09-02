@@ -9,16 +9,16 @@ let package = Package(
         .executable(name: "ice", targets: ["CLI"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/jakeheis/SwiftCLI", .upToNextMinor(from: "3.0.2")),
+        .package(url: "https://github.com/jakeheis/SwiftCLI", .upToNextMinor(from: "3.0.3")),
         .package(url: "https://github.com/JustHTTP/Just", .upToNextMinor(from: "0.6.0")),
         .package(url: "https://github.com/JohnSundell/Files", .upToNextMinor(from: "1.11.0")),
         .package(url: "https://github.com/sharplet/Regex", .upToNextMinor(from: "1.1.0")),
         .package(url: "https://github.com/onevcat/Rainbow", .upToNextMinor(from: "2.1.0")),
+        .package(url: "https://github.com/jakeheis/CLISpinner", .upToNextMinor(from: "0.3.5")),
     ],
     targets: [
         .target(name: "CLI", dependencies: ["SwiftCLI", "Core"]),
         .target(name: "Core", dependencies: ["Just", "Files", "Regex", "Rainbow", "CLISpinner"]),
         .testTarget(name: "CoreTests", dependencies: ["Core"]),
-        .target(name: "CLISpinner", dependencies: ["Files"]),
     ]
 )

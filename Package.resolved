@@ -3,11 +3,11 @@
     "pins": [
       {
         "package": "CLISpinner",
-        "repositoryURL": "https://github.com/kiliankoe/CLISpinner",
+        "repositoryURL": "https://github.com/jakeheis/CLISpinner",
         "state": {
           "branch": null,
-          "revision": "75242aa49a7b9543be3d7f7eeda574216f165165",
-          "version": "0.3.4"
+          "revision": "1b2125e222786d1c6a389023f3eccd11b06d3225",
+          "version": "0.3.5"
         }
       },
       {
@@ -51,8 +51,8 @@
         "repositoryURL": "https://github.com/jakeheis/SwiftCLI",
         "state": {
           "branch": null,
-          "revision": "7d79b041ffca72ca55e35f1f97d31fe04d9736e2",
-          "version": "3.0.2"
+          "revision": "36bb5dd52deed7264b6f41c1a2190d376cb9f17c",
+          "version": "3.0.3"
         }
       }
     ]
