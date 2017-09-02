@@ -146,7 +146,7 @@ public struct Package: Decodable {
             buffer += "dependencies: ["
             buffer.indent()
             for dependency in dependencies {
-                let versionPortion = ".upToNextMinor(from: \"\(dependency.requirement.lowerBound)\")"
+                let versionPortion = "from: \"\(dependency.requirement.lowerBound)\""
                 buffer += ".package(url: \(dependency.url.quoted), \(versionPortion)),"
             }
             buffer.unindent()
