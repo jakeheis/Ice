@@ -7,6 +7,7 @@ CLI.register(commands: [
     AddCommand(),
     BuildCommand(),
     CleanCommand(),
+    ConfigCommand(),
     DependCommand(),
     DescribeCommand(),
     InitCommand(),

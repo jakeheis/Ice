@@ -38,6 +38,14 @@ public struct Package: Decodable {
         public let name: String
         public let isTest: Bool
         public var dependencies: [Dependency]
+        
+        func strictVersion() -> Target {
+            return Target(
+                name: name,
+                isTest: isTest,
+                dependencies: dependencies.sorted { $0.name < $1.name}
+            )
+        }
     }
     
     public let name: String
@@ -46,7 +54,6 @@ public struct Package: Decodable {
     public private(set) var targets: [Target]
     
     public static func load(directory: String) throws -> Package {
-        
         let rawPackage = try SPM(path: directory).dumpPackage()
         return try JSONDecoder().decode(Package.self, from: rawPackage)
     }
@@ -84,7 +91,31 @@ public struct Package: Decodable {
         targets[targetIndex].dependencies.append(Target.Dependency(name: lib))
     }
     
+    public func strictVersion() -> Package {
+        return Package(
+            name: name,
+            dependencies: dependencies.sorted {
+                RepositoryReference(url: $0.url).name < RepositoryReference(url: $1.url).name
+            },
+            products: products.sorted { $0.name < $1.name },
+            targets: targets.sorted {
+                if $0.isTest && !$1.isTest { return false }
+                if !$0.isTest && $1.isTest { return true }
+                return $0.name < $1.name
+            }.map { $0.strictVersion() }
+        )
+    }
+    
     public func write(print: Bool = false) throws {
+        try write(print: print, isStrict: false)
+    }
+    
+    private func write(print: Bool = false, isStrict: Bool) throws {
+        if Config.get(\.strict) && !isStrict {
+            try strictVersion().write(print: print, isStrict: true)
+            return
+        }
+        
         let buffer = FileBuffer(path: "Package.swift")
         
         buffer += [

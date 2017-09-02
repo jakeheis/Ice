@@ -10,8 +10,7 @@ import Files
 
 public class Global {
     
-    static let root = FileSystem().homeFolder.path + ".icebox/"
-    static let symlinkDir = root + "bin/"
+    static let root = Folder.home.path + ".icebox/"
     
     enum Error: Swift.Error {
         case alreadyInstalled
@@ -19,7 +18,7 @@ public class Global {
     
     public static func setup() throws {
         try FileSystem().createFolderIfNeeded(at: Global.root)
-        try FileSystem().createFolderIfNeeded(at: Global.symlinkDir)
+        try FileSystem().createFolderIfNeeded(at: Config.get(\.bin))
     }
     
     public static func add(ref: RepositoryReference, version: Version?) throws {

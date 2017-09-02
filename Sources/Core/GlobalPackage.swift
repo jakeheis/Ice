@@ -51,7 +51,7 @@ public class GlobalPackage {
     func symlinkExecutables() throws -> Bool {
         var any = false
         for executable in try executables() {
-            let path = Global.symlinkDir + executable.name
+            let path = Config.get(\.bin) + executable.name
             try FileManager.default.createSymbolicLink(atPath : path, withDestinationPath: executable.path)
             any = true
         }
@@ -60,7 +60,7 @@ public class GlobalPackage {
     
     func unlinkExecutables() throws {
         for executable in try executables() {
-            let potentialPath = Global.symlinkDir + executable.name
+            let potentialPath = Config.get(\.bin) + executable.name
             if let destination = try? FileManager.default.destinationOfSymbolicLink(atPath: potentialPath), destination == executable.path {
                 print("Unlinking \(executable.name) from \(potentialPath)")
                 try FileManager.default.removeItem(atPath: potentialPath)

@@ -34,7 +34,7 @@ public class Exec {
         }
         
         InterruptCatcher.start(process: process)
-                
+        
         print(transformer?.prefix ?? "", terminator: "")
         process.launch()
         process.waitUntilExit()
