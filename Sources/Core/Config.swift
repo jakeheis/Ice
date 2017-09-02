@@ -16,12 +16,12 @@ public class Config {
         return encoder
     }()
     
-    private static let localPath = ".icerc"
-    private static let globalPath = Global.root + ".icerc"
+    private static let localPath = "ice.json"
+    private static let globalPath = Global.root + "ice.json"
     
     public static let localConfig = ConfigFile.from(path: localPath)
     private(set) public static var globalConfig = ConfigFile.from(path: globalPath)
-    public static let defaultConfig = ConfigFile(bin: Global.root + "bin", strict: true)
+    public static let defaultConfig = ConfigFile(bin: Global.root + "bin", strict: false)
     
     public static func get<T>(_ path: KeyPath<ConfigFile, T?>) -> T {
         if let localConfig = localConfig, let value = localConfig[keyPath: path] {
@@ -36,13 +36,13 @@ public class Config {
     public static func set<T>(_ path: WritableKeyPath<ConfigFile, T?>, value: T) throws {
         if globalConfig == nil {
             globalConfig = ConfigFile(bin: nil, strict: nil)
+            try Global.setup()
+            try FileSystem().createFile(at: globalPath)
         }
-//        globalConfig[keyPath: path] = value
-//        let unwrapped = globalConfig!
-//        unwrapped[keyPath: \ConfigFile.bin] = "hey"
+        globalConfig![keyPath: path] = value
         
         let file = try File(path: globalPath)
-        try file.write(data: encoder.encode(globalConfig))
+        try file.write(data: encoder.encode(globalConfig!))
     }
     
     public static func layer(config: ConfigFile?, onto: ConfigFile) -> ConfigFile {
@@ -53,8 +53,8 @@ public class Config {
 
 public struct ConfigFile: Codable {
     
-    public let bin: String?
-    public let strict: Bool?
+    public var bin: String?
+    public var strict: Bool?
     
     static func from(path: String) -> ConfigFile? {
         guard let data = try? File(path: path).read(),

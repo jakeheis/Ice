@@ -41,15 +41,15 @@ class ConfigCommand: Command {
             }
             print(value)
         } else if action.value == "set" {
-//            guard let key = key.value, let value = value.value else {
-//                throw IceError(message: "must follow set with the key and value to set")
-//            }
+            guard let key = key.value, let value = value.value else {
+                throw IceError(message: "must follow set with the key and value to set")
+            }
             
-//            switch key {
-//            case "bin": Config.set(\ConfigFile.bin, value: value)
-//            case "strict": Config.set(\ConfigFile.strict, value: (value.lowercased() == "true"))
-//            default: throw IceError(message: "key \(key) not recognized")
-//            }
+            switch key {
+            case "bin": try Config.set(\ConfigFile.bin, value: value)
+            case "strict": try Config.set(\ConfigFile.strict, value: (value.lowercased() == "true"))
+            default: throw IceError(message: "key \(key) not recognized")
+            }
         } else {
             throw IceError(message: "unrecognized action, must be: list | get | set")
         }
