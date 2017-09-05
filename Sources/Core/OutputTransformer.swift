@@ -9,13 +9,27 @@ import Foundation
 import Regex
 import CLISpinner
 import Dispatch
+import SwiftCLI
 
 public class OutputTransformer {
     
     public typealias Translation = (_ captures: [String]) -> String
     public typealias SpinnerDone = (_ spinner: Spinner, _ capture: [String]) -> ()
     
+    public enum Stream {
+        case out
+        case err
+        
+        func output(_ text: String) {
+            switch self {
+            case .out: print(text)
+            case .err: printError(text)
+            }
+        }
+    }
+    
     let output: Pipe
+    let error: Pipe
     
     private var prefix: String? = nil
     private var suffix: String? = nil
@@ -25,8 +39,14 @@ public class OutputTransformer {
     
     init() {
         self.output = Pipe()
+        self.error = Pipe()
         
-        output.fileHandleForReading.readabilityHandler = { (handle) in
+        output.fileHandleForReading.readabilityHandler = readability(stream: .out)
+        error.fileHandleForReading.readabilityHandler = readability(stream: .err)
+    }
+    
+    private func readability(stream: Stream) -> (FileHandle) -> () {
+        return { (handle) in
             guard let str = String(data:handle.availableData, encoding: .utf8), !str.isEmpty else {
                 return
             }
@@ -40,7 +60,7 @@ public class OutputTransformer {
                 self.currentResponse?.stop()
                 self.currentResponse = nil
                 for (index, line) in lines.enumerated() {
-                    self.respond(line: line, stopImmediately: index < lines.endIndex - 1)
+                    self.respond(stream: stream, line: line, stopImmediately: index < lines.endIndex - 1)
                 }
             }
         }
@@ -51,11 +71,15 @@ public class OutputTransformer {
     }
     
     public func replace(_ matcher: StaticString, _ yield: @escaping Translation) {
-        responseGenerators.append(ResponseGenerator(matcher: matcher, replace: yield))
+        responseGenerators.append(ResponseGenerator(matcher: matcher, replace: yield, stream: .out))
     }
     
-    public func spin(_ matcher: StaticString, _ during: @escaping OutputTransformer.Translation, _ done: @escaping OutputTransformer.SpinnerDone) {
-        responseGenerators.append(ResponseGenerator(matcher: matcher, during: during, after: done))
+    public func replaceErr(_ matcher: StaticString, _ yield: @escaping Translation) {
+        responseGenerators.append(ResponseGenerator(matcher: matcher, replace: yield, stream: .err))
+    }
+    
+    public func spin(_ matcher: StaticString, _ during: @escaping OutputTransformer.Translation, _ done: @escaping OutputTransformer.SpinnerDone, stream: Stream = .out) {
+        responseGenerators.append(ResponseGenerator(matcher: matcher, during: during, after: done, stream: .out))
     }
     
     public func last(_ str: String) {
@@ -64,12 +88,13 @@ public class OutputTransformer {
     
     public func attach(_ process: Process) {
         process.standardOutput = output
+        process.standardError = error
     }
     
-    private func respond(line: String, stopImmediately: Bool) {
+    private func respond(stream: Stream, line: String, stopImmediately: Bool) {
         for responseGenerator in self.responseGenerators {
-            if let match = responseGenerator.regex.firstMatch(in: line) {
-                let response = responseGenerator.respond(captures: match.captures.flatMap { $0 })
+            if responseGenerator.matches(stream, line) {
+                let response = responseGenerator.respond(line)
                 if stopImmediately {
                     response?.stop()
                 }
@@ -77,7 +102,7 @@ public class OutputTransformer {
                 return
             }
         }
-        print(line)
+        stream.output(line)
     }
     
     func printPrefix() {
@@ -98,28 +123,35 @@ public class OutputTransformer {
 }
 
 private class ResponseGenerator {
-    let regex: Regex
+    private let regex: Regex
+    private let internalResponse: (_ captures: [String]) -> Response?
+    private let stream: OutputTransformer.Stream
     
-    let internalResponse: (_ captures: [String]) -> Response?
-    
-    init(matcher: StaticString, replace: @escaping (_ captures: [String]) -> String) {
+    init(matcher: StaticString, replace: @escaping (_ captures: [String]) -> String, stream: OutputTransformer.Stream) {
         self.regex = Regex(matcher)
         self.internalResponse = { (captures) in
-            print(replace(captures))
+            stream.output(replace(captures))
             return nil
         }
+        self.stream = stream
     }
     
-    init(matcher: StaticString, during: @escaping (_ captures: [String]) -> String, after: @escaping (_ spinner: Spinner, _ captures: [String]) -> ()) {
+    init(matcher: StaticString, during: @escaping (_ captures: [String]) -> String, after: @escaping (_ spinner: Spinner, _ captures: [String]) -> (), stream: OutputTransformer.Stream) {
         self.regex = Regex(matcher)
         self.internalResponse = { (captures) in
             let spinner = Spinner(pattern: .dots, text: during(captures))
             spinner.start()
             return Response(spinner: spinner, after: after, captures: captures)
         }
+        self.stream = stream
     }
     
-    func respond(captures: [String]) -> Response? {
+    func matches(_ stream: OutputTransformer.Stream, _ line: String) -> Bool {
+        return stream == self.stream && regex.matches(line)
+    }
+    
+    func respond(_ line: String) -> Response? {
+        let captures = regex.firstMatch(in: line)?.captures.flatMap { $0 } ?? []
         return internalResponse(captures)
     }
 }

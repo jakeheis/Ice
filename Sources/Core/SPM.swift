@@ -50,7 +50,11 @@ public class SPM {
     }
 
     public func test() throws {
-        try exec(arguments: ["test"]).execute()
+        try exec(arguments: ["test"]).execute(transform: { (t) in
+            t.spin("Compile Swift Module '(.*)'", { "Compiling " + $0[0] }, { $0.succeed(text: "Compiled " + $1[0]) })
+            t.replaceErr("Test Case .* ([^ ]*)\\]' started", { $0[0] + " started" })
+            t.replaceErr("Test Case .* ([^ ]*)\\]' passed", { $0[0] + " passed" })
+        })
     }
 
     public func generateXcodeProject() throws {
