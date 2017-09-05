@@ -35,11 +35,11 @@ public class Exec {
         
         InterruptCatcher.start(process: process)
         
-        print(transformer?.prefix ?? "", terminator: "")
+        transformer?.printPrefix()
         process.launch()
         process.waitUntilExit()
-        print(transformer?.suffix ?? "", terminator: "")
-        
+        transformer?.printSuffix()
+
         InterruptCatcher.end()
         
         guard process.terminationStatus == 0 else {

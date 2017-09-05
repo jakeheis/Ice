@@ -17,8 +17,8 @@ public class OutputTransformer {
     
     let output: Pipe
     
-    var prefix: String? = nil
-    var suffix: String? = nil
+    private var prefix: String? = nil
+    private var suffix: String? = nil
     
     private var responseGenerators: [ResponseGenerator] = []
     private var currentResponse: Response?
@@ -36,8 +36,9 @@ public class OutputTransformer {
                 if let last = lines.last, last.isEmpty {
                     lines.removeLast()
                 }
-            
+                
                 self.currentResponse?.stop()
+                self.currentResponse = nil
                 for (index, line) in lines.enumerated() {
                     self.respond(line: line, stopImmediately: index < lines.endIndex - 1)
                 }
@@ -79,8 +80,19 @@ public class OutputTransformer {
         print(line)
     }
     
-    deinit {
+    func printPrefix() {
+        if let prefix = prefix {
+            print(prefix, terminator: "")
+        }
+    }
+    
+    func printSuffix() {
         currentResponse?.stop()
+        currentResponse = nil
+        
+        if let suffix = suffix {
+            print(suffix, terminator: "")
+        }
     }
     
 }
