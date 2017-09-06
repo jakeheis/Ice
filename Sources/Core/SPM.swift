@@ -29,7 +29,7 @@ public class SPM {
         }
         try exec(arguments: args).execute(transform: { (t) in
             t.first("\n")
-            t.replace("(Creating .* package): (.*)") { $0[0] + ": " + $0[1].blue + "\n" }
+            t.replace("(Creating .* package): (.*)") { $0[0] + ": " + $0[1].blue.bold + "\n" }
             t.replace("Creating ([^:]+)$") { "    create ".blue + $0[0] }
             t.last("\n")
         })
@@ -51,6 +51,10 @@ public class SPM {
     
     public func clean() throws {
         try exec(arguments: ["package", "clean"]).execute()
+    }
+    
+    public func reset() throws {
+        try exec(arguments: ["package", "reset"]).execute()
     }
 
     public func generateXcodeProject() throws {

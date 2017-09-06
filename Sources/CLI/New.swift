@@ -38,6 +38,9 @@ class NewCommand: Command {
             type = .executable
         }
         try SPM(path: projectName.value).initPackage(type: type)
+        
+        print("Run: ".blue.bold + "cd \(projectName.value) && ice build")
+        print()
     }
 
 }
