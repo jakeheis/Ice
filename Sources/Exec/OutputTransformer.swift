@@ -34,6 +34,7 @@ public class OutputTransformer {
                 return
             }
             currentResponse.stop()
+            self.currentResponse = nil
         }
         let generators = stream == .out ? outGenerators : errorGenerators
         for responseGenerator in generators {
