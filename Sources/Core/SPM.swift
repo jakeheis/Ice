@@ -40,9 +40,13 @@ public class SPM {
         if release {
             args += ["-c", "release"]
         }
-        try exec(arguments: args).execute(transform: { (t) in
-            t.spin("Compile Swift Module '(.*)'", { "Compiling " + $0[0] }, { $0.succeed(text: "Compiled " + $1[0]) })
-        })
+        do {
+            try exec(arguments: args).execute(transform: { (t) in
+                t.spin("Compile Swift Module '(.*)'", { "Compiling " + $0[0] }, { $0.succeed(text: "Compiled " + $1[0]) })
+            })
+        } catch let error as Exec.Error {
+            throw IceError(exitStatus: error.exitStatus)
+        }
     }
     
     public func clean() throws {
