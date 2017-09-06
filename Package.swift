@@ -18,7 +18,8 @@ let package = Package(
     ],
     targets: [
         .target(name: "CLI", dependencies: ["Core", "SwiftCLI"]),
-        .target(name: "Core", dependencies: ["CLISpinner", "Files", "Just", "Rainbow", "Regex"]),
+        .target(name: "Core", dependencies: ["CLISpinner", "Exec", "Files", "Just", "Rainbow", "Regex"]),
+        .target(name: "Exec", dependencies: ["CLISpinner", "Regex"]),
         .testTarget(name: "CoreTests", dependencies: ["Core"]),
     ]
 )

@@ -10,7 +10,7 @@ import Foundation
 public class Exec {
     
     public struct Error: Swift.Error {
-        let exitStatus: Int32
+        public let exitStatus: Int32
     }
     
     private let process: Process

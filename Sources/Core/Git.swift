@@ -5,8 +5,7 @@
 //  Created by Jake Heiser on 8/29/17.
 //
 
-import Foundation
-import CLISpinner
+import Exec
 
 class Git {
     
