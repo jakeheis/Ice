@@ -49,26 +49,6 @@ public class SPM {
         try exec(arguments: ["package", "clean"]).execute()
     }
 
-    public func test() throws {
-        do {
-            try exec(arguments: ["test"]).execute(transform: { (t) in
-                t.spin("Compile Swift Module '(.*)'", { "Compiling " + $0[0] }, { $0.succeed(text: "Compiled " + $1[0]) })
-                t.ignore("^Test Suite 'All tests' started", on: .err)
-                t.replace("^Test Suite '(.*)\\.xctest' started", on: .err, { "\n\($0[0]):\n".dim })
-                t.respond(on: .err, with: ResponseGenerator(matcher: "^Test Suite 'All tests' (passed|failed)", generate: {
-                    return TestEndResponse()
-                }))
-                t.respond(on: .err, with: ResponseGenerator(matcher: "^Test Suite '(.*)'", generate: {
-                    return TestSuiteResponse(stream: .err)
-                }))
-                t.ignore(".*", on: .out)
-                t.last("\n")
-            })
-        } catch let error as Exec.Error {
-            throw IceError(exitStatus: error.exitStatus)
-        }
-    }
-
     public func generateXcodeProject() throws {
         try exec(arguments: ["package", "generate-xcodeproj"]).execute()
     }
@@ -93,7 +73,7 @@ public class SPM {
         return data[jsonStart...]
     }
 
-    private func exec(arguments: [String]) -> Exec {
+    func exec(arguments: [String]) -> Exec {
         return Exec(command: "swift", args: arguments, in: path)
     }
     

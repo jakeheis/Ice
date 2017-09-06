@@ -13,7 +13,7 @@ public enum StdStream {
     case out
     case err
     
-    public func output(_ text: String, terminator: String = "\n") {
+    public func output(_ text: String = "", terminator: String = "\n") {
         switch self {
         case .out: print(text, terminator: terminator)
         case .err: printError(text, terminator: terminator)

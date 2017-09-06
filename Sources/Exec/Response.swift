@@ -31,7 +31,7 @@ public class ResponseGenerator {
 
 public protocol Response: class {
     func go(captures: [String])
-    func contine(on line: String) -> Bool
+    func keepGoing(on line: String) -> Bool
     func stop()
 }
 
@@ -51,7 +51,7 @@ public class ReplaceResponse: Response {
         stream.output(translation(captures))
     }
     
-    public func contine(on line: String) -> Bool {
+    public func keepGoing(on line: String) -> Bool {
         return false
     }
     
@@ -81,7 +81,7 @@ public class SpinnerResponse: Response {
         self.spinner = spinner
     }
     
-    public func contine(on line: String) -> Bool {
+    public func keepGoing(on line: String) -> Bool {
         return false
     }
     
@@ -95,7 +95,7 @@ public class SpinnerResponse: Response {
 
 public class IgnoreResponse: Response {
     public func go(captures: [String]) {}
-    public func contine(on line: String) -> Bool { return false }
+    public func keepGoing(on line: String) -> Bool { return false }
     public func stop() {}
 }
 

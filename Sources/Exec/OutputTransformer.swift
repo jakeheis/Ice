@@ -30,7 +30,7 @@ public class OutputTransformer {
     
     private func readLine(stream: StdStream, line: String) {
         if let currentResponse = currentResponse {
-            if currentResponse.contine(on: line) {
+            if currentResponse.keepGoing(on: line) {
                 return
             }
             currentResponse.stop()
