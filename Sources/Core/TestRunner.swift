@@ -15,7 +15,7 @@ extension SPM {
     public func test() throws {
         do {
             try exec(arguments: ["test"]).execute(transform: { (t) in
-                t.spin("Compile Swift Module '(.*)'", { "Compiling " + $0[0] }, { $0.succeed(text: "Compiled " + $1[0]) })
+                t.spin("Compile Swift Module '(.*)'", { "Compiling " + $0[0] }, { (s, c, _) in s.succeed(text: "Compiled " + c[0]) })
                 t.ignore("^Test Suite 'All tests' started", on: .err)
                 t.replace("^Test Suite '(.*)\\.xctest' started", on: .err, { "\n\($0[0]):\n".dim })
                 t.ignore("^Test Suite '(.*)\\.xctest'", on: .err)
@@ -36,7 +36,7 @@ extension SPM {
     
 }
 
-class TestSuiteResponse: Response {
+private class TestSuiteResponse: Response {
     
     static let caseRegex = Regex("^Test Case .* ([^ ]*)\\]' (started|passed|failed)")
     static let doneRegex = Regex("Executed .* tests")
@@ -94,11 +94,7 @@ class TestSuiteResponse: Response {
     
     func printAssertionFailure(_ failure: AssertionFailure) {
         stream.output()
-        var fileLocation = failure.file
-        let workingDirPrefix = Folder.current.path
-        if failure.file.hasPrefix(workingDirPrefix) {
-            fileLocation = String(fileLocation[fileLocation.index(fileLocation.startIndex, offsetBy: workingDirPrefix.characters.count)...])
-        }
+        let fileLocation = failure.file.trimmingCurrentDirectory
         if let assertion = failure.assertion {
             if let equalsMatch = Regex("\\(\"(.*)\"\\) is not equal to \\(\"(.*)\"\\)").firstMatch(in: assertion),
                 let received = equalsMatch.captures[0], let expected = equalsMatch.captures[1] {
@@ -140,7 +136,7 @@ class TestSuiteResponse: Response {
     
 }
 
-class TestEndResponse: Response {
+private class TestEndResponse: Response {
     
     static let countRegex = Regex("Executed ([0-9]+) tests, with ([0-9]*) failures? .* \\(([\\.0-9]+)\\) seconds$")
     

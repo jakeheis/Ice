@@ -61,13 +61,15 @@ public class ReplaceResponse: Response {
 
 public class SpinnerResponse: Response {
     
-    public typealias Completion = (_ spinner: Spinner, _ captures: [String]) -> ()
+    public typealias Completion = (_ spinner: Spinner, _ captures: [String], _ next: String?) -> ()
     
     private let during: CaptureTranslation
     private let after: Completion
     
     private var spinner: Spinner?
     private var captures: [String] = []
+    
+    private var nextLine: String?
     
     init(during: @escaping CaptureTranslation, after: @escaping Completion) {
         self.during = during
@@ -82,12 +84,13 @@ public class SpinnerResponse: Response {
     }
     
     public func keepGoing(on line: String) -> Bool {
+        nextLine = line
         return false
     }
     
     public func stop() {
         if let spinner = spinner {
-            after(spinner, captures)
+            after(spinner, captures, nextLine)
         }
     }
     

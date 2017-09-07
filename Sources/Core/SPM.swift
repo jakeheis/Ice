@@ -8,6 +8,7 @@
 import Foundation
 import Files
 import Exec
+import Regex
 
 public class SPM {
 
@@ -33,20 +34,6 @@ public class SPM {
             t.replace("Creating ([^:]+)$") { "    create ".blue + $0[0] }
             t.last("\n")
         })
-    }
-
-    public func build(release: Bool = false) throws {
-        var args = ["build"]
-        if release {
-            args += ["-c", "release"]
-        }
-        do {
-            try exec(arguments: args).execute(transform: { (t) in
-                t.spin("Compile Swift Module '(.*)'", { "Compiling " + $0[0] }, { $0.succeed(text: "Compiled " + $1[0]) })
-            })
-        } catch let error as Exec.Error {
-            throw IceError(exitStatus: error.exitStatus)
-        }
     }
     
     public func clean() throws {
