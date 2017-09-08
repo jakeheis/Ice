@@ -15,11 +15,11 @@ extension SPM {
     public func test() throws {
         do {
             try exec(arguments: ["test"]).execute(transform: { (t) in
-                t.spin("Compile Swift Module '(.*)'", { "Compiling " + $0[0] }, { (s, c, _) in s.succeed(text: "Compiled " + c[0]) })
+                self.transformBuild(t)
                 t.ignore("^Test Suite 'All tests' started", on: .err)
-                t.replace("^Test Suite '(.*)\\.xctest' started", on: .err, { "\n\($0[0]):\n".dim })
+                t.replace("^Test Suite '(.*)\\.xctest' started", on: .err, { "\n\($0[0]):\n".bold })
                 t.ignore("^Test Suite '(.*)\\.xctest'", on: .err)
-                t.respond(on: .err, with: ResponseGenerator(matcher: "^Test Suite 'All tests' (passed|failed)", generate: {
+                t.respond(on: .err, with: ResponseGenerator(matcher: "Test Suite 'All tests' (passed|failed)", generate: {
                     return TestEndResponse()
                 }))
                 t.respond(on: .err, with: ResponseGenerator(matcher: "^Test Suite '(.*)'", generate: {

@@ -18,19 +18,7 @@ extension SPM {
         }
         do {
             try exec(arguments: args).execute(transform: { (t) in
-                t.spin("Compile Swift Module '(.*)'", { "Compiling " + $0[0] }, { (spinner, captures, next) in
-                    if let next = next, Regex("error: ").matches(next) {
-                        spinner.fail(text: "Failed " + captures[0])
-                    } else {
-                        spinner.succeed(text: "Compiled " + captures[0])
-                    }
-                })
-                t.respond(on: .out, with: ResponseGenerator(matcher: "(/.*):([0-9]+):([0-9]+): (error|warning): (.*)", generate: {
-                    return ErrorResponse()
-                }))
-                t.ignore("^error:", on: .err)
-                t.ignore("^terminated\\(1\\)", on: .err)
-                t.ignore("^\\s*_\\s*$")
+                self.transformBuild(t)
                 t.last("\n")
             })
         } catch let error as Exec.Error {
@@ -38,9 +26,24 @@ extension SPM {
         }
     }
     
+    func transformBuild(_ t: OutputTransformer) {
+        t.replace("Compile Swift Module '(.*)' (.*)$", {
+            return "Compile ".dim + "\($0[0]) \($0[1])"
+        })
+        t.respond(on: .out, with: ResponseGenerator(matcher: "(/.*):([0-9]+):([0-9]+): (error|warning): (.*)", generate: {
+            return ErrorResponse()
+        }))
+        t.ignore("^error:", on: .err)
+        t.ignore("^terminated\\(1\\)", on: .err)
+        t.ignore("^\\s*_\\s*$")
+        t.replace("Linking (.*)", { "\nLink ".blue + $0[0] })
+    }
+    
 }
 
 private class ErrorResponse: Response {
+    
+    private static var pastErrors: [[String]] = []
     
     enum CurrentLine: Int {
         case code
@@ -48,13 +51,18 @@ private class ErrorResponse: Response {
         case done
     }
     
-    let stream: StdStream = .out
+    var stream: StdStream = .out
     var fileCaptures: [String] = []
     
     var currentLine: CurrentLine = .code
     var color: Color?
+    var startIndex: String.Index?
     
     func go(captures: [String]) {
+        if ErrorResponse.pastErrors.contains(where: { $0 == captures }) {
+            stream = .null
+        }
+        
         let prefix: String
         if captures[3] == "error" {
             prefix = "● Error:".red.bold
@@ -65,18 +73,21 @@ private class ErrorResponse: Response {
         }
         stream.output("\n  \(prefix) \(captures[4])\n")
         fileCaptures = captures
+        
+        ErrorResponse.pastErrors.append(captures)
     }
     
     func keepGoing(on line: String) -> Bool {
         switch currentLine {
         case .code:
-            stream.output(line.lightBlack)
+            startIndex = line.index(where: { $0 != " " })
+            stream.output("    " + String(line[startIndex!...]).lightBlack)
             currentLine = .underline
         case .underline:
-            stream.output(line.replacingAll(matching: "~", with: "^").applyingColor(color!))
+            stream.output("    " + String(line[startIndex!...]).replacingAll(matching: "~", with: "^").applyingColor(color!))
             currentLine = .done
         case .done:
-            if let noteMatch = Regex("(/.*):([0-9]+):([0-9]+): note: (.*)").firstMatch(in: line) {
+            if let noteMatch = Regex("(/.*):([0-9]+):[0-9]+: note: (.*)").firstMatch(in: line) {
                 stream.output("    " + noteMatch.captures[3]! + "\n")
                 currentLine = .code
             } else {
@@ -91,7 +102,7 @@ private class ErrorResponse: Response {
         var components = file.components(separatedBy: "/")
         let last = components.removeLast()
         let coloredFile = components.joined(separator: "/").dim + "/\(last)"
-        stream.output("    at \(coloredFile)" + ":\(fileCaptures[1]):\(fileCaptures[2])")
+        stream.output("    at \(coloredFile)" + ":\(fileCaptures[1])")
     }
     
     

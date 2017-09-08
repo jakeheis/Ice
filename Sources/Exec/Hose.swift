@@ -12,18 +12,24 @@ import Dispatch
 public enum StdStream {
     case out
     case err
+    case null
     
     public func output(_ text: String = "", terminator: String = "\n") {
         switch self {
-        case .out: print(text, terminator: terminator)
-        case .err: printError(text, terminator: terminator)
+        case .out:
+            print(text, terminator: terminator)
+            fflush(stdout)
+        case .err:
+            printError(text, terminator: terminator)
+            fflush(stderr)
+        case .null: break
         }
     }
 }
 
 class Hose {
     
-    private let pipe: Pipe
+    let pipe: Pipe
     var onLine: ((_ line: String) -> ())?
     
     init() {
@@ -33,14 +39,12 @@ class Hose {
                 return
             }
             
-            DispatchQueue.main.async {
-                var lines = str.components(separatedBy: "\n")
-                if let last = lines.last, last.isEmpty {
-                    lines.removeLast()
-                }
-                for line in lines {
-                    self.onLine?(line)
-                }
+            var lines = str.components(separatedBy: "\n")
+            if let last = lines.last, last.isEmpty {
+                lines.removeLast()
+            }
+            for line in lines {
+                self.onLine?(line)
             }
         }
     }
@@ -49,6 +53,7 @@ class Hose {
         switch stream {
         case .out: process.standardOutput = pipe
         case .err: process.standardError = pipe
+        case .null: break
         }
     }
     

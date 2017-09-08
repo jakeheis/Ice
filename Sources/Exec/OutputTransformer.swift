@@ -12,6 +12,8 @@ public class OutputTransformer {
     let out: Hose
     let error: Hose
     
+    let transformQueue: DispatchQueue
+    
     private var prefix: String? = nil
     private var suffix: String? = nil
     
@@ -23,27 +25,31 @@ public class OutputTransformer {
     init() {
         self.out = Hose()
         self.error = Hose()
+        self.transformQueue = DispatchQueue(label: "com.jakeheis.Ice.OutputTransformer")
         
         self.out.onLine = { [weak self] in self?.readLine(stream: .out, line: $0) }
         self.error.onLine = { [weak self] in self?.readLine(stream: .err, line: $0) }
     }
     
     private func readLine(stream: StdStream, line: String) {
-        if let currentResponse = currentResponse {
-            if currentResponse.keepGoing(on: line) {
-                return
+        self.transformQueue.async {
+            if let currentResponse = self.currentResponse {
+                if currentResponse.keepGoing(on: line) {
+                    return
+                }
+                currentResponse.stop()
+                self.currentResponse = nil
             }
-            currentResponse.stop()
-            self.currentResponse = nil
-        }
-        let generators = stream == .out ? outGenerators : errorGenerators
-        for responseGenerator in generators {
-            if responseGenerator.matches(line) {
-                currentResponse = responseGenerator.generateResponse(to: line)
-                return
+            let generators = stream == .out ? self.outGenerators : self.errorGenerators
+            for responseGenerator in generators {
+                if responseGenerator.matches(line) {
+                    self.currentResponse = responseGenerator.generateResponse(to: line)
+                    return
+                }
             }
+            print("output no match \(line)")
+            stream.output(line)
         }
-        stream.output(line)
     }
     
     public func first(_ str: String) {
@@ -95,6 +101,12 @@ public class OutputTransformer {
     }
     
     func printSuffix() {
+        let semaphore = DispatchSemaphore(value: 0)
+        transformQueue.async {
+            semaphore.signal()
+        }
+        semaphore.wait()
+        
         currentResponse?.stop()
         currentResponse = nil
         
