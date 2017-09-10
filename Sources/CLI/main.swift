@@ -1,7 +1,7 @@
 import Foundation
 import SwiftCLI
 
-CLI.setup(name: "ice")
+CLI.setup(name: "ice", version: "0.0.1", description: "ice package manager")
 
 CLI.register(commands: [
     AddCommand(),

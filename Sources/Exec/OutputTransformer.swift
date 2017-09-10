@@ -47,7 +47,6 @@ public class OutputTransformer {
                     return
                 }
             }
-            print("output no match \(line)")
             stream.output(line)
         }
     }

@@ -40,13 +40,14 @@ private class TestSuiteResponse: Response {
     
     static let caseRegex = Regex("^Test Case .* ([^ ]*)\\]' (started|passed|failed)")
     static let doneRegex = Regex("Executed .* tests")
-    static let xctFailureRegex = Regex("(.*):([0-9]+): error: .* : (.*) - (.*)$")
+    static let xctFailureRegex = Regex("(.*):([0-9]+): error: .* : (.*)( - (.*))?$")
+    static let remainingRegex = Regex("(.*) - (.*)$")
     
     struct AssertionFailure {
         let file: String
         let lineNumber: Int
-        let assertion: String?
-        let message: String?
+        var assertion: String?
+        var message: String?
     }
     
     let stream: StdStream = .err
@@ -65,16 +66,16 @@ private class TestSuiteResponse: Response {
         guard !done else {
             return false
         }
-        done = TestSuiteResponse.doneRegex.matches(line)
-        if let xctFailure = TestSuiteResponse.xctFailureRegex.firstMatch(in: line) {
+        if TestSuiteResponse.doneRegex.matches(line) {
+            done = true
+        } else if let xctFailure = TestSuiteResponse.xctFailureRegex.firstMatch(in: line) {
             currentAssertionFailures.append(AssertionFailure(
                 file: xctFailure.captures[0]!,
                 lineNumber: Int(xctFailure.captures[1]!)!,
                 assertion: xctFailure.captures[2]?.trimmed,
                 message: xctFailure.captures[3]?.trimmed
             ))
-        }
-        if let match = TestSuiteResponse.caseRegex.firstMatch(in: line) {
+        } else if let match = TestSuiteResponse.caseRegex.firstMatch(in: line) {
             if match.captures[1] == "failed" {
                 if failures.isEmpty {
                     stream.output("\r" + badge(text: "FAIL", color: .red))
@@ -88,6 +89,17 @@ private class TestSuiteResponse: Response {
                 }
             }
             currentAssertionFailures = []
+        } else if let match = TestSuiteResponse.remainingRegex.firstMatch(in: line) {
+            if var failure = currentAssertionFailures.last {
+                failure.assertion =  (failure.assertion ?? "") + "\n" + (match.captures[0] ?? "")
+                failure.message = match.captures[1]
+                currentAssertionFailures[currentAssertionFailures.count - 1] = failure
+            }
+        } else {
+            if var failure = currentAssertionFailures.last {
+                failure.assertion =  (failure.assertion ?? "") + "\n"  + line
+                currentAssertionFailures[currentAssertionFailures.count - 1] = failure
+            }
         }
         return true
     }
@@ -96,9 +108,14 @@ private class TestSuiteResponse: Response {
         stream.output()
         let fileLocation = failure.file.trimmingCurrentDirectory
         if let assertion = failure.assertion {
-            if let equalsMatch = Regex("\\(\"(.*)\"\\) is not equal to \\(\"(.*)\"\\)").firstMatch(in: assertion),
+            let lineBreak = "________"
+            let totalMessage = assertion.replacingOccurrences(of: "\n", with: lineBreak)
+            if let equalsMatch = Regex("\\(\"(.*)\"\\) is not equal to \\(\"(.*)\"\\)").firstMatch(in: totalMessage),
                 let received = equalsMatch.captures[0], let expected = equalsMatch.captures[1] {
-                printWrongValue(expected: expected, received: received)
+                printWrongValue(
+                    expected: expected.replacingOccurrences(of: lineBreak, with: "\n"),
+                    received: received.replacingOccurrences(of: lineBreak, with: "\n")
+                )
             } else if let nilMatch = Regex("XCTAssertNil failed: \"(.*)\"").firstMatch(in: assertion),
                 let received = nilMatch.captures[0] {
                 printWrongValue(expected: "nil", received: received)
@@ -119,9 +136,9 @@ private class TestSuiteResponse: Response {
     
     func printWrongValue(expected: String, received: String) {
         stream.output("\tExpected:")
-        stream.output("\t  \(expected)".green)
+        stream.output(expected.components(separatedBy: "\n").map{ "\t\($0)" }.joined(separator: "\n").green)
         stream.output("\tReceived:")
-        stream.output("\t  \(received)".red)
+        stream.output(received.components(separatedBy: "\n").map{ "\t\($0)" }.joined(separator: "\n").red)
     }
     
     func stop() {
