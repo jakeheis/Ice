@@ -18,6 +18,11 @@ public class ResponseGenerator<T: Response>: AnyResponseGenerator {
     private let regex: Regex
     private let generate: (_ match: T.Match) -> T
     
+    public init(matcher: Regex, generate: @escaping (_ match: T.Match) -> T) {
+        self.regex = matcher
+        self.generate = generate
+    }
+    
     public init(matcher: StaticString, generate: @escaping (_ match: T.Match) -> T) {
         self.regex = Regex(matcher)
         self.generate = generate
@@ -44,7 +49,6 @@ public class ResponseGenerator<T: Response>: AnyResponseGenerator {
 }
 
 public protocol AnyResponse: class {
-    static var type: RegexMatch.Type { get }
     func go()
     func keepGoing(on line: String) -> Bool
     func stop()
@@ -54,8 +58,8 @@ public protocol Response: AnyResponse {
     associatedtype Match: RegexMatch
 }
 
-extension Response {
-    public static var type: RegexMatch.Type { return Match.self }
+public protocol SimpleResponse: Response {
+    init(match: Match)
 }
 
 public typealias CaptureTranslation<T: RegexMatch> = (_ match: T) -> String
@@ -86,44 +90,6 @@ public class ReplaceResponse<T: RegexMatch>: Response {
     public func stop() {}
     
 }
-/*
-public class SpinnerResponse: Response {
-    
-    public typealias Completion = (_ spinner: Spinner, _ captures: [String], _ next: String?) -> ()
-    
-    private let during: CaptureTranslation
-    private let after: Completion
-    
-    private var spinner: Spinner?
-    private var captures: [String] = []
-    
-    private var nextLine: String?
-    
-    init(during: @escaping CaptureTranslation, after: @escaping Completion) {
-        self.during = during
-        self.after = after
-    }
-    
-    public func go(captures: [String]) {
-        self.captures = captures
-        let spinner = Spinner(pattern: .dots, text: during(captures))
-        spinner.start()
-        self.spinner = spinner
-    }
-    
-    public func keepGoing(on line: String) -> Bool {
-        nextLine = line
-        return false
-    }
-    
-    public func stop() {
-        if let spinner = spinner {
-            after(spinner, captures, nextLine)
-        }
-    }
-    
-}
-*/
 
 public class IgnoreResponse: Response {
     public typealias Match = RegexMatch
@@ -131,4 +97,3 @@ public class IgnoreResponse: Response {
     public func keepGoing(on line: String) -> Bool { return false }
     public func stop() {}
 }
-

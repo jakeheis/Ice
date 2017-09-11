@@ -43,7 +43,9 @@ public class OutputTransformer {
             let generators = stream == .out ? self.outGenerators : self.errorGenerators
             for responseGenerator in generators {
                 if responseGenerator.matches(line) {
-                    self.currentResponse = responseGenerator.generateResponse(to: line)
+                    let response = responseGenerator.generateResponse(to: line)
+                    response.go()
+                    self.currentResponse = response
                     return
                 }
             }
@@ -54,7 +56,7 @@ public class OutputTransformer {
     public func first(_ str: String) {
         self.prefix = str
     }
-    
+        
     public func respond(on stream: StdStream, with generator: AnyResponseGenerator) {
         if stream == .out {
             outGenerators.append(generator)
@@ -63,8 +65,15 @@ public class OutputTransformer {
         }
     }
     
-    public func replace<T: RegexMatch>(_ matcher: StaticString, _ type: T.Type, on stream: StdStream = .out, _ translation: @escaping CaptureTranslation<T>) {
-        let generator = ResponseGenerator(matcher: matcher, generate: {
+    public func register<T: Matchable, U: SimpleResponse>(_ type: U.Type, on stream: StdStream) where U.Match == T {
+        let generation = { (match: T) in
+            return U(match: match)
+        }
+        respond(on: stream, with: ResponseGenerator(matcher: T.regex, generate: generation))
+    }
+    
+    public func replace<T: RegexMatch & Matchable>(_ matcher: T.Type, on stream: StdStream = .out, _ translation: @escaping CaptureTranslation<T>) {
+        let generator = ResponseGenerator(matcher: T.regex, generate: {
             ReplaceResponse(match: $0, stream: stream, translation: translation)
         })
         respond(on: stream, with: generator)

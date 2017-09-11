@@ -26,46 +26,49 @@ extension SPM {
         }
     }
     
-    class CompileMatch: RegexMatch {
+    class CompileMatch: RegexMatch, Matchable {
+        static let regex = Regex("Compile Swift Module '(.*)' (.*)$")
         var module: String { return captures[0] }
         var sourceCount: String { return captures[1] }
     }
     
-    class LinkMatch: RegexMatch {
+    class LinkMatch: RegexMatch, Matchable {
+        static let regex = Regex("Linking (.*)")
         var product: String { return captures[0] }
     }
     
     func transformBuild(_ t: OutputTransformer) {
-        t.replace("Compile Swift Module '(.*)' (.*)$", CompileMatch.self) {
-            "Compile ".dim + "\($0.module) \($0.sourceCount)"
-        }
-        t.respond(on: .out, with: ResponseGenerator(matcher: "(/.*):([0-9]+):([0-9]+): (error|warning): (.*)", generate: {
-            ErrorResponse(match: $0)
-        }))
+        t.replace(CompileMatch.self) { "Compile ".dim + "\($0.module) \($0.sourceCount)" }
+        t.register(ErrorResponse.self, on: .out)
         t.ignore("^error:", on: .err)
         t.ignore("^terminated\\(1\\)", on: .err)
         t.ignore("^\\s*_\\s*$")
-        t.replace("Linking (.*)", LinkMatch.self) { "\nLink ".blue + $0.product }
+        t.replace(LinkMatch.self) { "\nLink ".blue + $0.product }
     }
     
 }
 
-class ErrorMatch: RegexMatch {
-    enum ErrorType: String, Capturable {
-        case error
-        case warning
+private final class ErrorResponse: SimpleResponse {
+    
+    class Match: RegexMatch, Matchable {
+        static let regex = Regex("(/.*):([0-9]+):([0-9]+): (error|warning): (.*)")
+        
+        enum ErrorType: String, Capturable {
+            case error
+            case warning
+        }
+        
+        var path: String { return captures[0] }
+        var lineNumber: Int { return captures[1] }
+        var columnNumber: Int { return captures[2] }
+        var type: ErrorType { return captures[3] }
+        var message: String { return captures[4] }
     }
     
-    var path: String { return captures[0] }
-    var lineNumber: Int { return captures[1] }
-    var columnNumber: Int { return captures[2] }
-    var type: ErrorType { return captures[3] }
-    var message: String { return captures[4] }
-}
-
-private class ErrorResponse: Response {
-    
-    typealias Match = ErrorMatch
+    class NoteMatch: RegexMatch, Matchable {
+        static let regex = Regex("(/.*):([0-9]+):[0-9]+: note: (.*)")
+        var note: String { return captures[2] }
+    }
     
     private static var pastMatches: [Match] = []
     
@@ -116,9 +119,12 @@ private class ErrorResponse: Response {
             stream.output("    " + String(line[startIndex!...]).replacingAll(matching: "~", with: "^").applyingColor(color!))
             currentLine = .done
         case .done:
-            if let noteMatch = Regex("(/.*):([0-9]+):[0-9]+: note: (.*)").firstMatch(in: line) {
-                stream.output("    " + noteMatch.captures[3]! + "\n")
+            if let noteMatch = NoteMatch.match(line) {
+                stream.output("    note: " + noteMatch.note + "\n")
                 currentLine = .code
+            } else if line.hasPrefix("        ") {
+                stream.output(String(line[startIndex!...]) + "\n")
+                return true
             } else {
                 return false
             }
@@ -131,7 +137,7 @@ private class ErrorResponse: Response {
         var components = file.components(separatedBy: "/")
         let last = components.removeLast()
         let coloredFile = components.joined(separator: "/").dim + "/\(last)"
-        stream.output("    at \(coloredFile)" + ":\(match.lineNumber)")
+        stream.output("    at \(coloredFile)" + ":\(match.lineNumber)\n")
     }
     
     

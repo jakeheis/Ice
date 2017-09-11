@@ -23,12 +23,14 @@ public class SPM {
         case library
     }
     
-    class CreatingPackageMatch: RegexMatch {
+    class CreatingPackageMatch: RegexMatch, Matchable {
+        static let regex = Regex("(Creating .* package): (.*)")
         var packageType: String { return captures[0] }
         var packageName: String { return captures[1] }
     }
     
-    class CreateFileMatch: RegexMatch {
+    class CreateFileMatch: RegexMatch, Matchable {
+        static let regex = Regex("Creating ([^:]+)$")
         var filePath: String { return captures[0] }
     }
     
@@ -39,12 +41,8 @@ public class SPM {
         }
         try exec(arguments: args).execute(transform: { (t) in
             t.first("\n")
-            t.replace("(Creating .* package): (.*)", CreatingPackageMatch.self) {
-                $0.packageType + ": " + $0.packageName.blue.bold + "\n"
-            }
-            t.replace("Creating ([^:]+)$", CreateFileMatch.self) {
-                "    create ".blue + $0.filePath
-            }
+            t.replace(CreatingPackageMatch.self) { $0.packageType + ": " + $0.packageName.blue.bold + "\n" }
+            t.replace(CreateFileMatch.self) { "    create ".blue + $0.filePath }
             t.last("\n")
         })
     }

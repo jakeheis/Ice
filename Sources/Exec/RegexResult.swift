@@ -31,20 +31,6 @@ public class Captures {
     
 }
 
-public class NamedRegex<T: RegexMatch> {
-    let regex: Regex
-    public init(_ regex: StaticString) {
-        self.regex = Regex(regex)
-    }
-    func match(_ text: String) -> T? {
-        guard let match = regex.firstMatch(in: text) else {
-            return nil
-        }
-        let captures = Captures(captures: match.captures)
-        return T(captures: captures)
-    }
-}
-
 open class RegexMatch {
     public let captures: Captures
     required public init(captures: Captures) {
@@ -56,6 +42,22 @@ extension RegexMatch: Equatable {
     public static func ==(lhs: RegexMatch, rhs: RegexMatch) -> Bool {
         return zip(lhs.captures.captures, rhs.captures.captures).contains(where: { $0 != $1 })
     }
+}
+
+public protocol Matchable {
+    static var regex: Regex { get }
+}
+
+extension Matchable where Self: RegexMatch {
+    
+    public static func match(_ line: String) -> Self? {
+        guard let match = regex.firstMatch(in: line) else {
+            return nil
+        }
+        let captures = Captures(captures: match.captures)
+        return Self(captures: captures)
+    }
+    
 }
 
 public protocol Capturable {

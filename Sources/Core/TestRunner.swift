@@ -12,21 +12,20 @@ import Files
 
 extension SPM {
     
+    class PackageTestsBegunMatch: RegexMatch, Matchable {
+        static let regex = Regex("^Test Suite '(.*)\\.xctest' started")
+        var packageName: String { return captures[0] }
+    }
+    
     public func test() throws {
         do {
             try exec(arguments: ["test"]).execute(transform: { (t) in
                 self.transformBuild(t)
                 t.ignore("^Test Suite 'All tests' started", on: .err)
-                t.replace("^Test Suite '(.*)\\.xctest' started", PackageTestsBegunMatch.self, on: .err) {
-                    "\n\($0.packageName):\n".bold
-                }
+                t.replace(PackageTestsBegunMatch.self, on: .err) { "\n\($0.packageName):\n".bold }
                 t.ignore("^Test Suite '(.*)\\.xctest'", on: .err)
-                t.respond(on: .err, with: ResponseGenerator(matcher: "Test Suite 'All tests' (passed|failed)", generate: { (_) in
-                    return TestEndResponse()
-                }))
-                t.respond(on: .err, with: ResponseGenerator(matcher: "^Test Suite '(.*)'", generate: {
-                    return TestSuiteResponse(match: $0)
-                }))
+                t.register(TestEndResponse.self, on: .err)
+                t.register(TestSuiteResponse.self, on: .err)
                 t.ignore("Executed [0-9]+ tests", on: .err)
                 t.ignore(".*", on: .out)
                 t.last("\n")
@@ -38,27 +37,45 @@ extension SPM {
     
 }
 
-class PackageTestsBegunMatch: RegexMatch {
-    var packageName: String { return captures[0] }
-}
-
-class TestSuiteMatch: RegexMatch {
-    var suiteName: String { return captures[0] }
-}
-
-private class TestSuiteResponse: Response {
+private final class TestSuiteResponse: SimpleResponse {
     
-    public typealias Match = TestSuiteMatch
+    class Match: RegexMatch, Matchable {
+        static let regex = Regex("^Test Suite '(.*)'")
+        var suiteName: String { return captures[0] }
+    }
     
-    static let caseRegex = Regex("^Test Case .* ([^ ]*)\\]' (started|passed|failed)")
+    class CaseMatch: RegexMatch, Matchable {
+        enum Status: String, Capturable {
+            case started
+            case passed
+            case failed
+        }
+        
+        static let regex = Regex("^Test Case .* ([^ ]*)\\]' (started|passed|failed)")
+        var caseName: String { return captures[0] }
+        var status: Status { return captures[1] }
+    }
+    
+    class XCTFailureMatch: RegexMatch, Matchable {
+        static let regex = Regex("(.*):([0-9]+): error: .* : (.*)( - (.*))?$")
+        var file: String { return captures[0] }
+        var lineNumber: Int { return captures[1] }
+        var assertion: String { return captures[2] }
+        var message: String? { return captures[3] }
+    }
+    
     static let doneRegex = Regex("Executed .* tests")
-    static let xctFailureRegex = Regex("(.*):([0-9]+): error: .* : (.*)( - (.*))?$")
-    static let remainingRegex = Regex("(.*) - (.*)$")
+    
+    class RemainingMatch: RegexMatch, Matchable {
+        static let regex = Regex("(.*) - (.*)$")
+        var assertion: String { return captures[0] }
+        var message: String { return captures[1] }
+    }
     
     struct AssertionFailure {
         let file: String
         let lineNumber: Int
-        var assertion: String?
+        var assertion: String
         var message: String?
     }
     
@@ -83,36 +100,36 @@ private class TestSuiteResponse: Response {
         }
         if TestSuiteResponse.doneRegex.matches(line) {
             done = true
-        } else if let xctFailure = TestSuiteResponse.xctFailureRegex.firstMatch(in: line) {
+        } else if let xctFailure = XCTFailureMatch.match(line) {
             currentAssertionFailures.append(AssertionFailure(
-                file: xctFailure.captures[0]!,
-                lineNumber: Int(xctFailure.captures[1]!)!,
-                assertion: xctFailure.captures[2]?.trimmed,
-                message: xctFailure.captures[3]?.trimmed
+                file: xctFailure.file,
+                lineNumber: xctFailure.lineNumber,
+                assertion: xctFailure.assertion.trimmed,
+                message: xctFailure.message?.trimmed
             ))
-        } else if let match = TestSuiteResponse.caseRegex.firstMatch(in: line) {
-            if match.captures[1] == "failed" {
+        } else if let match = CaseMatch.match(line) {
+            if match.status == .failed {
                 if failures.isEmpty {
                     stream.output("\r" + badge(text: "FAIL", color: .red))
                     stream.output("")
                 }
-                failures.append(match.captures[0]!)
-                stream.output(" ● \(match.captures[0]!)".red.bold)
+                failures.append(match.caseName)
+                stream.output(" ● \(match.caseName)".red.bold)
                 
                 for failure in currentAssertionFailures {
                     printAssertionFailure(failure)
                 }
             }
             currentAssertionFailures = []
-        } else if let match = TestSuiteResponse.remainingRegex.firstMatch(in: line) {
+        } else if let match = RemainingMatch.match(line) {
             if var failure = currentAssertionFailures.last {
-                failure.assertion =  (failure.assertion ?? "") + "\n" + (match.captures[0] ?? "")
-                failure.message = match.captures[1]
+                failure.assertion =  failure.assertion + "\n" + match.assertion
+                failure.message = match.message
                 currentAssertionFailures[currentAssertionFailures.count - 1] = failure
             }
         } else {
             if var failure = currentAssertionFailures.last {
-                failure.assertion =  (failure.assertion ?? "") + "\n"  + line
+                failure.assertion =  failure.assertion + "\n"  + line
                 currentAssertionFailures[currentAssertionFailures.count - 1] = failure
             }
         }
@@ -122,25 +139,25 @@ private class TestSuiteResponse: Response {
     func printAssertionFailure(_ failure: AssertionFailure) {
         stream.output()
         let fileLocation = failure.file.trimmingCurrentDirectory
-        if let assertion = failure.assertion {
-            let lineBreak = "________"
-            let totalMessage = assertion.replacingOccurrences(of: "\n", with: lineBreak)
-            if let equalsMatch = Regex("\\(\"(.*)\"\\) is not equal to \\(\"(.*)\"\\)").firstMatch(in: totalMessage),
-                let received = equalsMatch.captures[0], let expected = equalsMatch.captures[1] {
-                printWrongValue(
-                    expected: expected.replacingOccurrences(of: lineBreak, with: "\n"),
-                    received: received.replacingOccurrences(of: lineBreak, with: "\n")
-                )
-            } else if let nilMatch = Regex("XCTAssertNil failed: \"(.*)\"").firstMatch(in: assertion),
-                let received = nilMatch.captures[0] {
-                printWrongValue(expected: "nil", received: received)
-            } else if assertion != "failed" {
-                stream.output("\t\(assertion)")
-            }
-            if assertion != "failed" {
-                stream.output()
-            }
+        
+        let lineBreak = "________"
+        let totalMessage = failure.assertion.replacingOccurrences(of: "\n", with: lineBreak)
+        if let equalsMatch = Regex("\\(\"(.*)\"\\) is not equal to \\(\"(.*)\"\\)").firstMatch(in: totalMessage),
+            let received = equalsMatch.captures[0], let expected = equalsMatch.captures[1] {
+            printWrongValue(
+                expected: expected.replacingOccurrences(of: lineBreak, with: "\n"),
+                received: received.replacingOccurrences(of: lineBreak, with: "\n")
+            )
+        } else if let nilMatch = Regex("XCTAssertNil failed: \"(.*)\"").firstMatch(in: failure.assertion),
+            let received = nilMatch.captures[0] {
+            printWrongValue(expected: "nil", received: received)
+        } else if failure.assertion != "failed" {
+            stream.output("\t\(failure.assertion)")
         }
+        if failure.assertion != "failed" {
+            stream.output()
+        }
+        
         if let message = failure.message, !message.isEmpty {
             stream.output("\tNote: \(message)")
             stream.output()
@@ -168,14 +185,18 @@ private class TestSuiteResponse: Response {
     
 }
 
-private class TestEndResponse: Response {
+private final class TestEndResponse: SimpleResponse {
     
-    public typealias Match = RegexMatch
+    class Match: RegexMatch, Matchable {
+        static let regex = Regex("Test Suite 'All tests' (passed|failed)")
+    }
     
     static let countRegex = Regex("Executed ([0-9]+) tests, with ([0-9]*) failures? .* \\(([\\.0-9]+)\\) seconds$")
     
     let stream: StdStream = .err
     var nextLine = true
+    
+    init(match: Match) {}
     
     func go() {
         stream.output("")
