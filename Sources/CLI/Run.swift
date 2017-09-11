@@ -10,7 +10,8 @@ import SwiftCLI
 class RunCommand: Command {
     
     let name = "run"
-
+    let shortDescription = "Runs the executable of the current package"
+    
     let watch = Flag("-w", "--watch")
     
     func execute() throws {

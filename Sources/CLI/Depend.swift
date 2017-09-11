@@ -11,6 +11,7 @@ import Core
 class DependCommand: Command {
 
     let name = "depend"
+    let shortDescription = "Depends the given target on another target or package"
 
     let target = Parameter()
     

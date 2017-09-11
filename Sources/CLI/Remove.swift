@@ -11,6 +11,8 @@ import Core
 class RemoveCommand: Command {
     
     let name = "remove"
+    let shortDescription = "Removes the given package"
+    
     let package = Parameter()
     
     let global = GlobalOption.global

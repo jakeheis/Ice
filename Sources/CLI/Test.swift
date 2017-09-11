@@ -11,6 +11,7 @@ import Core
 class TestCommand: Command {
     
     let name = "test"
+    let shortDescription = "Tests the current package"
     
     func execute() throws {
         try SPM().test()

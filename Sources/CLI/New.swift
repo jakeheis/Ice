@@ -22,6 +22,8 @@ struct InitializerOptions {
 class NewCommand: Command {
 
     let name = "new"
+    let shortDescription = "Creates a new package in the given directory"
+    
     let projectName = Parameter()
 
     let library = InitializerOptions.library

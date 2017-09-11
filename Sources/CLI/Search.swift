@@ -10,6 +10,7 @@ import SwiftCLI
 class SearchCommand: Command {
     
     let name = "search"
+    let shortDescription = "Searches for the given package"
     
     func execute() throws {
         

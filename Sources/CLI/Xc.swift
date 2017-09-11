@@ -12,6 +12,7 @@ import Exec
 class XcCommand: Command {
     
     let name = "xc"
+    let shortDescription = "Creates a new xcode project for the current package"
     
     let noOpen = Flag("-n", "--no-open")
     

@@ -11,6 +11,7 @@ import Core
 class BuildCommand: Command {
     
     let name = "build"
+    let shortDescription = "Builds the current project"
     
     let clean = Flag("-c", "--clean")
     let release = Flag("-r", "--release")

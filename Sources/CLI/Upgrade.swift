@@ -11,6 +11,7 @@ import Core
 class UpgradeCommand: Command {
     
     let name = "upgrade"
+    let shortDescription = "Upgrades the given package"
     
     let dependency = Parameter()
     let version = OptionalParameter()

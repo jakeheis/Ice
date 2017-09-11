@@ -66,6 +66,7 @@ import Rainbow
 class InitCommand: Command {
     
     let name = "init"
+    let shortDescription = "Initializes a new package in the current directory"
     
     let library = InitializerOptions.library
     let executable = InitializerOptions.executable

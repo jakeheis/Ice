@@ -1,13 +1,10 @@
-import Foundation
 import SwiftCLI
 
-CLI.setup(name: "ice", version: "0.0.1", description: "ice package manager")
-
-CLI.register(commands: [
+let cli = CLI(name: "ice", version: "0.0.1", commands: [
     AddCommand(),
     BuildCommand(),
     CleanCommand(),
-    ConfigCommand(),
+    ConfigGroup(),
     DependCommand(),
     DumpCommand(),
     DescribeCommand(),
@@ -22,6 +19,6 @@ CLI.register(commands: [
     UpgradeCommand(),
     XcCommand()
 ])
-
-//exit(CLI.debugGo(with: "ice upgrade -G FlockCLI"))
-exit(CLI.go())
+cli.description = "ice package manager"
+cli.commands.append(GenerateCompletionsCommand(cli: cli))
+cli.goAndExit()

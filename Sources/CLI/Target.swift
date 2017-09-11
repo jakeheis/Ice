@@ -12,6 +12,8 @@ import Files
 class TargetCommand: Command {
     
     let name = "target"
+    let shortDescription = "Creates a new target"
+    
     let targetName = Parameter()
 
     let isTest = Flag("-t", "--test")

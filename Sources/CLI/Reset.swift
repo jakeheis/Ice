@@ -11,6 +11,7 @@ import Core
 class ResetCommand: Command {
     
     let name = "reset"
+    let shortDescription = "Resets the current package"
     
     func execute() throws {
         try SPM().reset()

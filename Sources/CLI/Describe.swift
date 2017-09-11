@@ -10,6 +10,7 @@ import SwiftCLI
 class DescribeCommand: Command {
     
     let name = "describe"
+    let shortDescription = "Describes the given package"
 
     let package = Parameter()
     

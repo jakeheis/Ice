@@ -12,6 +12,8 @@ import Core
 class AddCommand: Command {
     
     let name = "add"
+    let shortDescription = "Adds the given package"
+    
     let dependency = Parameter()
     let version = OptionalParameter()
 
