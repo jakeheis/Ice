@@ -17,10 +17,10 @@ public class OutputTransformer {
     private var prefix: String? = nil
     private var suffix: String? = nil
     
-    private var outGenerators: [ResponseGenerator] = []
-    private var errorGenerators: [ResponseGenerator] = []
+    private var outGenerators: [AnyResponseGenerator] = []
+    private var errorGenerators: [AnyResponseGenerator] = []
     
-    private var currentResponse: Response?
+    private var currentResponse: AnyResponse?
     
     init() {
         self.out = Hose()
@@ -55,7 +55,7 @@ public class OutputTransformer {
         self.prefix = str
     }
     
-    public func respond(on stream: StdStream, with generator: ResponseGenerator) {
+    public func respond(on stream: StdStream, with generator: AnyResponseGenerator) {
         if stream == .out {
             outGenerators.append(generator)
         } else {
@@ -63,22 +63,15 @@ public class OutputTransformer {
         }
     }
     
-    public func replace(_ matcher: StaticString, on stream: StdStream = .out, _ translation: @escaping CaptureTranslation) {
+    public func replace<T: RegexMatch>(_ matcher: StaticString, _ type: T.Type, on stream: StdStream = .out, _ translation: @escaping CaptureTranslation<T>) {
         let generator = ResponseGenerator(matcher: matcher, generate: {
-            return ReplaceResponse(stream: stream, translation: translation)
+            ReplaceResponse(match: $0, stream: stream, translation: translation)
         })
         respond(on: stream, with: generator)
     }
     
-    public func spin(_ matcher: StaticString, _ during: @escaping CaptureTranslation, _ done: @escaping SpinnerResponse.Completion) {
-        let generator = ResponseGenerator(matcher: matcher, generate: {
-            return SpinnerResponse(during: during, after: done)
-        })
-        respond(on: .out, with: generator)
-    }
-    
     public func ignore(_ matcher: StaticString, on stream: StdStream = .out) {
-        let generator = ResponseGenerator(matcher: matcher) {
+        let generator = ResponseGenerator(matcher: matcher) { (_) in
             return IgnoreResponse()
         }
         respond(on: stream, with: generator)

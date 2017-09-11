@@ -10,9 +10,12 @@ import Foundation
 public struct Package: Decodable {
     
     public struct Dependency: Decodable {
+        
         public struct Requirement: Decodable {
-            let lowerBound: String
+            let type: String
+            let lowerBound: String?
             let upperBound: String?
+            let identifier: String?
         }
         
         public let url: String
@@ -20,7 +23,7 @@ public struct Package: Decodable {
         
         init(url: String, version: Version) {
             self.url = url
-            self.requirement = Requirement(lowerBound: String(describing: version), upperBound: nil)
+            self.requirement = Requirement(type: "range", lowerBound: String(describing: version), upperBound: nil, identifier: nil)
         }
     }
     
@@ -55,7 +58,11 @@ public struct Package: Decodable {
     
     public static func load(directory: String) throws -> Package {
         let rawPackage = try SPM(path: directory).dumpPackage()
-        return try JSONDecoder().decode(Package.self, from: rawPackage)
+        do {
+            return try JSONDecoder().decode(Package.self, from: rawPackage)
+        } catch {
+            throw IceError(message: "couldn't parse Package.swift")
+        }
     }
     
     public mutating func addDependency(ref: RepositoryReference, version: Version) {

@@ -23,6 +23,15 @@ public class SPM {
         case library
     }
     
+    class CreatingPackageMatch: RegexMatch {
+        var packageType: String { return captures[0] }
+        var packageName: String { return captures[1] }
+    }
+    
+    class CreateFileMatch: RegexMatch {
+        var filePath: String { return captures[0] }
+    }
+    
     public func initPackage(type: InitType?) throws {
         var args = ["package", "init"]
         if let type = type {
@@ -30,8 +39,12 @@ public class SPM {
         }
         try exec(arguments: args).execute(transform: { (t) in
             t.first("\n")
-            t.replace("(Creating .* package): (.*)") { $0[0] + ": " + $0[1].blue.bold + "\n" }
-            t.replace("Creating ([^:]+)$") { "    create ".blue + $0[0] }
+            t.replace("(Creating .* package): (.*)", CreatingPackageMatch.self) {
+                $0.packageType + ": " + $0.packageName.blue.bold + "\n"
+            }
+            t.replace("Creating ([^:]+)$", CreateFileMatch.self) {
+                "    create ".blue + $0.filePath
+            }
             t.last("\n")
         })
     }

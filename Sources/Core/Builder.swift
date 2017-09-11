@@ -26,24 +26,48 @@ extension SPM {
         }
     }
     
+    class CompileMatch: RegexMatch {
+        var module: String { return captures[0] }
+        var sourceCount: String { return captures[1] }
+    }
+    
+    class LinkMatch: RegexMatch {
+        var product: String { return captures[0] }
+    }
+    
     func transformBuild(_ t: OutputTransformer) {
-        t.replace("Compile Swift Module '(.*)' (.*)$", {
-            return "Compile ".dim + "\($0[0]) \($0[1])"
-        })
+        t.replace("Compile Swift Module '(.*)' (.*)$", CompileMatch.self) {
+            "Compile ".dim + "\($0.module) \($0.sourceCount)"
+        }
         t.respond(on: .out, with: ResponseGenerator(matcher: "(/.*):([0-9]+):([0-9]+): (error|warning): (.*)", generate: {
-            return ErrorResponse()
+            ErrorResponse(match: $0)
         }))
         t.ignore("^error:", on: .err)
         t.ignore("^terminated\\(1\\)", on: .err)
         t.ignore("^\\s*_\\s*$")
-        t.replace("Linking (.*)", { "\nLink ".blue + $0[0] })
+        t.replace("Linking (.*)", LinkMatch.self) { "\nLink ".blue + $0.product }
     }
     
 }
 
+class ErrorMatch: RegexMatch {
+    enum ErrorType: String, Capturable {
+        case error
+        case warning
+    }
+    
+    var path: String { return captures[0] }
+    var lineNumber: Int { return captures[1] }
+    var columnNumber: Int { return captures[2] }
+    var type: ErrorType { return captures[3] }
+    var message: String { return captures[4] }
+}
+
 private class ErrorResponse: Response {
     
-    private static var pastErrors: [[String]] = []
+    typealias Match = ErrorMatch
+    
+    private static var pastMatches: [Match] = []
     
     enum CurrentLine: Int {
         case code
@@ -51,30 +75,35 @@ private class ErrorResponse: Response {
         case done
     }
     
-    var stream: StdStream = .out
-    var fileCaptures: [String] = []
+    let match: Match
     
+    var stream: StdStream = .out
     var currentLine: CurrentLine = .code
     var color: Color?
     var startIndex: String.Index?
     
-    func go(captures: [String]) {
-        if ErrorResponse.pastErrors.contains(where: { $0 == captures }) {
+    init(match: Match) {
+        self.match = match
+    }
+    
+    func go() {
+        if ErrorResponse.pastMatches.contains(match) {
             stream = .null
+            return
         }
         
         let prefix: String
-        if captures[3] == "error" {
+        switch match.type {
+        case .error:
             prefix = "● Error:".red.bold
             color = .red
-        } else {
+        case .warning:
             prefix = "● Warning:".yellow.bold
             color = .yellow
         }
-        stream.output("\n  \(prefix) \(captures[4])\n")
-        fileCaptures = captures
+        stream.output("\n  \(prefix) \(match.message)\n")
         
-        ErrorResponse.pastErrors.append(captures)
+        ErrorResponse.pastMatches.append(match)
     }
     
     func keepGoing(on line: String) -> Bool {
@@ -98,11 +127,11 @@ private class ErrorResponse: Response {
     }
     
     func stop() {
-        let file = fileCaptures[0].trimmingCurrentDirectory
+        let file = match.path.trimmingCurrentDirectory
         var components = file.components(separatedBy: "/")
         let last = components.removeLast()
         let coloredFile = components.joined(separator: "/").dim + "/\(last)"
-        stream.output("    at \(coloredFile)" + ":\(fileCaptures[1])")
+        stream.output("    at \(coloredFile)" + ":\(match.lineNumber)")
     }
     
     

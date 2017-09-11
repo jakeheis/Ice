@@ -17,13 +17,15 @@ extension SPM {
             try exec(arguments: ["test"]).execute(transform: { (t) in
                 self.transformBuild(t)
                 t.ignore("^Test Suite 'All tests' started", on: .err)
-                t.replace("^Test Suite '(.*)\\.xctest' started", on: .err, { "\n\($0[0]):\n".bold })
+                t.replace("^Test Suite '(.*)\\.xctest' started", PackageTestsBegunMatch.self, on: .err) {
+                    "\n\($0.packageName):\n".bold
+                }
                 t.ignore("^Test Suite '(.*)\\.xctest'", on: .err)
-                t.respond(on: .err, with: ResponseGenerator(matcher: "Test Suite 'All tests' (passed|failed)", generate: {
+                t.respond(on: .err, with: ResponseGenerator(matcher: "Test Suite 'All tests' (passed|failed)", generate: { (_) in
                     return TestEndResponse()
                 }))
                 t.respond(on: .err, with: ResponseGenerator(matcher: "^Test Suite '(.*)'", generate: {
-                    return TestSuiteResponse()
+                    return TestSuiteResponse(match: $0)
                 }))
                 t.ignore("Executed [0-9]+ tests", on: .err)
                 t.ignore(".*", on: .out)
@@ -36,7 +38,17 @@ extension SPM {
     
 }
 
+class PackageTestsBegunMatch: RegexMatch {
+    var packageName: String { return captures[0] }
+}
+
+class TestSuiteMatch: RegexMatch {
+    var suiteName: String { return captures[0] }
+}
+
 private class TestSuiteResponse: Response {
+    
+    public typealias Match = TestSuiteMatch
     
     static let caseRegex = Regex("^Test Case .* ([^ ]*)\\]' (started|passed|failed)")
     static let doneRegex = Regex("Executed .* tests")
@@ -50,15 +62,18 @@ private class TestSuiteResponse: Response {
         var message: String?
     }
     
+    let suiteName: String
     let stream: StdStream = .err
-    var suiteName: String?
     
     var done = false
     var failures: [String] = []
     var currentAssertionFailures: [AssertionFailure] = []
     
-    func go(captures: [String]) {
-        suiteName = captures[0]
+    init(match: Match) {
+        self.suiteName = match.suiteName
+    }
+    
+    func go() {
         stream.output(badge(text: "RUNS", color: .blue), terminator: "")
     }
     
@@ -148,19 +163,21 @@ private class TestSuiteResponse: Response {
     }
     
     func badge(text: String, color: BackgroundColor) -> String {
-        return " \(text) ".applyingBackgroundColor(color).black.bold + " " + suiteName!.bold
+        return " \(text) ".applyingBackgroundColor(color).black.bold + " " + suiteName.bold
     }
     
 }
 
 private class TestEndResponse: Response {
     
+    public typealias Match = RegexMatch
+    
     static let countRegex = Regex("Executed ([0-9]+) tests, with ([0-9]*) failures? .* \\(([\\.0-9]+)\\) seconds$")
     
     let stream: StdStream = .err
     var nextLine = true
     
-    func go(captures: [String]) {
+    func go() {
         stream.output("")
     }
     
