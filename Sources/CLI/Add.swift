@@ -17,16 +17,7 @@ class AddCommand: Command {
     let dependency = Parameter()
     let version = OptionalParameter()
 
-    let test = Flag("-T", "--test-dependency")
-    let global = GlobalOption.global
-    let modules = Key<String>("-m", "--modules")
-    
-    var optionGroups: [OptionGroup] {
-        return [
-            OptionGroup(options: [test, global], restriction: .atMostOne),
-            OptionGroup(options: [modules, global], restriction: .atMostOne)
-        ]
-    }
+    let modules = Key<String>("-m", "--modules", description: "List of modules which should depend on this dependency")
     
     func execute() throws {
         guard let ref = RepositoryReference(dependency.value) else {
@@ -34,25 +25,21 @@ class AddCommand: Command {
         }
         
         let version = try ref.latestVersion()
-        if global.value {
-            try Global.add(ref: ref, version: version)
-        } else {
-            var package = try Package.load(directory: ".")
-            
-            func manualVersion() -> Version {
-                let major = Input.awaitInt(message: "Major version: ")
-                let minor = Input.awaitInt(message: "Minor version: ")
-                return Version(major, minor, 0)
-            }
-            let actualVersion = version ?? manualVersion()
-            
-            package.addDependency(ref: ref, version: actualVersion)
-            if let modulesString = modules.value {
-                let modules = modulesString.components(separatedBy: ",")
-                try modules.forEach { try package.depend(target: $0, on: ref.name) }
-            }
-            try package.write()
+        var package = try Package.load(directory: ".")
+        
+        func manualVersion() -> Version {
+            let major = Input.awaitInt(message: "Major version: ")
+            let minor = Input.awaitInt(message: "Minor version: ")
+            return Version(major, minor, 0)
         }
+        let actualVersion = version ?? manualVersion()
+        
+        package.addDependency(ref: ref, version: actualVersion)
+        if let modulesString = modules.value {
+            let modules = modulesString.components(separatedBy: ",")
+            try modules.forEach { try package.depend(target: $0, on: ref.name) }
+        }
+        try package.write()
     }
     
 }

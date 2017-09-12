@@ -19,7 +19,6 @@ extension SPM {
         do {
             try exec(arguments: args).execute(transform: { (t) in
                 self.transformBuild(t)
-                t.last("\n")
             })
         } catch let error as Exec.Error {
             throw IceError(exitStatus: error.exitStatus)
@@ -43,7 +42,7 @@ extension SPM {
         t.ignore("^error:", on: .err)
         t.ignore("^terminated\\(1\\)", on: .err)
         t.ignore("^\\s*_\\s*$")
-        t.replace(LinkMatch.self) { "\nLink ".blue + $0.product }
+        t.replace(LinkMatch.self) { "Link ".blue + $0.product }
     }
     
 }

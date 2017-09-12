@@ -9,10 +9,6 @@ import SwiftCLI
 import Core
 import Files
 
-struct GlobalOption {
-    static let global = Flag("-G", "--global")
-}
-
 struct InitializerOptions {
     static let library = Flag("-l", "--lib", "--library")
     static let executable = Flag("-e", "--exec", "--executable")

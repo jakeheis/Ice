@@ -15,19 +15,9 @@ class UpgradeCommand: Command {
     
     let dependency = Parameter()
     let version = OptionalParameter()
-
-    let global = GlobalOption.global
-    
+        
     func execute() throws {
-        let version: Version?
-        if let versionString = self.version.value {
-            version = Version(versionString)
-        } else {
-            version = nil
-        }
-        if global.value {
-            try Global.upgrade(name: dependency.value, version: version)
-        }
+        
     }
     
 }

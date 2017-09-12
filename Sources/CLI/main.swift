@@ -10,6 +10,7 @@ ice.commands = [
     DumpCommand(),
     DescribeCommand(),
     GenerateCompletionsCommand(cli: ice),
+    GlobalGroup(),
     InitCommand(),
     TargetCommand(),
     NewCommand(),

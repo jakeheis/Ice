@@ -80,7 +80,7 @@ public class Global {
         try add(ref: ref, version: version)
     }
 
-    public static func remove(name: String, purge: Bool) throws {
+    public static func remove(name: String) throws {
         let packageName: String
         if let ref = RepositoryReference(name) {
             packageName = ref.name

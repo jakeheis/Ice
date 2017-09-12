@@ -14,18 +14,11 @@ class RemoveCommand: Command {
     let shortDescription = "Removes the given package"
     
     let package = Parameter()
-    
-    let global = GlobalOption.global
-    let purge = Flag("-p", "--purge")
 
     func execute() throws {
-        if global.value {
-            try Global.remove(name: package.value, purge: purge.value)
-        } else {
-            var project = try Package.load(directory: ".")
-            try project.removeDependency(named: package.value)
-            try project.write()
-        }
+        var project = try Package.load(directory: ".")
+        try project.removeDependency(named: package.value)
+        try project.write()
     }
     
 }
