@@ -78,14 +78,20 @@ private final class ErrorResponse: SimpleResponse {
     }
     
     let match: Match
+    let color: Color
     
     var stream: StdStream = .out
     var currentLine: CurrentLine = .code
-    var color: Color?
-    var startIndex: String.Index?
+    var lastLineStartIndex: String.Index?
     
     init(match: Match) {
         self.match = match
+        switch match.type {
+        case .error:
+            self.color = .red
+        case .warning:
+            self.color = .yellow
+        }
     }
     
     func go() {
@@ -98,10 +104,8 @@ private final class ErrorResponse: SimpleResponse {
         switch match.type {
         case .error:
             prefix = "● Error:".red.bold
-            color = .red
         case .warning:
             prefix = "● Warning:".yellow.bold
-            color = .yellow
         }
         stream.output("\n  \(prefix) \(match.message)\n")
         
@@ -111,18 +115,21 @@ private final class ErrorResponse: SimpleResponse {
     func keepGoing(on line: String) -> Bool {
         switch currentLine {
         case .code:
-            startIndex = line.index(where: { $0 != " " })
-            stream.output("    " + String(line[startIndex!...]).lightBlack)
+            let lineStartIndex = line.index(where: { $0 != " " }) ?? line.startIndex
+            stream.output("    " + String(line[lineStartIndex...]).lightBlack)
+            self.lastLineStartIndex = lineStartIndex
             currentLine = .underline
         case .underline:
-            stream.output("    " + String(line[startIndex!...]).replacingAll(matching: "~", with: "^").applyingColor(color!))
+            let lineStartIndex = self.lastLineStartIndex ?? line.startIndex
+            stream.output("    " + String(line[lineStartIndex...]).replacingAll(matching: "~", with: "^").applyingColor(color))
             currentLine = .done
         case .done:
             if let noteMatch = NoteMatch.match(line) {
                 stream.output("    note: " + noteMatch.note + "\n")
                 currentLine = .code
             } else if line.hasPrefix("        ") {
-                stream.output(String(line[startIndex!...]) + "\n")
+                let lineStartIndex = self.lastLineStartIndex ?? line.startIndex
+                stream.output(String(line[lineStartIndex...]) + "\n")
                 return true
             } else {
                 return false
