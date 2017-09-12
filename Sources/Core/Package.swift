@@ -6,6 +6,8 @@
 //
 
 import Foundation
+import SwiftCLI
+import Files
 
 public struct Package: Decodable {
     
@@ -57,9 +59,13 @@ public struct Package: Decodable {
     public private(set) var targets: [Target]
     
     public static func load(directory: String) throws -> Package {
-        let rawPackage = try SPM(path: directory).dumpPackage()
+        let data = try SPM(path: directory).dumpPackage()
+        return try load(data: data)
+    }
+    
+    public static func load(data: Data) throws -> Package {
         do {
-            return try JSONDecoder().decode(Package.self, from: rawPackage)
+            return try JSONDecoder().decode(Package.self, from: data)
         } catch {
             throw IceError(message: "couldn't parse Package.swift")
         }
@@ -113,77 +119,78 @@ public struct Package: Decodable {
         )
     }
     
-    public func write(print: Bool = false) throws {
-        try write(print: print, isStrict: false)
+    public func write(to stream: OutputByteStream? = nil) throws {
+        try write(to: stream, isStrict: false)
     }
     
-    private func write(print: Bool = false, isStrict: Bool) throws {
+    private func write(to stream: OutputByteStream?, isStrict: Bool) throws {
         if Config.get(\.strict) && !isStrict {
-            try strictVersion().write(print: print, isStrict: true)
+            try strictVersion().write(to: stream, isStrict: true)
             return
         }
         
-        let buffer = FileBuffer(path: "Package.swift")
+        let out: OutputByteStream
+        if let stream = stream {
+            out = stream
+        } else {
+            let file = "Package.swift"
+            try File(path: file).write(string: "")
+            guard let fileStream = FileStream(path: file) else  {
+                throw IceError(message: "Couldn't write to \(file)")
+            }
+            out = fileStream
+        }
         
-        buffer += [
-            "// swift-tools-version:4.0",
-            "// Managed by ice",
-            "",
-            "import PackageDescription",
-            "",
-            "let package = Package(",
-        ]
+        out << """
+        // swift-tools-version:4.0
+        // Managed by ice
+
+        import PackageDescription
+
+        let package = Package(
+        """
         
-        buffer.indent()
-        
-        buffer += "name: \(name.quoted),"
+        out << "    name: \(name.quoted),"
         
         if !products.isEmpty {
-            buffer += "products: ["
-            buffer.indent()
+            out << "    products: ["
             for product in products {
                 let targetsPortion = product.targets.map { $0.quoted }.joined(separator: ", ")
-                buffer += ".\(product.product_type)(name: \(product.name.quoted), targets: [\(targetsPortion)]),"
+                out << "        .\(product.product_type)(name: \(product.name.quoted), targets: [\(targetsPortion)]),"
             }
-            buffer.unindent()
-            buffer += "],"
+            out << "    ],"
         }
         
         if !dependencies.isEmpty {
-            buffer += "dependencies: ["
-            buffer.indent()
+            out << "    dependencies: ["
             for dependency in dependencies {
-                let versionPortion = "from: \"\(dependency.requirement.lowerBound)\""
-                buffer += ".package(url: \(dependency.url.quoted), \(versionPortion)),"
+                let versionPortion: String
+                switch dependency.requirement.type {
+                case "range":
+                    versionPortion = "from: \(dependency.requirement.lowerBound!.quoted)"
+                case "branch":
+                    versionPortion = ".branchItem(\(dependency.requirement.identifier!.quoted))"
+                default:
+                    fatalError("Unsupported dependency requirement type: \(dependency.requirement.type)")
+                }
+                out << "        .package(url: \(dependency.url.quoted), \(versionPortion)),"
             }
-            buffer.unindent()
-            buffer += "],"
+            out << "    ],"
         }
         
         if !targets.isEmpty {
-            buffer += "targets: ["
-            buffer.indent()
+            out << "    targets: ["
             for target in targets {
                 let type = target.isTest ? ".testTarget" : ".target"
                 let dependenciesPortion = target.dependencies.map { $0.name.quoted }.joined(separator: ", ")
-                buffer += "\(type)(name: \(target.name.quoted), dependencies: [\(dependenciesPortion)]),"
+                out << "        \(type)(name: \(target.name.quoted), dependencies: [\(dependenciesPortion)]),"
             }
-            buffer.unindent()
-            buffer += "],"
-        }
-        
-        var last = buffer.lines.removeLast()
-        last = String(last[..<last.index(before: last.endIndex)])
-        buffer.lines.append(last)
-        
-        buffer.unindent()
-        buffer += ")"
-        
-        if print {
-            buffer.print()
+            out << "    ]"
         } else {
-            try buffer.write()
+            out << "    targets: []"
         }
+        
+        out << ")"
     }
     
 }

@@ -6,7 +6,6 @@
 //
 
 import Regex
-import CLISpinner
 
 public protocol AnyResponseGenerator {
     func matches(_ line: String) -> Bool

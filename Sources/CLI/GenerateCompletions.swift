@@ -19,7 +19,7 @@ class GenerateCompletionsCommand: Command {
     }
     
     func execute() throws {
-        let completionGenerator = cli.createCompletionGenerator(for: .zsh)
+        let completionGenerator = ZshCompletionGenerator(cli: cli)
         completionGenerator.writeCompletions()
     }
     

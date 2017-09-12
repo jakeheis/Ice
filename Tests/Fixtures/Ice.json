@@ -1,0 +1,146 @@
+{
+  "cLanguageStandard": null,
+  "cxxLanguageStandard": null,
+  "dependencies": [
+    {
+      "requirement": {
+        "lowerBound": "1.11.0",
+        "type": "range",
+        "upperBound": "2.0.0"
+      },
+      "url": "https://github.com/JohnSundell/Files"
+    },
+    {
+      "requirement": {
+        "lowerBound": "0.6.0",
+        "type": "range",
+        "upperBound": "1.0.0"
+      },
+      "url": "https://github.com/JustHTTP/Just"
+    },
+    {
+      "requirement": {
+        "lowerBound": "2.1.0",
+        "type": "range",
+        "upperBound": "3.0.0"
+      },
+      "url": "https://github.com/onevcat/Rainbow"
+    },
+    {
+      "requirement": {
+        "lowerBound": "1.1.0",
+        "type": "range",
+        "upperBound": "2.0.0"
+      },
+      "url": "https://github.com/sharplet/Regex"
+    },
+    {
+      "requirement": {
+        "identifier": "master",
+        "type": "branch"
+      },
+      "url": "https://github.com/jakeheis/SwiftCLI"
+    }
+  ],
+  "name": "Ice",
+  "products": [
+    {
+      "name": "ice",
+      "product_type": "executable",
+      "targets": [
+        "CLI"
+      ]
+    }
+  ],
+  "targets": [
+    {
+      "dependencies": [
+        {
+          "name": "Core",
+          "type": "byname"
+        },
+        {
+          "name": "SwiftCLI",
+          "type": "byname"
+        }
+      ],
+      "exclude": [
+
+      ],
+      "isTest": false,
+      "name": "CLI",
+      "path": null,
+      "publicHeadersPath": null,
+      "sources": null
+    },
+    {
+      "dependencies": [
+        {
+          "name": "Exec",
+          "type": "byname"
+        },
+        {
+          "name": "Files",
+          "type": "byname"
+        },
+        {
+          "name": "Just",
+          "type": "byname"
+        },
+        {
+          "name": "Rainbow",
+          "type": "byname"
+        },
+        {
+          "name": "Regex",
+          "type": "byname"
+        }
+      ],
+      "exclude": [
+
+      ],
+      "isTest": false,
+      "name": "Core",
+      "path": null,
+      "publicHeadersPath": null,
+      "sources": null
+    },
+    {
+      "dependencies": [
+        {
+          "name": "Regex",
+          "type": "byname"
+        },
+        {
+          "name": "SwiftCLI",
+          "type": "byname"
+        }
+      ],
+      "exclude": [
+
+      ],
+      "isTest": false,
+      "name": "Exec",
+      "path": null,
+      "publicHeadersPath": null,
+      "sources": null
+    },
+    {
+      "dependencies": [
+        {
+          "name": "Core",
+          "type": "byname"
+        }
+      ],
+      "exclude": [
+
+      ],
+      "isTest": true,
+      "name": "CoreTests",
+      "path": null,
+      "publicHeadersPath": null,
+      "sources": null
+    }
+  ]
+}
+

@@ -9,7 +9,6 @@ let package = Package(
         .executable(name: "ice", targets: ["CLI"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/jakeheis/CLISpinner", from: "0.3.5"),
         .package(url: "https://github.com/JohnSundell/Files", from: "1.11.0"),
         .package(url: "https://github.com/JustHTTP/Just", from: "0.6.0"),
         .package(url: "https://github.com/onevcat/Rainbow", from: "2.1.0"),
@@ -18,8 +17,8 @@ let package = Package(
     ],
     targets: [
         .target(name: "CLI", dependencies: ["Core", "SwiftCLI"]),
-        .target(name: "Core", dependencies: ["CLISpinner", "Exec", "Files", "Just", "Rainbow", "Regex"]),
-        .target(name: "Exec", dependencies: ["CLISpinner", "Regex"]),
+        .target(name: "Core", dependencies: ["Exec", "Files", "Just", "Rainbow", "Regex"]),
+        .target(name: "Exec", dependencies: ["Regex", "SwiftCLI"]),
         .testTarget(name: "CoreTests", dependencies: ["Core"]),
     ]
 )

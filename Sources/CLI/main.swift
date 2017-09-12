@@ -1,6 +1,7 @@
 import SwiftCLI
 
-let cli = CLI(name: "ice", version: "0.0.1", commands: [
+let ice = CLI(name: "ice", version: "0.0.1", description: "ice package manager")
+ice.commands = [
     AddCommand(),
     BuildCommand(),
     CleanCommand(),
@@ -8,6 +9,7 @@ let cli = CLI(name: "ice", version: "0.0.1", commands: [
     DependCommand(),
     DumpCommand(),
     DescribeCommand(),
+    GenerateCompletionsCommand(cli: ice),
     InitCommand(),
     TargetCommand(),
     NewCommand(),
@@ -18,7 +20,5 @@ let cli = CLI(name: "ice", version: "0.0.1", commands: [
     TestCommand(),
     UpgradeCommand(),
     XcCommand()
-])
-cli.description = "ice package manager"
-cli.commands.append(GenerateCompletionsCommand(cli: cli))
-cli.goAndExit()
+]
+ice.goAndExit()

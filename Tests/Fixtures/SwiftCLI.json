@@ -1,0 +1,50 @@
+{
+  "cLanguageStandard": null,
+  "cxxLanguageStandard": null,
+  "dependencies": [
+
+  ],
+  "name": "SwiftCLI",
+  "products": [
+    {
+      "name": "SwiftCLI",
+      "product_type": "library",
+      "targets": [
+        "SwiftCLI"
+      ],
+      "type": null
+    }
+  ],
+  "targets": [
+    {
+      "dependencies": [
+
+      ],
+      "exclude": [
+
+      ],
+      "isTest": false,
+      "name": "SwiftCLI",
+      "path": null,
+      "publicHeadersPath": null,
+      "sources": null
+    },
+    {
+      "dependencies": [
+        {
+          "name": "SwiftCLI",
+          "type": "byname"
+        }
+      ],
+      "exclude": [
+
+      ],
+      "isTest": true,
+      "name": "SwiftCLITests",
+      "path": null,
+      "publicHeadersPath": null,
+      "sources": null
+    }
+  ]
+}
+
