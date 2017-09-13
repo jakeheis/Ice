@@ -25,18 +25,17 @@ class BuildCommand: Command {
             try spm.clean()
         }
         
-        guard watch.value else {
+        if watch.value {
+            let watcher = try SourceWatcher() {
+                do {
+                    print("[ice] rebuilding due to changes...".green)
+                    try spm.build(release: self.release.value)
+                } catch {}
+            }
+            try watcher.go()
+        } else {
             try spm.build(release: release.value)
-            return
         }
-        
-        let watcher = try Watcher(action: {
-            do {
-                print("[ice] rebuilding due to changes...".green)
-                try spm.build(release: self.release.value)
-            } catch {}
-        })
-        watcher.go()
     }
     
 }

@@ -22,23 +22,21 @@ class RunCommand: Command {
     func execute() throws {
         let spm = SPM()
         
-        guard watch.value else {
-            try spm.run(release: release.value)
-            return
-        }
-        
-        let runQueue = DispatchQueue(label: "com.jakeheis.Ice.RunCommand")
-        
-        let watcher = try Watcher(action: {
-            print("[ice] restarting due to changes...".green)
-            InterruptCatcher.interrupt()
-            runQueue.async {
-                do {
-                    try spm.run(release: self.release.value)
-                } catch {}
+        if watch.value {
+            let runQueue = DispatchQueue(label: "com.jakeheis.Ice.RunCommand")
+            let watcher = try SourceWatcher() {
+                print("[ice] restarting due to changes...".green)
+                InterruptCatcher.interrupt()
+                runQueue.async {
+                    do {
+                        try spm.run(release: self.release.value)
+                    } catch {}
+                }
             }
-        })
-        watcher.go()
+            try watcher.go()
+        } else {
+            try spm.run(release: release.value)
+        }
     }
     
 }
