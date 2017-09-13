@@ -17,6 +17,10 @@ class Git {
         try exec(arguments: args + [url, path]).execute()
     }
     
+    static func pull(path: String) throws {
+        try exec(arguments: ["-C", path, "pull"]).execute()
+    }
+    
     static func getRemoteUrl(of path: String) throws -> String {
         return try exec(arguments: ["-C", path, "remote", "get-url", "origin"]).capture()
     }

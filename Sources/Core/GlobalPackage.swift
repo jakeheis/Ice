@@ -11,10 +11,12 @@ import Exec
 
 public class GlobalPackage {
     
+    static let directory = Global.root + "Packages"
+    
     let name: String
     
     var path: Path {
-        return Global.root + name
+        return GlobalPackage.directory + name
     }
     
     private lazy var spm: SPM = {
@@ -67,7 +69,7 @@ public class GlobalPackage {
     
     func executables() throws -> [Path] {
         let bin = try spm.showBinPath(release: true)
-        return Path(bin).children().filter { $0.isExecutable && $0.pathExtension != "build" }
+        return Path(bin).children().filter { $0.isExecutable && $0.pathExtension != "build" && path.fileName != "ModuleCache" }
     }
     
 }

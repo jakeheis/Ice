@@ -29,10 +29,14 @@ public struct RepositoryReference {
                 url = "https://gitlab.com/\(path)"
             }
             self.init(url: url)
-        } else if !Regex("^[a-zA-Z]+$").matches(blob) {
-            self.init(url: blob)
+        } else if Regex("^[a-zA-Z]+$").matches(blob) {
+            if let url = Registry.get(blob) {
+                self.init(url: url)
+            } else {
+                return nil
+            }
         } else {
-            return nil
+            self.init(url: blob)
         }
     }
     

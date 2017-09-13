@@ -14,6 +14,7 @@ ice.commands = [
     InitCommand(),
     NewCommand(),
     RemoveCommand(),
+    RegistryGroup(),
     ResetCommand(),
     RunCommand(),
     SearchCommand(),
