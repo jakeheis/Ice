@@ -17,6 +17,7 @@ extension SPM {
     }
     
     public func test() throws {
+        try resolve()
         do {
             try exec(arguments: ["test"]).execute(transform: { (t) in
                 self.transformBuild(t)

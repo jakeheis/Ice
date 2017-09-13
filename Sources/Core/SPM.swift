@@ -59,6 +59,17 @@ public class SPM {
         try exec(arguments: ["package", "generate-xcodeproj"]).execute()
     }
     
+    public func resolve() throws {
+        class ActionMatch: RegexMatch, Matchable {
+            static let regex = Regex("Fetching (.*)$")
+            var url: String { return captures[0] }
+        }
+        try exec(arguments: ["package", "-v", "resolve"]).execute() { (t) in
+            t.replace(ActionMatch.self) { "Fetch ".dim + $0.url }
+            t.ignore(".*")
+        }
+    }
+    
     func showBinPath(release: Bool = false) throws -> String {
         var args = ["build", "--show-bin-path"]
         if release {

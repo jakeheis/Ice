@@ -12,6 +12,8 @@ import Rainbow
 extension SPM {
     
     public func build(release: Bool = false) throws {
+        try resolve()
+        
         var args = ["build"]
         if release {
             args += ["-c", "release"]
@@ -26,6 +28,8 @@ extension SPM {
     }
     
     public func run(release: Bool = false) throws {
+        try resolve()
+        
         var args = ["run"]
         if release {
             args += ["-c", "release"]
