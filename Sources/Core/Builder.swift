@@ -25,6 +25,20 @@ extension SPM {
         }
     }
     
+    public func run(release: Bool = false) throws {
+        var args = ["run"]
+        if release {
+            args += ["-c", "release"]
+        }
+        do {
+            try exec(arguments: args).execute(transform: { (t) in
+                self.transformBuild(t)
+            })
+        } catch let error as Exec.Error {
+            throw IceError(exitStatus: error.exitStatus)
+        }
+    }
+    
     class CompileMatch: RegexMatch, Matchable {
         static let regex = Regex("Compile Swift Module '(.*)' (.*)$")
         var module: String { return captures[0] }

@@ -72,28 +72,3 @@ public class Exec {
     }
     
 }
-
-private class InterruptCatcher {
-    
-    static var currentProcess: Process?
-    
-    static func start(process: Process) {
-        currentProcess = process
-        signal(SIGINT) { (val) in
-            InterruptCatcher.interrupt()
-            
-            // After interrupting subprocess, interrupt this process
-            signal(SIGINT, SIG_DFL)
-            raise(SIGINT)
-        }
-    }
-    
-    static func interrupt() {
-        currentProcess?.interrupt()
-    }
-    
-    static func end() {
-        signal(SIGINT, SIG_DFL)
-    }
-    
-}

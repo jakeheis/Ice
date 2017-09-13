@@ -53,7 +53,7 @@ class GetConfigCommand: Command {
 }
 
 class SetConfigCommand: Command {
-    let name = "Set"
+    let name = "set"
     let shortDescription = "Sets the config for the given key"
     
     let key = Parameter()
