@@ -11,7 +11,7 @@ public struct Version {
     public let minor: Int
     public let patch: Int
     
-    var raw: String {
+    public var raw: String {
         return description
     }
     

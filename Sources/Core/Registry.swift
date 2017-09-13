@@ -13,7 +13,8 @@ public class Registry {
     private static let url = "https://github.com/jakeheis/IceRegistry"
     private static let directory = Global.root + "Registry"
     private static let localPath = directory + "local.json"
-    private static let sharedPath = directory + "shared"
+    private static let sharedRepo = directory + "shared"
+    private static let sharedPath = sharedRepo + "Registry"
     
     private static var localRegistry = RegistryFile.load(from: localPath)
     
@@ -22,13 +23,13 @@ public class Registry {
         try directory.createDirectory(withIntermediateDirectories: true)
     }
     
-    public static func refresh() throws {
+    public static func refresh(silent: Bool = false) throws {
         try setup()
         
-        if sharedPath.exists {
-            try Git.pull(path: sharedPath.rawValue)
+        if sharedRepo.exists {
+            try Git.pull(path: sharedRepo.rawValue, silent: silent)
         } else {
-            try Git.clone(url: url, to: sharedPath.rawValue, version: nil)
+            try Git.clone(url: url, to: sharedRepo.rawValue, version: nil, silent: silent)
         }
     }
     
@@ -41,21 +42,21 @@ public class Registry {
         } else {
             newRegistry = RegistryFile(entries: [])
         }
-        newRegistry.entries.append(.init(name: name, url: url))
+        newRegistry.entries.append(.init(name: name, url: url, description: nil))
         
         self.localRegistry = newRegistry
         try JSONEncoder().encode(newRegistry).write(to: localPath)
     }
     
-    public static func get(_ name: String) -> String? {
+    public static func get(_ name: String) -> RegistryEntry? {
         if let matching = localRegistry?.entries.first(where: { $0.name == name }) {
-            return matching.url
+            return matching
         }
         
-        let letterPath = sharedPath + "Registry" + (String(name.uppercased()[name.startIndex]) + ".json")
+        let letterPath = sharedPath + (String(name.uppercased()[name.startIndex]) + ".json")
         let sharedRegistry = RegistryFile.load(from: letterPath)
         if let matching = sharedRegistry?.entries.first(where: { $0.name == name }) {
-            return matching.url
+            return matching
         }
         
         return nil
@@ -74,16 +75,64 @@ public class Registry {
         try JSONEncoder().encode(localRegistry).write(to: localPath)
     }
     
+    public static func search(query: String, includeDescription: Bool) throws -> [RegistryEntry] {
+        try refresh(silent: true)
+        
+        var all = Set<String>()
+
+        func filterOnName(entries: [RegistryEntry]) -> [RegistryEntry] {
+            return entries.filter { $0.name.lowercased().contains(query.lowercased()) && !all.contains($0.name) }
+        }
+        
+        var localEntries: [RegistryEntry] = filterOnName(entries: localRegistry?.entries ?? [])
+        all.formUnion(localEntries.map { $0.name })
+        
+        var entries: [RegistryEntry] = []
+        forEachShared { (file, fileName) in
+            let results = filterOnName(entries: file.entries)
+            if fileName == String(query.uppercased()[query.startIndex]) {
+                entries = results + entries // Rank results with the starting letter higher
+            } else {
+                entries += results
+            }
+            all.formUnion(results.map { $0.name })
+        }
+        
+        if includeDescription {
+            func filterOnDescription(entries: [RegistryEntry]) -> [RegistryEntry] {
+                return entries.filter { $0.description?.lowercased().contains(query.lowercased()) ?? false  && !all.contains($0.name)}
+            }
+            localEntries += filterOnDescription(entries: localRegistry?.entries ?? [])
+            all.formUnion(localEntries.map { $0.name })
+            forEachShared { (file, _) in
+                let results = filterOnDescription(entries: file.entries)
+                entries += results
+            }
+        }
+        
+        return localEntries + entries
+    }
+    
+    private static func forEachShared(block: (_ file: RegistryFile, _ fileName: String) -> ()) {
+        let paths = sharedPath.children()
+        paths.forEach { (path) in
+            if let file = RegistryFile.load(from: path) {
+                block(file, path.fileName)
+            }
+        }
+    }
+    
+}
+
+public struct RegistryEntry: Codable {
+    public let name: String
+    public let url: String
+    public let description: String?
 }
 
 private struct RegistryFile: Codable {
     
-    public struct Entry: Codable {
-        let name: String
-        let url: String
-    }
-    
-    public var entries: [Entry]
+    public var entries: [RegistryEntry]
     
     static func load(from path: Path) -> RegistryFile? {
         guard let data = try? Data.read(from: path),

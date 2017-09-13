@@ -9,16 +9,26 @@ import Exec
 
 class Git {
     
-    static func clone(url: String, to path: String, version: Version?) throws {
+    static func clone(url: String, to path: String, version: Version?, silent: Bool = false) throws {
         var args = ["clone", "--depth", "1"]
         if let version = version {
             args += ["--branch", version.raw]
         }
-        try exec(arguments: args + [url, path]).execute()
+        let command = exec(arguments: args + [url, path])
+        if silent {
+            _ = try command.capture()
+        } else {
+            try command.execute()
+        }
     }
     
-    static func pull(path: String) throws {
-        try exec(arguments: ["-C", path, "pull"]).execute()
+    static func pull(path: String, silent: Bool) throws {
+        let command = exec(arguments: ["-C", path, "pull"])
+        if silent {
+            _ = try command.capture()
+        } else {
+            try command.execute()
+        }
     }
     
     static func getRemoteUrl(of path: String) throws -> String {
