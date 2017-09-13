@@ -8,7 +8,6 @@
 import Exec
 import Regex
 import Rainbow
-import Files
 
 extension SPM {
     

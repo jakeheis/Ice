@@ -7,6 +7,7 @@
 
 import SwiftCLI
 import Core
+import FileKit
 
 class BuildCommand: Command {
     

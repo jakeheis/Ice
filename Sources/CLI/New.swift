@@ -7,7 +7,7 @@
 
 import SwiftCLI
 import Core
-import Files
+import FileKit
 
 struct InitializerOptions {
     static let library = Flag("-l", "--lib", "--library")
@@ -27,7 +27,8 @@ class NewCommand: Command {
     let optionGroups = [InitializerOptions.typeGroup]
 
     func execute() throws {
-        try Folder.current.createSubfolderIfNeeded(withName: projectName.value)
+        let path = Path.current + projectName.value
+        try path.createDirectory()
         
         var type: SPM.InitType?
         if library.value {
@@ -35,7 +36,7 @@ class NewCommand: Command {
         } else if executable.value {
             type = .executable
         }
-        try SPM(path: projectName.value).initPackage(type: type)
+        try SPM(path: path).initPackage(type: type)
         
         print("Run: ".blue.bold + "cd \(projectName.value) && ice build")
         print()

@@ -6,30 +6,34 @@
 //
 
 import Dispatch
-import Foundation
-import Files
+import FileKit
 
 public class Watcher {
     
     let action: () -> ()
-    private let observer: DirectoryObserver
+    private var watcher: FileSystemWatcher?
     private var needsAction = true
     
     private let watchQueue = DispatchQueue(label: "com.jakeheis.Ice.Watcher")
     
     public init(action: @escaping () -> ()) throws {
         self.action = action
-        self.observer = try DirectoryObserver(path: "Sources")
     }
     
     public func go() {
-        observer.start {
+        let sources = Path("Sources")
+        let children = sources.children(recursive: true).filter { $0.isDirectory || $0.pathExtension == "swift" }
+        let watcher = FileSystemWatcher(paths: [sources] + children) { (event) in
             self.watchQueue.async {
                 self.needsAction = true
             }
         }
+        watcher.watch()
+        self.watcher = watcher
+        
         while true {
             sleep(1)
+            watcher.flushSync()
             actIfNecessary()
         }
     }
@@ -44,53 +48,3 @@ public class Watcher {
     }
     
 }
-
-class DirectoryObserver {
-    
-    let queue = DispatchQueue(label: "com.jakeheis.Ice.FileObserver")
-    let observers: [FileObserver]
-    
-    init(path: String) throws {
-        var observers: [FileObserver] = []
-        observers.append(FileObserver(path: path, queue: queue))
-        let paths = try FileManager.default.subpathsOfDirectory(atPath: path)
-        for subpath in paths {
-            if let folder = try? Folder(path: path + "/" + subpath) {
-                observers.append(FileObserver(path: folder.path, queue: queue))
-            } else if let file = try? File(path: path + "/" + subpath), file.extension == "swift" {
-                observers.append(FileObserver(path: file.path, queue: queue))
-            }
-        }
-        self.observers = observers
-    }
-    
-    func start(onEvent: @escaping () -> ()) {
-        for observer in observers {
-            observer.start(onEvent: onEvent)
-        }
-    }
-    
-}
-
-class FileObserver {
-    
-    let path: String
-    let source: DispatchSourceFileSystemObject
-    
-    init(path: String, queue: DispatchQueue) {
-        self.path = path
-        
-        let fileDescriptor = open(path, O_EVTONLY)
-        guard fileDescriptor > 0 else {
-            fatalError("Couldn't open file \(path)")
-        }
-        self.source = DispatchSource.makeFileSystemObjectSource(fileDescriptor: fileDescriptor, eventMask: [.write, .delete], queue: queue)
-    }
-    
-    func start(onEvent: @escaping () -> ()) {
-        self.source.setEventHandler(handler: onEvent)
-        source.resume()
-    }
-    
-}
-

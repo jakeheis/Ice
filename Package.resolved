@@ -11,6 +11,15 @@
         }
       },
       {
+        "package": "FileKit",
+        "repositoryURL": "https://github.com/nvzqz/FileKit",
+        "state": {
+          "branch": null,
+          "revision": "d2427f3785c33059674d6f163e11ec15abee7511",
+          "version": "4.0.1"
+        }
+      },
+      {
         "package": "Files",
         "repositoryURL": "https://github.com/JohnSundell/Files",
         "state": {
@@ -51,7 +60,7 @@
         "repositoryURL": "https://github.com/jakeheis/SwiftCLI",
         "state": {
           "branch": "master",
-          "revision": "84dc3e332b1aaf8e5b8907720a3f1607231f71f1",
+          "revision": "396f3a3754e2243562300861a388dd7dacfa53d8",
           "version": null
         }
       }

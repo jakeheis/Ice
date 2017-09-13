@@ -7,7 +7,7 @@
 
 import Foundation
 import SwiftCLI
-import Files
+import FileKit
 
 public struct Package: Decodable {
     
@@ -58,7 +58,7 @@ public struct Package: Decodable {
     public private(set) var products: [Product]
     public private(set) var targets: [Target]
     
-    public static func load(directory: String) throws -> Package {
+    public static func load(directory: Path) throws -> Package {
         let data = try SPM(path: directory).dumpPackage()
         return try load(data: data)
     }
@@ -134,7 +134,7 @@ public struct Package: Decodable {
             out = stream
         } else {
             let file = "Package.swift"
-            try File(path: file).write(string: "")
+            try "".write(to: Path(file)) // Overwrite file
             guard let fileStream = FileStream(path: file) else  {
                 throw IceError(message: "Couldn't write to \(file)")
             }

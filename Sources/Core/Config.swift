@@ -6,7 +6,7 @@
 //
 
 import Foundation
-import Files
+import FileKit
 
 public class Config {
     
@@ -16,12 +16,16 @@ public class Config {
         return encoder
     }()
     
-    private static let localPath = "ice.json"
+    private static let localPath = Path.current + "ice.json"
     private static let globalPath = Global.root + "ice.json"
     
     public static let localConfig = ConfigFile.from(path: localPath)
     private(set) public static var globalConfig = ConfigFile.from(path: globalPath)
-    public static let defaultConfig = ConfigFile(bin: Global.root + "bin", strict: false)
+    
+    public static let defaultConfig = ConfigFile(
+        bin: (Global.root + "bin").rawValue,
+        strict: false
+    )
     
     public static func get<T>(_ path: KeyPath<ConfigFile, T?>) -> T {
         if let localConfig = localConfig, let value = localConfig[keyPath: path] {
@@ -34,15 +38,21 @@ public class Config {
     }
     
     public static func set<T>(_ path: WritableKeyPath<ConfigFile, T?>, value: T) throws {
-        if globalConfig == nil {
-            globalConfig = ConfigFile(bin: nil, strict: nil)
+        var file: ConfigFile
+        if let existing = self.globalConfig {
+            file = existing
+        } else {
             try Global.setup()
-            try FileSystem().createFile(at: globalPath)
+            
+            let new = ConfigFile(bin: nil, strict: nil)
+            file = new
         }
-        globalConfig![keyPath: path] = value
         
-        let file = try File(path: globalPath)
-        try file.write(data: encoder.encode(globalConfig!))
+        file[keyPath: path] = value
+        
+        self.globalConfig = file
+        
+        try encoder.encode(file).write(to: globalPath)
     }
     
     public static func layer(config: ConfigFile?, onto: ConfigFile) -> ConfigFile {
@@ -56,8 +66,8 @@ public struct ConfigFile: Codable {
     public var bin: String?
     public var strict: Bool?
     
-    static func from(path: String) -> ConfigFile? {
-        guard let data = try? File(path: path).read(),
+    static func from(path: Path) -> ConfigFile? {
+        guard let data = try? Data.read(from: path),
             let file = try? JSONDecoder().decode(ConfigFile.self, from: data) else {
             return nil
         }

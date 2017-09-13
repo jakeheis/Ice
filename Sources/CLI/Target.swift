@@ -7,7 +7,7 @@
 
 import SwiftCLI
 import Core
-import Files
+import FileKit
 
 class TargetCommand: Command {
     
@@ -31,17 +31,14 @@ class TargetCommand: Command {
             testTarget = Input.awaitYesNoInput(message: "Warning: Target name contains the word `Tests` but --test was not passed.\n\nIs this target a test target? ")
         }
         
-        let intermediateFolder: Folder
-        if testTarget {
-            intermediateFolder = try Folder.current.createSubfolderIfNeeded(withName: "Tests")
-        } else {
-            intermediateFolder = try Folder.current.createSubfolderIfNeeded(withName: "Sources")
-        }
-        let targetFolder = try intermediateFolder.createSubfolderIfNeeded(withName: targetName.value)
-        if targetFolder.files.first == nil {
-            let initialFile = "//\n// \(targetName.value).swift\n// \(package.name)\n//\n"
-            try targetFolder.createFile(named: targetName.value + ".swift", contents: initialFile)
-        }
+        let intermediatePath = Path.current + (testTarget ? "Tests" : "Sources")
+        try intermediatePath.createDirectory(withIntermediateDirectories: true)
+        
+        let targetPath = intermediatePath + targetName.value
+        try targetPath.createDirectory()
+        
+        let initialFile = targetPath + Path(targetName.value + ".swift")
+        try "//\n// \(targetName.value).swift\n// \(package.name)\n//\n".write(to: initialFile)
         
         package.addTarget(
             name: targetName.value,

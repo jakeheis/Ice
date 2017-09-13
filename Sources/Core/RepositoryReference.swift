@@ -7,7 +7,6 @@
 //
 
 import Foundation
-import Just
 import Regex
 
 public struct RepositoryReference {

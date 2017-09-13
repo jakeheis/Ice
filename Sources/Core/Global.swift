@@ -6,19 +6,20 @@
 //
 
 import Foundation
-import Files
+import FileKit
 
 public class Global {
     
-    static let root = Folder.home.path + ".icebox/"
+    static let root = Path.userHome + ".icebox"
     
     enum Error: Swift.Error {
         case alreadyInstalled
     }
     
     public static func setup() throws {
-        try FileSystem().createFolderIfNeeded(at: Global.root)
-        try FileSystem().createFolderIfNeeded(at: Config.get(\.bin))
+        try root.createDirectory(withIntermediateDirectories: true)
+        let bin = Path(Config.get(\.bin))
+        try bin.createDirectory(withIntermediateDirectories: true)
     }
     
     public static func add(ref: RepositoryReference, version: Version?) throws {
@@ -38,7 +39,7 @@ public class Global {
             try globalPackage.clone(url: ref.url, version: cloneVersion)
         }
         
-        try globalPackage.spm.build(release: true)
+        try globalPackage.build()
         
         let anyLinked = try globalPackage.symlinkExecutables()
         
@@ -67,7 +68,7 @@ public class Global {
         } else {
             let url: String
             do {
-                url = try Git.getRemoteUrl(of: package.path).trimmed
+                url = try Git.getRemoteUrl(of: package.path.rawValue).trimmed
             } catch let error as IceError {
                 throw IceError(message: "couldn't get remote url of package", exitStatus: error.exitStatus)
             }

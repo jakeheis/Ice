@@ -6,15 +6,15 @@
 //
 
 import Foundation
-import Files
+import FileKit
 import Exec
 import Regex
 
 public class SPM {
 
-    let path: String
+    let path: Path
     
-    public init(path: String = ".") {
+    public init(path: Path = Path.current) {
         self.path = path
     }
     
@@ -80,7 +80,7 @@ public class SPM {
     }
 
     func exec(arguments: [String]) -> Exec {
-        return Exec(command: "swift", args: arguments, in: path)
+        return Exec(command: "swift", args: arguments, in: path.rawValue)
     }
     
 }
