@@ -11,7 +11,7 @@ import Core
 class RegistryGroup: CommandGroup {
     let name = "registry"
     let shortDescription = "Manage local package registry"
-    let children: [Routable] = [AddEntryCommand(), RemoveEntryCommand(), LookupEntryCommand()]
+    let children: [Routable] = [AddEntryCommand(), RemoveEntryCommand(), LookupEntryCommand(), RefreshCommand()]
 }
 
 private class AddEntryCommand: Command {
@@ -54,6 +54,16 @@ private class LookupEntryCommand: Command {
             throw IceError(message: "couldn't find \(from.value)")
         }
         print(value)
+    }
+    
+}
+
+private class RefreshCommand: Command {
+    
+    let name = "refresh"
+    
+    func execute() throws {
+        try Registry.refresh()
     }
     
 }

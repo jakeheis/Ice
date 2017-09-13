@@ -13,6 +13,7 @@ public class Registry {
     private static let url = "https://github.com/jakeheis/IceRegistry"
     private static let directory = Global.root + "Registry"
     private static let localPath = directory + "local.json"
+    private static let sharedPath = directory + "shared"
     
     private static var localRegistry = RegistryFile.load(from: localPath)
     
@@ -24,10 +25,10 @@ public class Registry {
     public static func refresh() throws {
         try setup()
         
-        if directory.exists {
-            try Git.pull(path: directory.rawValue)
+        if sharedPath.exists {
+            try Git.pull(path: sharedPath.rawValue)
         } else {
-            try Git.clone(url: url, to: directory.rawValue, version: nil)
+            try Git.clone(url: url, to: sharedPath.rawValue, version: nil)
         }
     }
     
@@ -51,7 +52,7 @@ public class Registry {
             return matching.url
         }
         
-        let letterPath = directory + (String(name.uppercased()[name.startIndex]) + ".json")
+        let letterPath = sharedPath + "Registry" + (String(name.uppercased()[name.startIndex]) + ".json")
         let sharedRegistry = RegistryFile.load(from: letterPath)
         if let matching = sharedRegistry?.entries.first(where: { $0.name == name }) {
             return matching.url
