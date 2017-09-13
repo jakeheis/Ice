@@ -9,8 +9,12 @@ import Exec
 
 class Git {
     
-    static func clone(url: String, to path: String) throws {
-        try exec(arguments: ["clone", url, path]).execute()
+    static func clone(url: String, to path: String, version: Version?) throws {
+        var args = ["clone", "--depth", "1"]
+        if let version = version {
+            args += ["--branch", version.raw]
+        }
+        try exec(arguments: args + [url, path]).execute()
     }
     
     static func getRemoteUrl(of path: String) throws -> String {

@@ -29,9 +29,17 @@ class GlobalAddCommand: Command {
             throw IceError(message: "not a valid package reference")
         }
         
-        let version = try ref.latestVersion()
+        let packageVersion: Version?
+        if let versionValue = version.value {
+            guard let specifiedVersion = Version(versionValue) else {
+                throw IceError(message: "invalid version")
+            }
+            packageVersion = specifiedVersion
+        } else {
+            packageVersion = nil
+        }
         
-        try Global.add(ref: ref, version: version)
+        try Global.add(ref: ref, version: packageVersion)
     }
     
 }
