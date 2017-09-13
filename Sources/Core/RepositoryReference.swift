@@ -6,7 +6,6 @@
 //  Created by Jake Heiser on 7/21/17.
 //
 
-import Foundation
 import Regex
 
 public struct RepositoryReference {
