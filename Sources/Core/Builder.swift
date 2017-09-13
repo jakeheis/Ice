@@ -49,6 +49,11 @@ extension SPM {
         var sourceCount: String { return captures[1] }
     }
     
+    class CompileCMatch: RegexMatch, Matchable {
+        static let regex = Regex("Compile ([^ ]*) .*\\.c$")
+        var module: String { return captures[0] }
+    }
+    
     class LinkMatch: RegexMatch, Matchable {
         static let regex = Regex("Linking (.*)")
         var product: String { return captures[0] }
@@ -56,6 +61,7 @@ extension SPM {
     
     func transformBuild(_ t: OutputTransformer) {
         t.replace(CompileMatch.self) { "Compile ".dim + "\($0.module) \($0.sourceCount)" }
+        t.replace(CompileCMatch.self) { "Compile ".dim + "\($0.module)" }
         t.register(ErrorResponse.self, on: .out)
         t.ignore("^error:", on: .err)
         t.ignore("^terminated\\(1\\)", on: .err)
