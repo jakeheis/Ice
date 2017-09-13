@@ -1,40 +1,33 @@
 //
-//  TestResponses.swift
-//  Core
+//  Test.swift
+//  Transformers
 //
-//  Created by Jake Heiser on 9/5/17.
+//  Created by Jake Heiser on 9/12/17.
 //
 
 import Exec
 import Regex
 import Rainbow
 
-extension SPM {
+public extension Transformers {
     
-    class PackageTestsBegunMatch: RegexMatch, Matchable {
-        static let regex = Regex("^Test Suite '(.*)\\.xctest' started")
-        var packageName: String { return captures[0] }
+    static func test(t: OutputTransformer) {
+        build(t: t)
+        t.ignore("^Test Suite 'All tests' started", on: .err)
+        t.replace(PackageTestsBegunMatch.self, on: .err) { "\n\($0.packageName):\n".bold }
+        t.ignore("^Test Suite '(.*)\\.xctest'", on: .err)
+        t.register(TestEndResponse.self, on: .err)
+        t.register(TestSuiteResponse.self, on: .err)
+        t.ignore("Executed [0-9]+ tests", on: .err)
+        t.ignore(".*", on: .out)
+        t.last("\n")
     }
     
-    public func test() throws {
-        try resolve()
-        do {
-            try exec(arguments: ["test"]).execute(transform: { (t) in
-                self.transformBuild(t)
-                t.ignore("^Test Suite 'All tests' started", on: .err)
-                t.replace(PackageTestsBegunMatch.self, on: .err) { "\n\($0.packageName):\n".bold }
-                t.ignore("^Test Suite '(.*)\\.xctest'", on: .err)
-                t.register(TestEndResponse.self, on: .err)
-                t.register(TestSuiteResponse.self, on: .err)
-                t.ignore("Executed [0-9]+ tests", on: .err)
-                t.ignore(".*", on: .out)
-                t.last("\n")
-            })
-        } catch let error as Exec.Error {
-            throw IceError(exitStatus: error.exitStatus)
-        }
-    }
-    
+}
+
+private class PackageTestsBegunMatch: RegexMatch, Matchable {
+    static let regex = Regex("^Test Suite '(.*)\\.xctest' started")
+    var packageName: String { return captures[0] }
 }
 
 private final class TestSuiteResponse: SimpleResponse {
@@ -235,3 +228,4 @@ private final class TestEndResponse: SimpleResponse {
     func stop() {}
     
 }
+

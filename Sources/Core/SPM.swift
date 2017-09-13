@@ -7,10 +7,16 @@
 
 import Foundation
 import FileKit
-import Exec
 import Regex
+import Exec
+import Transformers
 
 public class SPM {
+    
+    public enum InitType: String {
+        case executable
+        case library
+    }
 
     let path: Path
     
@@ -18,34 +24,58 @@ public class SPM {
         self.path = path
     }
     
-    public enum InitType: String {
-        case executable
-        case library
-    }
-    
-    class CreatingPackageMatch: RegexMatch, Matchable {
-        static let regex = Regex("(Creating .* package): (.*)")
-        var packageType: String { return captures[0] }
-        var packageName: String { return captures[1] }
-    }
-    
-    class CreateFileMatch: RegexMatch, Matchable {
-        static let regex = Regex("Creating ([^:]+)$")
-        var filePath: String { return captures[0] }
-    }
-    
     public func initPackage(type: InitType?) throws {
         var args = ["package", "init"]
         if let type = type {
             args += ["--type", type.rawValue]
         }
-        try exec(arguments: args).execute(transform: { (t) in
-            t.first("\n")
-            t.replace(CreatingPackageMatch.self) { $0.packageType + ": " + $0.packageName.blue.bold + "\n" }
-            t.replace(CreateFileMatch.self) { "    create ".blue + $0.filePath }
-            t.last("\n")
-        })
+        try exec(arguments: args).execute(transform: Transformers.initPackage)
     }
+    
+    // MARK: - Building
+    
+    public func build(release: Bool = false) throws {
+        try resolve()
+        
+        var args = ["build"]
+        if release {
+            args += ["-c", "release"]
+        }
+        do {
+            try exec(arguments: args).execute(transform: Transformers.build)
+        } catch let error as Exec.Error {
+            throw IceError(exitStatus: error.exitStatus)
+        }
+    }
+    
+    public func run(release: Bool = false) throws {
+        try resolve()
+        
+        var args = ["run"]
+        if release {
+            args += ["-c", "release"]
+        }
+        do {
+            try exec(arguments: args).execute(transform: Transformers.build)
+        } catch let error as Exec.Error {
+            throw IceError(exitStatus: error.exitStatus)
+        }
+    }
+    
+    public func test() throws {
+        try resolve()
+        do {
+            try exec(arguments: ["test"]).execute(transform: Transformers.test)
+        } catch let error as Exec.Error {
+            throw IceError(exitStatus: error.exitStatus)
+        }
+    }
+    
+    public func resolve() throws {
+        try exec(arguments: ["package", "-v", "resolve"]).execute(transform: Transformers.resolve)
+    }
+    
+    // MARK: -
     
     public func clean() throws {
         try exec(arguments: ["package", "clean"]).execute()
@@ -59,18 +89,7 @@ public class SPM {
         try exec(arguments: ["package", "generate-xcodeproj"]).execute()
     }
     
-    public func resolve() throws {
-        class ActionMatch: RegexMatch, Matchable {
-            static let regex = Regex("Fetching (.*)$")
-            var url: String { return captures[0] }
-        }
-        try exec(arguments: ["package", "-v", "resolve"]).execute() { (t) in
-            t.replace(ActionMatch.self) { "Fetch ".dim + $0.url }
-            t.ignore(".*")
-        }
-    }
-    
-    func showBinPath(release: Bool = false) throws -> String {
+    public func showBinPath(release: Bool = false) throws -> String {
         var args = ["build", "--show-bin-path"]
         if release {
             args += ["-c", "release"]
@@ -90,6 +109,8 @@ public class SPM {
         return data[jsonStart...]
     }
 
+    // MARK: -
+    
     func exec(arguments: [String]) -> Exec {
         return Exec(command: "swift", args: arguments, in: path.rawValue)
     }

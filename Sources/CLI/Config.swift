@@ -62,7 +62,7 @@ class SetConfigCommand: Command {
     func execute() throws {
         switch key.value {
         case "bin": try Config.set(\ConfigFile.bin, value: key.value)
-        case "strict": try Config.set(\ConfigFile.strict, value: (key.value.lowercased() == "true"))
+        case "strict": try Config.set(\ConfigFile.strict, value: (value.value.lowercased() == "true" || value.value.lowercased() == "yes"))
         default: throw IceError(message: "key \(key) not recognized")
         }
     }

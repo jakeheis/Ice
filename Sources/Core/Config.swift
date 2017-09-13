@@ -17,7 +17,7 @@ public class Config {
     }()
     
     private static let localPath = Path.current + "ice.json"
-    private static let globalPath = Global.root + "ice.json"
+    private static let globalPath = Global.root + "config.json"
     
     public static let localConfig = ConfigFile.from(path: localPath)
     private(set) public static var globalConfig = ConfigFile.from(path: globalPath)

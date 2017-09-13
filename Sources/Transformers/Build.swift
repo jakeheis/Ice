@@ -1,65 +1,17 @@
 //
-//  Builder.swift
-//  Core
+//  Build.swift
+//  Transformers
 //
-//  Created by Jake Heiser on 9/6/17.
+//  Created by Jake Heiser on 9/12/17.
 //
 
 import Exec
 import Regex
 import Rainbow
 
-extension SPM {
+public extension Transformers {
     
-    public func build(release: Bool = false) throws {
-        try resolve()
-        
-        var args = ["build"]
-        if release {
-            args += ["-c", "release"]
-        }
-        do {
-            try exec(arguments: args).execute(transform: { (t) in
-                self.transformBuild(t)
-            })
-        } catch let error as Exec.Error {
-            throw IceError(exitStatus: error.exitStatus)
-        }
-    }
-    
-    public func run(release: Bool = false) throws {
-        try resolve()
-        
-        var args = ["run"]
-        if release {
-            args += ["-c", "release"]
-        }
-        do {
-            try exec(arguments: args).execute(transform: { (t) in
-                self.transformBuild(t)
-            })
-        } catch let error as Exec.Error {
-            throw IceError(exitStatus: error.exitStatus)
-        }
-    }
-    
-    class CompileMatch: RegexMatch, Matchable {
-        static let regex = Regex("Compile Swift Module '(.*)' (.*)$")
-        var module: String { return captures[0] }
-        var sourceCount: String { return captures[1] }
-    }
-    
-    class CompileCMatch: RegexMatch, Matchable {
-        static let regex = Regex("Compile ([^ ]*) .*\\.c$")
-        var module: String { return captures[0] }
-    }
-    
-    class LinkMatch: RegexMatch, Matchable {
-        static let regex = Regex("Linking (.*)")
-        var product: String { return captures[0] }
-    }
-    
-    func transformBuild(_ t: OutputTransformer) {
+    static func build(t: OutputTransformer) {
         t.replace(CompileMatch.self) { "Compile ".dim + "\($0.module) \($0.sourceCount)" }
         t.replace(CompileCMatch.self) { "Compile ".dim + "\($0.module)" }
         t.register(ErrorResponse.self, on: .out)
@@ -69,6 +21,27 @@ extension SPM {
         t.replace(LinkMatch.self) { "Link ".blue + $0.product }
     }
     
+}
+
+private class CompileMatch: RegexMatch, Matchable {
+    static let regex = Regex("Compile Swift Module '(.*)' (.*)$")
+    var module: String { return captures[0] }
+    var sourceCount: String { return captures[1] }
+}
+
+private class CompileCMatch: RegexMatch, Matchable {
+    static let regex = Regex("Compile ([^ ]*) .*\\.c$")
+    var module: String { return captures[0] }
+}
+
+private class LinkMatch: RegexMatch, Matchable {
+    static let regex = Regex("Linking (.*)")
+    var product: String { return captures[0] }
+}
+
+private class NoteMatch: RegexMatch, Matchable {
+    static let regex = Regex("(/.*):([0-9]+):[0-9]+: note: (.*)")
+    var note: String { return captures[2] }
 }
 
 private final class ErrorResponse: SimpleResponse {
@@ -86,11 +59,6 @@ private final class ErrorResponse: SimpleResponse {
         var columnNumber: Int { return captures[2] }
         var type: ErrorType { return captures[3] }
         var message: String { return captures[4] }
-    }
-    
-    class NoteMatch: RegexMatch, Matchable {
-        static let regex = Regex("(/.*):([0-9]+):[0-9]+: note: (.*)")
-        var note: String { return captures[2] }
     }
     
     private static var pastMatches: [Match] = []
@@ -172,3 +140,4 @@ private final class ErrorResponse: SimpleResponse {
     
     
 }
+
