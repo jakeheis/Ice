@@ -6,10 +6,16 @@
 //
 
 import FileKit
+import Foundation
 
 public class Global {
     
-    static let root = Path.userHome + ".icebox"
+    static let root: Path = {
+        if let root = ProcessInfo.processInfo.environment["ICE_GLOBAL_ROOT"] {
+            return Path(root)
+        }
+        return Path.userHome + ".icebox"
+    }()
     
     enum Error: Swift.Error {
         case alreadyInstalled

@@ -19,14 +19,12 @@ class XcCommand: Command {
     func execute() throws {
         try SPM().generateXcodeProject()
         
-        if noOpen.value {
-            return
+        if !noOpen.value {
+            let package = try Package.load(directory: ".")
+            do {
+                try Exec(command: "open", args: ["\(package.name).xcodeproj"]).execute()
+            } catch {}
         }
-        
-        let package = try Package.load(directory: ".")
-        do {
-            try Exec(command: "open", args: ["\(package.name).xcodeproj"]).execute()
-        } catch {}
     }
     
 }

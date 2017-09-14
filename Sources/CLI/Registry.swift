@@ -53,7 +53,7 @@ private class LookupEntryCommand: Command {
         guard let value = Registry.get(from.value) else {
             throw IceError(message: "couldn't find \(from.value)")
         }
-        print(value)
+        print(value.url)
     }
     
 }

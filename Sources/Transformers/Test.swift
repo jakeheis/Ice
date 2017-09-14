@@ -30,6 +30,32 @@ private class PackageTestsBegunMatch: RegexMatch, Matchable {
     var packageName: String { return captures[0] }
 }
 
+private class CaseMatch: RegexMatch, Matchable {
+    enum Status: String, Capturable {
+        case started
+        case passed
+        case failed
+    }
+    
+    static let regex = Regex("^Test Case .* ([^ ]*)\\]' (started|passed|failed)")
+    var caseName: String { return captures[0] }
+    var status: Status { return captures[1] }
+}
+
+private class XCTFailureMatch: RegexMatch, Matchable {
+    static let regex = Regex("(.*):([0-9]+): error: .* : (.*)( - (.*))?$")
+    var file: String { return captures[0] }
+    var lineNumber: Int { return captures[1] }
+    var assertion: String { return captures[2] }
+    var message: String? { return captures[3] }
+}
+
+private class RemainingMatch: RegexMatch, Matchable {
+    static let regex = Regex("(.*) - (.*)$")
+    var assertion: String { return captures[0] }
+    var message: String { return captures[1] }
+}
+
 private final class TestSuiteResponse: SimpleResponse {
     
     class Match: RegexMatch, Matchable {
@@ -37,33 +63,7 @@ private final class TestSuiteResponse: SimpleResponse {
         var suiteName: String { return captures[0] }
     }
     
-    class CaseMatch: RegexMatch, Matchable {
-        enum Status: String, Capturable {
-            case started
-            case passed
-            case failed
-        }
-        
-        static let regex = Regex("^Test Case .* ([^ ]*)\\]' (started|passed|failed)")
-        var caseName: String { return captures[0] }
-        var status: Status { return captures[1] }
-    }
-    
-    class XCTFailureMatch: RegexMatch, Matchable {
-        static let regex = Regex("(.*):([0-9]+): error: .* : (.*)( - (.*))?$")
-        var file: String { return captures[0] }
-        var lineNumber: Int { return captures[1] }
-        var assertion: String { return captures[2] }
-        var message: String? { return captures[3] }
-    }
-    
     static let doneRegex = Regex("Executed .* tests")
-    
-    class RemainingMatch: RegexMatch, Matchable {
-        static let regex = Regex("(.*) - (.*)$")
-        var assertion: String { return captures[0] }
-        var message: String { return captures[1] }
-    }
     
     struct AssertionFailure {
         let file: String

@@ -28,7 +28,9 @@ class TargetCommand: Command {
         
         var testTarget = isTest.value
         if !testTarget && targetName.value.contains("Test") {
-            testTarget = Input.awaitYesNoInput(message: "Warning: Target name contains the word `Tests` but --test was not passed.\n\nIs this target a test target? ")
+            testTarget = Input.awaitYesNoInput(
+                message: "Warning: Target name contains the word `Tests` but --test was not passed.\n\nIs this target a test target? "
+            )
         }
         
         let intermediatePath = Path.current + (testTarget ? "Tests" : "Sources")
