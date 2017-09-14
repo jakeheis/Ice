@@ -1,0 +1,29 @@
+{
+  "entries" : [
+    {
+      "name" : "IBAnimatable",
+      "url" : "https:\/\/github.com\/IBAnimatable\/IBAnimatable",
+      "description" : "Design and prototype customized UI, interaction, navigation, transition and animation for App Store ready Apps in Interface Builder with IBAnimatable."
+    },
+    {
+      "name" : "Instructions",
+      "url" : "https:\/\/github.com\/ephread\/Instructions",
+      "description" : "Create walkthroughs and guided tours (coach marks) in a simple way, with Swift."
+    },
+    {
+      "name" : "Interpolate",
+      "url" : "https:\/\/github.com\/marmelroy\/Interpolate",
+      "description" : "Swift interpolation for gesture-driven animations"
+    },
+    {
+      "name" : "IHKeyboardAvoiding",
+      "url" : "https:\/\/github.com\/IdleHandsApps\/IHKeyboardAvoiding",
+      "description" : "IHKeyboardAvoiding is an elegant solution for keeping any UIView visible when the keyboard is being shown - no UIScrollView required!"
+    },
+    {
+      "name" : "Interstellar",
+      "url" : "https:\/\/github.com\/JensRavens\/Interstellar",
+      "description" : "Simple and lightweight Functional Reactive Coding in Swift for the rest of us"
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "entries" : [
+    {
+      "name" : "ZIPFoundation",
+      "url" : "https:\/\/github.com\/weichsel\/ZIPFoundation",
+      "description" : "Effortless ZIP Handling in Swift"
+    }
+  ]
+}

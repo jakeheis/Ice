@@ -1,0 +1,44 @@
+{
+  "entries" : [
+    {
+      "name" : "Timepiece",
+      "url" : "https:\/\/github.com\/naoty\/Timepiece",
+      "description" : "Intuitive date handling in Swift"
+    },
+    {
+      "name" : "Then",
+      "url" : "https:\/\/github.com\/devxoul\/Then",
+      "description" : "✨ Super sweet syntactic sugar for Swift initializers"
+    },
+    {
+      "name" : "TDBadgedCell",
+      "url" : "https:\/\/github.com\/tmdvs\/TDBadgedCell",
+      "description" : "TDBadgedCell is a table view cell class that adds a badge, similar to the badges in Apple's own apps"
+    },
+    {
+      "name" : "TestDrive",
+      "url" : "https:\/\/github.com\/JohnSundell\/TestDrive",
+      "description" : "Quickly try out any Swift pod or framework in a playground"
+    },
+    {
+      "name" : "Taylor",
+      "url" : "https:\/\/github.com\/izqui\/Taylor",
+      "description" : "A lightweight library for writing HTTP web servers with Swift"
+    },
+    {
+      "name" : "TabPageViewController",
+      "url" : "https:\/\/github.com\/EndouMari\/TabPageViewController",
+      "description" : "Paging view controller and scroll tab view"
+    },
+    {
+      "name" : "then",
+      "url" : "https:\/\/github.com\/freshOS\/then",
+      "description" : ":clapper: Promises Library for Swift with Async\/Await"
+    },
+    {
+      "name" : "Tabman",
+      "url" : "https:\/\/github.com\/uias\/Tabman",
+      "description" : "A powerful paging view controller with indicator bar."
+    }
+  ]
+}

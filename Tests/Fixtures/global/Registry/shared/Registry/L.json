@@ -1,0 +1,29 @@
+{
+  "entries" : [
+    {
+      "name" : "Locksmith",
+      "url" : "https:\/\/github.com\/matthewpalmer\/Locksmith",
+      "description" : "A powerful, protocol-oriented library for working with the keychain in Swift."
+    },
+    {
+      "name" : "LayoutKit",
+      "url" : "https:\/\/github.com\/linkedin\/LayoutKit",
+      "description" : "LayoutKit is a fast view layout library for iOS, macOS, and tvOS."
+    },
+    {
+      "name" : "Localize-Swift",
+      "url" : "https:\/\/github.com\/marmelroy\/Localize-Swift",
+      "description" : "Swift friendly localization and i18n with in-app language switching"
+    },
+    {
+      "name" : "LicensePlist",
+      "url" : "https:\/\/github.com\/mono0926\/LicensePlist",
+      "description" : "A license list generator of all your dependencies for iOS applications"
+    },
+    {
+      "name" : "LocalizationKit_iOS",
+      "url" : "https:\/\/github.com\/willpowell8\/LocalizationKit_iOS",
+      "description" : "Realtime Dynamic localization translation delivery system for iOS and Mac OSX in Swift. Create and update texts from localization.com without needing to recompile or redeploy. Cocapod for iOS devices (iPad, iPhone, iPod Touch and Mac)"
+    }
+  ]
+}

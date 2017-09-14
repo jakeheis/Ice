@@ -1,0 +1,44 @@
+{
+  "entries" : [
+    {
+      "name" : "Moya",
+      "url" : "https:\/\/github.com\/Moya\/Moya",
+      "description" : "Network abstraction layer written in Swift."
+    },
+    {
+      "name" : "Marathon",
+      "url" : "https:\/\/github.com\/JohnSundell\/Marathon",
+      "description" : "Marathon makes it easy to write, run and manage your Swift scripts 🏃"
+    },
+    {
+      "name" : "M13Checkbox",
+      "url" : "https:\/\/github.com\/Marxon13\/M13Checkbox",
+      "description" : "A customizeable checkbox for iOS"
+    },
+    {
+      "name" : "mapper",
+      "url" : "https:\/\/github.com\/lyft\/mapper",
+      "description" : "A JSON deserialization library for Swift"
+    },
+    {
+      "name" : "Metron",
+      "url" : "https:\/\/github.com\/toineheuvelmans\/Metron",
+      "description" : "Geometry, simplified."
+    },
+    {
+      "name" : "Magnetic",
+      "url" : "https:\/\/github.com\/efremidze\/Magnetic",
+      "description" : "SpriteKit Floating Bubble Picker (inspired by Apple Music)"
+    },
+    {
+      "name" : "Marshal",
+      "url" : "https:\/\/github.com\/utahiosmac\/Marshal",
+      "description" : "Marshaling the typeless wild west of [String: Any]"
+    },
+    {
+      "name" : "ModelRocket",
+      "url" : "https:\/\/github.com\/ovenbits\/ModelRocket",
+      "description" : "An iOS framework for creating JSON-based models. Written in Swift."
+    }
+  ]
+}

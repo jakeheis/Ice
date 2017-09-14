@@ -1,0 +1,64 @@
+{
+  "entries" : [
+    {
+      "name" : "FSPagerView",
+      "url" : "https:\/\/github.com\/WenchaoD\/FSPagerView",
+      "description" : "FSPagerView is an elegant Screen Slide Library. It is extremely helpful for making Banner View、Product Show、Welcome\/Guide Pages、Screen\/ViewController Sliders."
+    },
+    {
+      "name" : "FileKit",
+      "url" : "https:\/\/github.com\/nvzqz\/FileKit",
+      "description" : "Simple and expressive file management in Swift"
+    },
+    {
+      "name" : "FolioReaderKit",
+      "url" : "https:\/\/github.com\/FolioReader\/FolioReaderKit",
+      "description" : "📚 A Swift ePub reader and parser framework for iOS."
+    },
+    {
+      "name" : "FengNiao",
+      "url" : "https:\/\/github.com\/onevcat\/FengNiao",
+      "description" : "A command line tool for cleaning unused resources in Xcode."
+    },
+    {
+      "name" : "Freddy",
+      "url" : "https:\/\/github.com\/bignerdranch\/Freddy",
+      "description" : "A reusable framework for parsing JSON in Swift."
+    },
+    {
+      "name" : "Files",
+      "url" : "https:\/\/github.com\/JohnSundell\/Files",
+      "description" : "A nicer way to handle files & folders in Swift"
+    },
+    {
+      "name" : "FontBlaster",
+      "url" : "https:\/\/github.com\/ArtSabintsev\/FontBlaster",
+      "description" : "Programmatically load custom fonts into your iOS app."
+    },
+    {
+      "name" : "fluent",
+      "url" : "https:\/\/github.com\/vapor\/fluent",
+      "description" : "🖋 Swift ORM (queries, models, and relations) for NoSQL and SQL databases."
+    },
+    {
+      "name" : "FlowingMenu",
+      "url" : "https:\/\/github.com\/yannickl\/FlowingMenu",
+      "description" : "Interactive view transition to display menus with flowing and bouncing effects in Swift"
+    },
+    {
+      "name" : "FutureKit",
+      "url" : "https:\/\/github.com\/FutureKit\/FutureKit",
+      "description" : "A Swift based Future\/Promises Library for IOS and OS X."
+    },
+    {
+      "name" : "FDWaveformView",
+      "url" : "https:\/\/github.com\/fulldecent\/FDWaveformView",
+      "description" : "Reads an audio file and displays the waveform"
+    },
+    {
+      "name" : "FlexibleImage",
+      "url" : "https:\/\/github.com\/kawoou\/FlexibleImage",
+      "description" : "A simple way to play with the image!"
+    }
+  ]
+}

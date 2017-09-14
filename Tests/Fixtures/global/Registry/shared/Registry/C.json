@@ -1,0 +1,79 @@
+{
+  "entries" : [
+    {
+      "name" : "Carthage",
+      "url" : "https:\/\/github.com\/Carthage\/Carthage",
+      "description" : "A simple, decentralized dependency manager for Cocoa"
+    },
+    {
+      "name" : "CryptoSwift",
+      "url" : "https:\/\/github.com\/krzyzanowskim\/CryptoSwift",
+      "description" : "CryptoSwift is a growing collection of standard and secure cryptographic algorithms implemented in Swift"
+    },
+    {
+      "name" : "CoreStore",
+      "url" : "https:\/\/github.com\/JohnEstropia\/CoreStore",
+      "description" : "Unleashing the real power of Core Data with the elegance and safety of Swift"
+    },
+    {
+      "name" : "CleanroomLogger",
+      "url" : "https:\/\/github.com\/emaloney\/CleanroomLogger",
+      "description" : "CleanroomLogger provides an extensible Swift-based logging API that is simple, lightweight and performant"
+    },
+    {
+      "name" : "CommandLine",
+      "url" : "https:\/\/github.com\/jatoben\/CommandLine",
+      "description" : "A pure Swift library for creating command-line interfaces"
+    },
+    {
+      "name" : "ColorMatchTabs",
+      "url" : "https:\/\/github.com\/Yalantis\/ColorMatchTabs",
+      "description" : "This is a Review posting app that let user find interesting places near them"
+    },
+    {
+      "name" : "Commander",
+      "url" : "https:\/\/github.com\/kylef\/Commander",
+      "description" : "Compose beautiful command line interfaces in Swift"
+    },
+    {
+      "name" : "Cleanse",
+      "url" : "https:\/\/github.com\/square\/Cleanse",
+      "description" : "Lightweight Swift Dependency Injection Framework"
+    },
+    {
+      "name" : "Cluster",
+      "url" : "https:\/\/github.com\/efremidze\/Cluster",
+      "description" : "Easy Map Annotation Clustering 📍"
+    },
+    {
+      "name" : "Cacao",
+      "url" : "https:\/\/github.com\/PureSwift\/Cacao",
+      "description" : "Pure Swift Cross-platform UIKit (Cocoa Touch) implementation (Supports Linux)"
+    },
+    {
+      "name" : "Changeset",
+      "url" : "https:\/\/github.com\/osteslag\/Changeset",
+      "description" : "Minimal edits from one collection to another"
+    },
+    {
+      "name" : "CameraManager",
+      "url" : "https:\/\/github.com\/imaginary-cloud\/CameraManager",
+      "description" : "Simple Swift class to provide all the configurations you need to create custom camera view in your app"
+    },
+    {
+      "name" : "Coolie",
+      "url" : "https:\/\/github.com\/nixzhu\/Coolie",
+      "description" : "Coolie(苦力) helps you to create models (& their constructors) from a JSON file."
+    },
+    {
+      "name" : "CoreDataStack",
+      "url" : "https:\/\/github.com\/bignerdranch\/CoreDataStack",
+      "description" : "The Big Nerd Ranch Core Data Stack"
+    },
+    {
+      "name" : "CodableAlamofire",
+      "url" : "https:\/\/github.com\/Otbivnoe\/CodableAlamofire",
+      "description" : "An extension for Alamofire that converts JSON data into Decodable objects."
+    }
+  ]
+}

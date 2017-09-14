@@ -1,0 +1,24 @@
+{
+  "entries" : [
+    {
+      "name" : "Unbox",
+      "url" : "https:\/\/github.com\/JohnSundell\/Unbox",
+      "description" : "The easy to use Swift JSON decoder"
+    },
+    {
+      "name" : "UIImageColors",
+      "url" : "https:\/\/github.com\/jathu\/UIImageColors",
+      "description" : "iTunes style color fetcher for UIImage."
+    },
+    {
+      "name" : "URLNavigator",
+      "url" : "https:\/\/github.com\/devxoul\/URLNavigator",
+      "description" : "⛵️ Elegant URL Routing for Swift"
+    },
+    {
+      "name" : "UIFontComplete",
+      "url" : "https:\/\/github.com\/Nirma\/UIFontComplete",
+      "description" : "Make working with UIFont faster and less error-prone."
+    }
+  ]
+}

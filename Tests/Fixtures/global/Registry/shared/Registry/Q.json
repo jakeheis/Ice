@@ -1,0 +1,19 @@
+{
+  "entries" : [
+    {
+      "name" : "Quick",
+      "url" : "https:\/\/github.com\/Quick\/Quick",
+      "description" : "The Swift (and Objective-C) testing framework."
+    },
+    {
+      "name" : "Queuer",
+      "url" : "https:\/\/github.com\/FabrizioBrancati\/Queuer",
+      "description" : "Queuer is a queue manager, built on top of OperationQueue and Dispatch (aka GCD)."
+    },
+    {
+      "name" : "QRCodeReader.swift",
+      "url" : "https:\/\/github.com\/yannickl\/QRCodeReader.swift",
+      "description" : "Simple QRCode reader in Swift"
+    }
+  ]
+}

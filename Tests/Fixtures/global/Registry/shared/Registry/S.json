@@ -1,0 +1,283 @@
+{
+  "entries" : [
+    {
+      "name" : "SwiftyJSON",
+      "url" : "https:\/\/github.com\/SwiftyJSON\/SwiftyJSON",
+      "description" : "The better way to deal with JSON data in Swift"
+    },
+    {
+      "name" : "SnapKit",
+      "url" : "https:\/\/github.com\/SnapKit\/SnapKit",
+      "description" : "A Swift Autolayout DSL for iOS & OS X"
+    },
+    {
+      "name" : "SwiftLint",
+      "url" : "https:\/\/github.com\/realm\/SwiftLint",
+      "description" : "A tool to enforce Swift style and conventions."
+    },
+    {
+      "name" : "swift-package-manager",
+      "url" : "https:\/\/github.com\/apple\/swift-package-manager",
+      "description" : "The Package Manager for the Swift Programming Language"
+    },
+    {
+      "name" : "Swift-AI",
+      "url" : "https:\/\/github.com\/Swift-AI\/Swift-AI",
+      "description" : "The Swift machine learning library."
+    },
+    {
+      "name" : "SQLite.swift",
+      "url" : "https:\/\/github.com\/stephencelis\/SQLite.swift",
+      "description" : "A type-safe, Swift-language layer over SQLite3."
+    },
+    {
+      "name" : "Surge",
+      "url" : "https:\/\/github.com\/mattt\/Surge",
+      "description" : "A Swift library that uses the Accelerate framework to provide high-performance functions for matrix math, digital signal processing, and image manipulation."
+    },
+    {
+      "name" : "SwifterSwift",
+      "url" : "https:\/\/github.com\/SwifterSwift\/SwifterSwift",
+      "description" : "A handy collection of more than 500 native Swift 3 extensions to boost your productivity."
+    },
+    {
+      "name" : "SwiftDate",
+      "url" : "https:\/\/github.com\/malcommac\/SwiftDate",
+      "description" : "The best way to manage Dates and Timezones in Swift"
+    },
+    {
+      "name" : "Starscream",
+      "url" : "https:\/\/github.com\/daltoniam\/Starscream",
+      "description" : "Websockets in swift for iOS and OSX"
+    },
+    {
+      "name" : "SwiftyBeaver",
+      "url" : "https:\/\/github.com\/SwiftyBeaver\/SwiftyBeaver",
+      "description" : "Convenient logging during development & release in Swift 2, 3 & 4"
+    },
+    {
+      "name" : "Swiftz",
+      "url" : "https:\/\/github.com\/typelift\/Swiftz",
+      "description" : "Functional programming in Swift"
+    },
+    {
+      "name" : "SwiftyUserDefaults",
+      "url" : "https:\/\/github.com\/radex\/SwiftyUserDefaults",
+      "description" : "Modern Swift API for NSUserDefaults"
+    },
+    {
+      "name" : "socket.io-client-swift",
+      "url" : "https:\/\/github.com\/socketio\/socket.io-client-swift"
+    },
+    {
+      "name" : "Sourcery",
+      "url" : "https:\/\/github.com\/krzysztofzablocki\/Sourcery",
+      "description" : "Meta-programming for Swift, stop writing boilerplate code."
+    },
+    {
+      "name" : "Stellar",
+      "url" : "https:\/\/github.com\/AugustRush\/Stellar",
+      "description" : "A fantastic Physical animation library for swift"
+    },
+    {
+      "name" : "SwipeCellKit",
+      "url" : "https:\/\/github.com\/SwipeCellKit\/SwipeCellKit",
+      "description" : "Swipeable UITableViewCell based on the stock Mail.app, implemented in Swift."
+    },
+    {
+      "name" : "SkyFloatingLabelTextField",
+      "url" : "https:\/\/github.com\/Skyscanner\/SkyFloatingLabelTextField",
+      "description" : "A beautiful and flexible text field control implementation of  \"Float Label Pattern\". Written in Swift."
+    },
+    {
+      "name" : "Stevia",
+      "url" : "https:\/\/github.com\/freshOS\/Stevia",
+      "description" : ":leaves: Elegant Autolayout DSL for iOS"
+    },
+    {
+      "name" : "swifter",
+      "url" : "https:\/\/github.com\/httpswift\/swifter",
+      "description" : "Tiny http server engine written in Swift programming language."
+    },
+    {
+      "name" : "Swifton",
+      "url" : "https:\/\/github.com\/necolt\/Swifton",
+      "description" : "A Ruby on Rails inspired Web Framework for Swift that runs on Linux and OS X"
+    },
+    {
+      "name" : "Siren",
+      "url" : "https:\/\/github.com\/ArtSabintsev\/Siren",
+      "description" : "Notify users when a new version of your app is available and prompt them to upgrade."
+    },
+    {
+      "name" : "Swinject",
+      "url" : "https:\/\/github.com\/Swinject\/Swinject",
+      "description" : "Dependency injection framework for Swift with iOS\/macOS\/Linux"
+    },
+    {
+      "name" : "Swifter",
+      "url" : "https:\/\/github.com\/mattdonnelly\/Swifter",
+      "description" : ":bird: A Twitter framework for iOS & OS X written in Swift"
+    },
+    {
+      "name" : "SwiftHTTP",
+      "url" : "https:\/\/github.com\/daltoniam\/SwiftHTTP",
+      "description" : "Thin wrapper around NSURLSession in swift. Simplifies HTTP requests."
+    },
+    {
+      "name" : "SwiftKotlin",
+      "url" : "https:\/\/github.com\/angelolloqui\/SwiftKotlin",
+      "description" : "A tool to convert Swift code to Kotlin."
+    },
+    {
+      "name" : "SFFocusViewLayout",
+      "url" : "https:\/\/github.com\/fdzsergio\/SFFocusViewLayout",
+      "description" : "UICollectionViewLayout with focused content"
+    },
+    {
+      "name" : "SwiftFormat",
+      "url" : "https:\/\/github.com\/nicklockwood\/SwiftFormat",
+      "description" : "A code library and command-line formatting tool for reformatting Swift code"
+    },
+    {
+      "name" : "siesta",
+      "url" : "https:\/\/github.com\/bustoutsolutions\/siesta",
+      "description" : "The civilized way to write REST API clients for iOS \/ macOS"
+    },
+    {
+      "name" : "SwiftLocation",
+      "url" : "https:\/\/github.com\/malcommac\/SwiftLocation",
+      "description" : "Easy and efficient Location Manager in Swift"
+    },
+    {
+      "name" : "swift-protobuf",
+      "url" : "https:\/\/github.com\/apple\/swift-protobuf",
+      "description" : "Plugin and runtime library for using protobuf with Swift"
+    },
+    {
+      "name" : "Stencil",
+      "url" : "https:\/\/github.com\/kylef\/Stencil",
+      "description" : "Stencil is a simple and powerful template language for Swift."
+    },
+    {
+      "name" : "SourceKitten",
+      "url" : "https:\/\/github.com\/jpsim\/SourceKitten",
+      "description" : "An adorable little framework and command line tool for interacting with SourceKit."
+    },
+    {
+      "name" : "SwiftRichString",
+      "url" : "https:\/\/github.com\/malcommac\/SwiftRichString",
+      "description" : "Elegant & Painless Attributed Strings Management Library in Swift"
+    },
+    {
+      "name" : "SwiftyCam",
+      "url" : "https:\/\/github.com\/Awalz\/SwiftyCam",
+      "description" : "A Snapchat Inspired iOS Camera Framework written in Swift"
+    },
+    {
+      "name" : "Swiftline",
+      "url" : "https:\/\/github.com\/nsomar\/Swiftline",
+      "description" : "Swiftline is a set of tools to help you create command line applications."
+    },
+    {
+      "name" : "SwiftyTimer",
+      "url" : "https:\/\/github.com\/radex\/SwiftyTimer",
+      "description" : "Swifty API for NSTimer"
+    },
+    {
+      "name" : "SwiftWebSocket",
+      "url" : "https:\/\/github.com\/tidwall\/SwiftWebSocket",
+      "description" : "Fast Websockets in Swift for iOS and OSX"
+    },
+    {
+      "name" : "SwiftCheck",
+      "url" : "https:\/\/github.com\/typelift\/SwiftCheck",
+      "description" : "QuickCheck for Swift"
+    },
+    {
+      "name" : "SWXMLHash",
+      "url" : "https:\/\/github.com\/drmohundro\/SWXMLHash",
+      "description" : "Simple XML parsing in Swift"
+    },
+    {
+      "name" : "Splitflap",
+      "url" : "https:\/\/github.com\/yannickl\/Splitflap",
+      "description" : "A simple split-flap display for your Swift applications"
+    },
+    {
+      "name" : "SwiftLinkPreview",
+      "url" : "https:\/\/github.com\/LeonardoCardoso\/SwiftLinkPreview",
+      "description" : "It makes a preview from an URL, grabbing all the information such as title, relevant texts and images."
+    },
+    {
+      "name" : "SwiftyGif",
+      "url" : "https:\/\/github.com\/kirualex\/SwiftyGif",
+      "description" : "High performance GIF engine"
+    },
+    {
+      "name" : "SwiftAutoLayout",
+      "url" : "https:\/\/github.com\/indragiek\/SwiftAutoLayout",
+      "description" : "Tiny Swift DSL for Autolayout"
+    },
+    {
+      "name" : "SwiftState",
+      "url" : "https:\/\/github.com\/ReactKit\/SwiftState",
+      "description" : "Elegant state machine for Swift."
+    },
+    {
+      "name" : "swift-sdk",
+      "url" : "https:\/\/github.com\/watson-developer-cloud\/swift-sdk",
+      "description" : ":iphone: The Watson Swift SDK enables developers to quickly add Watson Cognitive Computing services to their Swift applications."
+    },
+    {
+      "name" : "SwiftyGPIO",
+      "url" : "https:\/\/github.com\/uraimo\/SwiftyGPIO",
+      "description" : "A Swift library for hardware projects on Linux\/ARM boards with support for GPIOs\/SPI\/I2C\/PWM\/UART."
+    },
+    {
+      "name" : "swift-corelibs-xctest",
+      "url" : "https:\/\/github.com\/apple\/swift-corelibs-xctest",
+      "description" : "The XCTest Project, A Swift core library for providing unit test support"
+    },
+    {
+      "name" : "SwiftFoundation",
+      "url" : "https:\/\/github.com\/PureSwift\/SwiftFoundation",
+      "description" : "Cross-Platform, Protocol-Oriented Programming base library to complement the Swift Standard Library. (Pure Swift, Supports Linux)"
+    },
+    {
+      "name" : "SlackKit",
+      "url" : "https:\/\/github.com\/SlackKit\/SlackKit",
+      "description" : "Build Slack apps, in Swift"
+    },
+    {
+      "name" : "SwiftHEXColors",
+      "url" : "https:\/\/github.com\/thii\/SwiftHEXColors",
+      "description" : "HEX color handling as an extension for UIColor."
+    },
+    {
+      "name" : "SwiftySound",
+      "url" : "https:\/\/github.com\/adamcichy\/SwiftySound",
+      "description" : "SwiftySound is a simple library that lets you play sounds with a single line of code."
+    },
+    {
+      "name" : "SigmaSwiftStatistics",
+      "url" : "https:\/\/github.com\/evgenyneu\/SigmaSwiftStatistics",
+      "description" : "A collection of functions for statistical calculation written in Swift."
+    },
+    {
+      "name" : "swift-http",
+      "url" : "https:\/\/github.com\/huytd\/swift-http",
+      "description" : "HTTP Implementation for Swift on Linux and Mac OS X"
+    },
+    {
+      "name" : "sockets",
+      "url" : "https:\/\/github.com\/vapor\/sockets",
+      "description" : "🔌 Pure Swift (POSIX) TCP and UDP non-blocking socket layer, with event-driven Server and Client."
+    },
+    {
+      "name" : "SourceKittenDaemon",
+      "url" : "https:\/\/github.com\/terhechte\/SourceKittenDaemon",
+      "description" : "Swift Auto Completions for any Text Editor"
+    }
+  ]
+}

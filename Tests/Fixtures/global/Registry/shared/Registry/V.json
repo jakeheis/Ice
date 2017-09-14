@@ -1,0 +1,19 @@
+{
+  "entries" : [
+    {
+      "name" : "vapor",
+      "url" : "https:\/\/github.com\/vapor\/vapor",
+      "description" : "💧 A server-side Swift web framework."
+    },
+    {
+      "name" : "Venice",
+      "url" : "https:\/\/github.com\/Zewo\/Venice",
+      "description" : "Coroutines, structured concurrency and CSP for Swift on macOS and Linux."
+    },
+    {
+      "name" : "View2ViewTransition",
+      "url" : "https:\/\/github.com\/naru-jpn\/View2ViewTransition",
+      "description" : "Custom interactive view controller transition from one view to another view."
+    }
+  ]
+}

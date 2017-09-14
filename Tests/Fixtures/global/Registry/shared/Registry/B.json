@@ -1,0 +1,34 @@
+{
+  "entries" : [
+    {
+      "name" : "Bond",
+      "url" : "https:\/\/github.com\/ReactiveKit\/Bond",
+      "description" : "A Swift binding framework"
+    },
+    {
+      "name" : "BrightFutures",
+      "url" : "https:\/\/github.com\/Thomvis\/BrightFutures",
+      "description" : "Write great asynchronous code in Swift using futures and promises"
+    },
+    {
+      "name" : "blackfire",
+      "url" : "https:\/\/github.com\/elliottminns\/blackfire",
+      "description" : "A minimal, fast and unopinionated web framework for Swift"
+    },
+    {
+      "name" : "BTree",
+      "url" : "https:\/\/github.com\/attaswift\/BTree",
+      "description" : "Fast sorted collections for Swift using in-memory B-trees"
+    },
+    {
+      "name" : "BFKit-Swift",
+      "url" : "https:\/\/github.com\/FabrizioBrancati\/BFKit-Swift",
+      "description" : "BFKit-Swift is a collection of useful classes, structs and extensions to develop Apps faster."
+    },
+    {
+      "name" : "BlueSocket",
+      "url" : "https:\/\/github.com\/IBM-Swift\/BlueSocket",
+      "description" : "Socket framework for Swift using the Swift Package Manager. Works on iOS, macOS, and Linux."
+    }
+  ]
+}

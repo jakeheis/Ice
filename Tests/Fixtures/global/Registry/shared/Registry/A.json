@@ -1,0 +1,74 @@
+{
+  "entries" : [
+    {
+      "name" : "Alamofire",
+      "url" : "https:\/\/github.com\/Alamofire\/Alamofire",
+      "description" : "Elegant HTTP Networking in Swift"
+    },
+    {
+      "name" : "Async",
+      "url" : "https:\/\/github.com\/duemunk\/Async",
+      "description" : "Syntactic sugar in Swift for asynchronous dispatches in Grand Central Dispatch"
+    },
+    {
+      "name" : "Advance",
+      "url" : "https:\/\/github.com\/storehouse\/Advance",
+      "description" : "A powerful animation framework for iOS, tvOS, and OS X."
+    },
+    {
+      "name" : "Argo",
+      "url" : "https:\/\/github.com\/thoughtbot\/Argo",
+      "description" : "Functional JSON parsing library for Swift"
+    },
+    {
+      "name" : "AnimatedCollectionViewLayout",
+      "url" : "https:\/\/github.com\/KelvinJin\/AnimatedCollectionViewLayout",
+      "description" : "A UICollectionViewLayout subclass that adds custom transitions\/animations to the UICollectionView without effecting your existing code."
+    },
+    {
+      "name" : "AlamofireImage",
+      "url" : "https:\/\/github.com\/Alamofire\/AlamofireImage",
+      "description" : "AlamofireImage is an image component library for Alamofire"
+    },
+    {
+      "name" : "APIKit",
+      "url" : "https:\/\/github.com\/ishkawa\/APIKit",
+      "description" : "Type-safe networking abstraction layer that associates request type with response type."
+    },
+    {
+      "name" : "AppIcon",
+      "url" : "https:\/\/github.com\/Nonchalant\/AppIcon",
+      "description" : "AppIcon generates *.appiconset contains each resolution image for iOS"
+    },
+    {
+      "name" : "arek",
+      "url" : "https:\/\/github.com\/ennioma\/arek",
+      "description" : "AREK is a clean and easy way to request any kind of iOS permission (with some nifty features 🤖)"
+    },
+    {
+      "name" : "apollo-ios",
+      "url" : "https:\/\/github.com\/apollographql\/apollo-ios",
+      "description" : "📱 A strongly-typed, caching GraphQL client for iOS, written in Swift"
+    },
+    {
+      "name" : "AlecrimCoreData",
+      "url" : "https:\/\/github.com\/Alecrim\/AlecrimCoreData",
+      "description" : "A powerful and simple Core Data wrapper framework written in Swift."
+    },
+    {
+      "name" : "AEXML",
+      "url" : "https:\/\/github.com\/tadija\/AEXML",
+      "description" : "Simple and lightweight XML parser written in Swift"
+    },
+    {
+      "name" : "Attabench",
+      "url" : "https:\/\/github.com\/attaswift\/Attabench",
+      "description" : "Microbenchmarking app for Swift with nice log-log plots"
+    },
+    {
+      "name" : "Apodimark",
+      "url" : "https:\/\/github.com\/loiclec\/Apodimark",
+      "description" : "Fast, flexible markdown parser written in Swift"
+    }
+  ]
+}

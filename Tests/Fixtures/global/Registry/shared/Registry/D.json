@@ -1,0 +1,49 @@
+{
+  "entries" : [
+    {
+      "name" : "Dollar",
+      "url" : "https:\/\/github.com\/ankurp\/Dollar",
+      "description" : "A functional tool-belt for Swift Language similar to Lo-Dash or Underscore.js in Javascript"
+    },
+    {
+      "name" : "DynamicColor",
+      "url" : "https:\/\/github.com\/yannickl\/DynamicColor",
+      "description" : "Yet another extension to manipulate colors easily in Swift"
+    },
+    {
+      "name" : "Dwifft",
+      "url" : "https:\/\/github.com\/jflinter\/Dwifft",
+      "description" : "Swift Diff"
+    },
+    {
+      "name" : "Decodable",
+      "url" : "https:\/\/github.com\/Anviking\/Decodable",
+      "description" : "Swift 2\/3 JSON parsing done (more) right"
+    },
+    {
+      "name" : "DynamicButton",
+      "url" : "https:\/\/github.com\/yannickl\/DynamicButton",
+      "description" : "Yet another animated flat buttons in Swift"
+    },
+    {
+      "name" : "Diff.swift",
+      "url" : "https:\/\/github.com\/wokalski\/Diff.swift",
+      "description" : "The fastest Diff and patch library in Swift. Includes UICollectionView\/UITableView utils."
+    },
+    {
+      "name" : "DefaultsKit",
+      "url" : "https:\/\/github.com\/nmdias\/DefaultsKit",
+      "description" : "Simple, Strongly Typed UserDefaults for iOS, macOS and tvOS"
+    },
+    {
+      "name" : "Dip",
+      "url" : "https:\/\/github.com\/AliSoftware\/Dip",
+      "description" : "Simple Swift Dependency container. Use protocols to resolve your dependencies and avoid singletons \/ sharedInstances!"
+    },
+    {
+      "name" : "DeallocationChecker",
+      "url" : "https:\/\/github.com\/fastred\/DeallocationChecker",
+      "description" : "Catch leaking view controllers without opening Instruments."
+    }
+  ]
+}

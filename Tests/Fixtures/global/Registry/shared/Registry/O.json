@@ -1,0 +1,29 @@
+{
+  "entries" : [
+    {
+      "name" : "ObjectMapper",
+      "url" : "https:\/\/github.com\/Hearst-DD\/ObjectMapper",
+      "description" : "Simple JSON Object mapping written in Swift"
+    },
+    {
+      "name" : "OAuthSwift",
+      "url" : "https:\/\/github.com\/OAuthSwift\/OAuthSwift",
+      "description" : "Swift based OAuth library for iOS"
+    },
+    {
+      "name" : "Overdrive",
+      "url" : "https:\/\/github.com\/arikis\/Overdrive",
+      "description" : "⚡️ Fast async task based Swift framework with focus on type safety, concurrency and multi threading"
+    },
+    {
+      "name" : "ObjectiveKit",
+      "url" : "https:\/\/github.com\/marmelroy\/ObjectiveKit",
+      "description" : "Swift-friendly API for a set of powerful Objective C runtime functions."
+    },
+    {
+      "name" : "OAuth2",
+      "url" : "https:\/\/github.com\/p2\/OAuth2",
+      "description" : "OAuth2 framework for macOS and iOS, written in Swift."
+    }
+  ]
+}

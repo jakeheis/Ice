@@ -1,0 +1,69 @@
+{
+  "entries" : [
+    {
+      "name" : "Perfect",
+      "url" : "https:\/\/github.com\/PerfectlySoft\/Perfect",
+      "description" : "Server-side Swift. The Perfect core toolset and framework for Swift Developers. (For mobile back-end development, website and API development, and more…)"
+    },
+    {
+      "name" : "PromiseKit",
+      "url" : "https:\/\/github.com\/mxcl\/PromiseKit",
+      "description" : "Promises for Swift & ObjC"
+    },
+    {
+      "name" : "PeekPop",
+      "url" : "https:\/\/github.com\/marmelroy\/PeekPop",
+      "description" : "Peek and Pop with backwards-compatibility "
+    },
+    {
+      "name" : "Player",
+      "url" : "https:\/\/github.com\/piemonte\/Player",
+      "description" : "▶️ video player in Swift, simple way to play and stream media on iOS\/tvOS"
+    },
+    {
+      "name" : "Pitaya",
+      "url" : "https:\/\/github.com\/johnlui\/Pitaya",
+      "description" : "A Swift HTTP \/ HTTPS networking library just incidentally execute on machines"
+    },
+    {
+      "name" : "PathKit",
+      "url" : "https:\/\/github.com\/kylef\/PathKit",
+      "description" : "Effortless path operations in Swift"
+    },
+    {
+      "name" : "Pageboy",
+      "url" : "https:\/\/github.com\/uias\/Pageboy",
+      "description" : "A simple, highly informative page view controller."
+    },
+    {
+      "name" : "protobuf-swift",
+      "url" : "https:\/\/github.com\/alexeyxo\/protobuf-swift",
+      "description" : "Google ProtocolBuffers for Apple Swift"
+    },
+    {
+      "name" : "PinLayout",
+      "url" : "https:\/\/github.com\/mirego\/PinLayout",
+      "description" : "Fast Swift UIViews layouting without auto layout. No magic, pure code, full control and blazing fast. Concise syntax, intuitive, readable & chainable."
+    },
+    {
+      "name" : "pull-to-refresh",
+      "url" : "https:\/\/github.com\/eggswift\/pull-to-refresh",
+      "description" : "An easy way to use pull to refresh and infinite scrolling in Swift. Pod 'ESPullToRefresh'"
+    },
+    {
+      "name" : "ProcedureKit",
+      "url" : "https:\/\/github.com\/ProcedureKit\/ProcedureKit",
+      "description" : "Advanced Operations in Swift"
+    },
+    {
+      "name" : "Preheat",
+      "url" : "https:\/\/github.com\/kean\/Preheat",
+      "description" : "Automates prefetching of content in UITableView and UICollectionView"
+    },
+    {
+      "name" : "PrediKit",
+      "url" : "https:\/\/github.com\/KrakenDev\/PrediKit",
+      "description" : "An NSPredicate DSL for iOS, OSX, tvOS, & watchOS. Inspired by SnapKit and lovingly written in Swift."
+    }
+  ]
+}

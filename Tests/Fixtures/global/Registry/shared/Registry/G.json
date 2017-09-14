@@ -1,0 +1,39 @@
+{
+  "entries" : [
+    {
+      "name" : "Gloss",
+      "url" : "https:\/\/github.com\/hkellaway\/Gloss",
+      "description" : "A shiny JSON parsing library in Swift :sparkles:"
+    },
+    {
+      "name" : "Guaka",
+      "url" : "https:\/\/github.com\/nsomar\/Guaka",
+      "description" : "The smartest and most beautiful (POSIX compliant) Command line framework for Swift 🤖"
+    },
+    {
+      "name" : "GRDB.swift",
+      "url" : "https:\/\/github.com\/groue\/GRDB.swift",
+      "description" : "A toolkit for SQLite databases, with a focus on application development"
+    },
+    {
+      "name" : "Genome",
+      "url" : "https:\/\/github.com\/LoganWright\/Genome",
+      "description" : "A simple, type safe, failure driven mapping library for serializing JSON to models in Swift 3.0 (Supports Linux)"
+    },
+    {
+      "name" : "Graph",
+      "url" : "https:\/\/github.com\/CosmicMind\/Graph",
+      "description" : "Graph is a semantic database that is used to create data-driven applications."
+    },
+    {
+      "name" : "GlitchLabel",
+      "url" : "https:\/\/github.com\/kciter\/GlitchLabel",
+      "description" : "G..lit...c...hing UILa..bel fo..r iO...S :tv:"
+    },
+    {
+      "name" : "Guitar",
+      "url" : "https:\/\/github.com\/ArtSabintsev\/Guitar",
+      "description" : "A Cross-Platform String and Regular Expression Library written in Swift."
+    }
+  ]
+}

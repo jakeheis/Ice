@@ -1,0 +1,39 @@
+{
+  "entries" : [
+    {
+      "name" : "Hero",
+      "url" : "https:\/\/github.com\/lkzhao\/Hero",
+      "description" : "Elegant transition library for iOS & tvOS"
+    },
+    {
+      "name" : "HandyJSON",
+      "url" : "https:\/\/github.com\/alibaba\/HandyJSON",
+      "description" : "A handy swift json-object serialization\/deserialization library"
+    },
+    {
+      "name" : "Hydra",
+      "url" : "https:\/\/github.com\/malcommac\/Hydra",
+      "description" : "Lightweight full-featured Promises, Async & Await Library in Swift"
+    },
+    {
+      "name" : "Hedwig",
+      "url" : "https:\/\/github.com\/onevcat\/Hedwig",
+      "description" : "Send email to any SMTP server like a boss, in Swift and cross-platform"
+    },
+    {
+      "name" : "HaishinKit.swift",
+      "url" : "https:\/\/github.com\/shogo4405\/HaishinKit.swift",
+      "description" : "Camera and Microphone streaming library via RTMP, HLS for iOS, macOS, tvOS."
+    },
+    {
+      "name" : "Himotoki",
+      "url" : "https:\/\/github.com\/ikesyo\/Himotoki",
+      "description" : "A type-safe JSON decoding library purely written in Swift"
+    },
+    {
+      "name" : "Highlighter",
+      "url" : "https:\/\/github.com\/younatics\/Highlighter",
+      "description" : "🖍 Highlight whatever you want! "
+    }
+  ]
+}

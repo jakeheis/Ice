@@ -1,0 +1,34 @@
+{
+  "entries" : [
+    {
+      "name" : "JTAppleCalendar",
+      "url" : "https:\/\/github.com\/patchthecode\/JTAppleCalendar",
+      "description" : "The Unofficial Apple iOS Swift Calendar View. iOS calendar Library. iOS calendar Control. 100% Customizable"
+    },
+    {
+      "name" : "Just",
+      "url" : "https:\/\/github.com\/JustHTTP\/Just",
+      "description" : "Swift HTTP for Humans"
+    },
+    {
+      "name" : "JTMaterialTransition",
+      "url" : "https:\/\/github.com\/jonathantribouharet\/JTMaterialTransition",
+      "description" : "An iOS transition for controllers based on material design."
+    },
+    {
+      "name" : "json-swift",
+      "url" : "https:\/\/github.com\/owensd\/json-swift",
+      "description" : "A basic library for working with JSON in Swift."
+    },
+    {
+      "name" : "Ji",
+      "url" : "https:\/\/github.com\/honghaoz\/Ji",
+      "description" : "Ji (戟) is an XML\/HTML parser for Swift"
+    },
+    {
+      "name" : "JSQDataSourcesKit",
+      "url" : "https:\/\/github.com\/jessesquires\/JSQDataSourcesKit",
+      "description" : "Protocol-oriented, type-safe data source objects that keep your view controllers light"
+    }
+  ]
+}

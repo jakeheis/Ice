@@ -1,0 +1,84 @@
+{
+  "entries" : [
+    {
+      "name" : "RxSwift",
+      "url" : "https:\/\/github.com\/ReactiveX\/RxSwift",
+      "description" : "Reactive Programming in Swift"
+    },
+    {
+      "name" : "ReSwift",
+      "url" : "https:\/\/github.com\/ReSwift\/ReSwift",
+      "description" : "Unidirectional Data Flow in Swift - Inspired by Redux"
+    },
+    {
+      "name" : "R.swift",
+      "url" : "https:\/\/github.com\/mac-cain13\/R.swift",
+      "description" : "Get strong typed, autocompleted resources like images, fonts and segues in Swift projects"
+    },
+    {
+      "name" : "RNCryptor",
+      "url" : "https:\/\/github.com\/RNCryptor\/RNCryptor",
+      "description" : "CCCryptor (AES encryption) wrappers for iOS and Mac in Swift. -- For ObjC, see RNCryptor\/RNCryptor-objc"
+    },
+    {
+      "name" : "reel-search",
+      "url" : "https:\/\/github.com\/Ramotion\/reel-search",
+      "description" : ":octocat: 🔍 RAMReel is a UI controller that allows you to choose options from a list. Made by @Ramotion"
+    },
+    {
+      "name" : "Result",
+      "url" : "https:\/\/github.com\/antitypical\/Result",
+      "description" : "Swift type modelling the success\/failure of arbitrary operations."
+    },
+    {
+      "name" : "ReactiveSwift",
+      "url" : "https:\/\/github.com\/ReactiveCocoa\/ReactiveSwift",
+      "description" : "Streams of values over time"
+    },
+    {
+      "name" : "Reusable",
+      "url" : "https:\/\/github.com\/AliSoftware\/Reusable",
+      "description" : "A Swift mixin for reusing views easily and in a type-safe way (UITableViewCells, UICollectionViewCells, custom UIViews, ViewControllers, Storyboards…)"
+    },
+    {
+      "name" : "RandomKit",
+      "url" : "https:\/\/github.com\/nvzqz\/RandomKit",
+      "description" : "Random data generation in Swift"
+    },
+    {
+      "name" : "Rainbow",
+      "url" : "https:\/\/github.com\/onevcat\/Rainbow",
+      "description" : "Delightful console output for Swift developers."
+    },
+    {
+      "name" : "ReactiveKit",
+      "url" : "https:\/\/github.com\/ReactiveKit\/ReactiveKit",
+      "description" : "A Swift Reactive Programming Kit"
+    },
+    {
+      "name" : "RxDataSources",
+      "url" : "https:\/\/github.com\/RxSwiftCommunity\/RxDataSources",
+      "description" : "UITableView and UICollectionView Data Sources for RxSwift (sections, animated updates, editing ...)"
+    },
+    {
+      "name" : "ReactorKit",
+      "url" : "https:\/\/github.com\/ReactorKit\/ReactorKit",
+      "description" : "A framework for a reactive and unidirectional Swift application architecture"
+    },
+    {
+      "name" : "Runes",
+      "url" : "https:\/\/github.com\/thoughtbot\/Runes",
+      "description" : "Infix operators for monadic functions in Swift"
+    },
+    {
+      "name" : "RxAutomaton",
+      "url" : "https:\/\/github.com\/inamiy\/RxAutomaton",
+      "description" : "RxSwift + State Machine, inspired by Redux and Elm."
+    },
+    {
+      "name" : "Regex",
+      "url" : "https:\/\/github.com\/sharplet\/Regex",
+      "description" : "A delightful and expressive regular expression type for Swift."
+    }
+  ]
+}

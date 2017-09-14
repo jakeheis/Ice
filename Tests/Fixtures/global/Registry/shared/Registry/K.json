@@ -1,0 +1,39 @@
+{
+  "entries" : [
+    {
+      "name" : "Kingfisher",
+      "url" : "https:\/\/github.com\/onevcat\/Kingfisher",
+      "description" : "A lightweight, pure-Swift library for downloading and caching images from the web."
+    },
+    {
+      "name" : "Kitura",
+      "url" : "https:\/\/github.com\/IBM-Swift\/Kitura",
+      "description" : "A Swift web framework and HTTP server."
+    },
+    {
+      "name" : "KeychainAccess",
+      "url" : "https:\/\/github.com\/kishikawakatsumi\/KeychainAccess",
+      "description" : "Simple Swift wrapper for Keychain that works on iOS, watchOS, tvOS and macOS."
+    },
+    {
+      "name" : "Kanna",
+      "url" : "https:\/\/github.com\/tid-kijyun\/Kanna",
+      "description" : "Kanna(鉋) is an XML\/HTML parser for Swift."
+    },
+    {
+      "name" : "KZFileWatchers",
+      "url" : "https:\/\/github.com\/krzysztofzablocki\/KZFileWatchers",
+      "description" : "A micro-framework for observing file changes, both local and remote. Helpful in building developer tools."
+    },
+    {
+      "name" : "keychain-swift",
+      "url" : "https:\/\/github.com\/evgenyneu\/keychain-swift",
+      "description" : "Helper functions for saving text in Keychain securely for iOS, OS X, tvOS and watchOS."
+    },
+    {
+      "name" : "Kuery",
+      "url" : "https:\/\/github.com\/kishikawakatsumi\/Kuery",
+      "description" : "A type-safe Core Data query API using Swift 4's Smart KeyPaths"
+    }
+  ]
+}

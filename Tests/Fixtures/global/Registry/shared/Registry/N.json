@@ -1,0 +1,29 @@
+{
+  "entries" : [
+    {
+      "name" : "Nimble",
+      "url" : "https:\/\/github.com\/Quick\/Nimble",
+      "description" : "A Matcher Framework for Swift and Objective-C"
+    },
+    {
+      "name" : "Nuke",
+      "url" : "https:\/\/github.com\/kean\/Nuke",
+      "description" : "A powerful image loading and caching framework"
+    },
+    {
+      "name" : "Networking",
+      "url" : "https:\/\/github.com\/3lvis\/Networking",
+      "description" : "Easy HTTP Networking in Swift a NSURLSession wrapper with image caching support"
+    },
+    {
+      "name" : "Natalie",
+      "url" : "https:\/\/github.com\/krzyzanowskim\/Natalie",
+      "description" : "Natalie - Storyboard Code Generator (for Swift)"
+    },
+    {
+      "name" : "NextLevel",
+      "url" : "https:\/\/github.com\/NextLevel\/NextLevel",
+      "description" : "⬆️ Rad Media Capture in Swift"
+    }
+  ]
+}

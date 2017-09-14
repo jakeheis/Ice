@@ -49,6 +49,7 @@ class Runner {
             }
             
             try! FileManager.default.copyItem(atPath: "Tests/Sandboxes/\(sandbox.name)", toPath: sandboxedDirectory)
+            try! FileManager.default.copyItem(atPath: "Tests/Fixtures/global", toPath: sandboxedDirectory + "/global")
         }
         
         sandboxSetup?()

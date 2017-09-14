@@ -1,0 +1,39 @@
+{
+  "entries" : [
+    {
+      "name" : "ESTabBarController",
+      "url" : "https:\/\/github.com\/eggswift\/ESTabBarController",
+      "description" : ":octocat: ESTabBarController is a Swift model for customize UI, badge and adding animation to tabbar items. Support lottie!"
+    },
+    {
+      "name" : "EFQRCode",
+      "url" : "https:\/\/github.com\/EyreFree\/EFQRCode",
+      "description" : "A better way to operate quick response code in Swift."
+    },
+    {
+      "name" : "Express",
+      "url" : "https:\/\/github.com\/crossroadlabs\/Express",
+      "description" : "Swift Express is a simple, yet unopinionated web application server written in Swift"
+    },
+    {
+      "name" : "Element",
+      "url" : "https:\/\/github.com\/eonist\/Element",
+      "description" : "Programmatic UI for macOS"
+    },
+    {
+      "name" : "Elevate",
+      "url" : "https:\/\/github.com\/Nike-Inc\/Elevate",
+      "description" : "Elevate is a JSON parsing framework that leverages Swift to make parsing simple, reliable and composable."
+    },
+    {
+      "name" : "EatFit",
+      "url" : "https:\/\/github.com\/Yalantis\/EatFit",
+      "description" : "Eat fit is a component for attractive data representation inspired by Google Fit"
+    },
+    {
+      "name" : "Eject",
+      "url" : "https:\/\/github.com\/Raizlabs\/Eject",
+      "description" : "An eject button for Interface Builder to generate swift code"
+    }
+  ]
+}

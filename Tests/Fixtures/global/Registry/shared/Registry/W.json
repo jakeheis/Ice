@@ -1,0 +1,24 @@
+{
+  "entries" : [
+    {
+      "name" : "Willow",
+      "url" : "https:\/\/github.com\/Nike-Inc\/Willow",
+      "description" : "Willow is a powerful, yet lightweight logging library written in Swift."
+    },
+    {
+      "name" : "WKZombie",
+      "url" : "https:\/\/github.com\/mkoehnke\/WKZombie",
+      "description" : "WKZombie is a Swift framework for iOS\/OSX to navigate within websites and collect data without the need of User Interface or API, also known as Headless browser. It can be used to run automated tests \/ snapshots and manipulate websites using Javascript."
+    },
+    {
+      "name" : "WSTagsField",
+      "url" : "https:\/\/github.com\/whitesmith\/WSTagsField",
+      "description" : "An iOS text field that represents different Tags"
+    },
+    {
+      "name" : "Wrap",
+      "url" : "https:\/\/github.com\/JohnSundell\/Wrap",
+      "description" : "The easy to use Swift JSON encoder"
+    }
+  ]
+}
