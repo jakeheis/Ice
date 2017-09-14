@@ -6,7 +6,7 @@
 import XCTest
 import Core
 
-class RemoteTests: XCTestCase {
+class RepositoryReferenceTests: XCTestCase {
     
     func testGithub() {
         let short = RepositoryReference("jakeheis/SwiftCLI")

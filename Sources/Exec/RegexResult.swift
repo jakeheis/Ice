@@ -31,6 +31,14 @@ public class Captures {
     
 }
 
+extension Captures: CustomStringConvertible {
+    
+    public var description: String {
+        return captures.description
+    }
+    
+}
+
 open class RegexMatch {
     public let captures: Captures
     required public init(captures: Captures) {
@@ -40,7 +48,7 @@ open class RegexMatch {
 
 extension RegexMatch: Equatable {
     public static func ==(lhs: RegexMatch, rhs: RegexMatch) -> Bool {
-        return zip(lhs.captures.captures, rhs.captures.captures).contains(where: { $0 != $1 })
+        return !zip(lhs.captures.captures, rhs.captures.captures).contains(where: { $0 != $1 })
     }
 }
 
@@ -56,6 +64,10 @@ extension Matchable where Self: RegexMatch {
         }
         let captures = Captures(captures: match.captures)
         return Self(captures: captures)
+    }
+    
+    public static func matches(_ line: String) -> Bool {
+        return match(line) != nil
     }
     
 }

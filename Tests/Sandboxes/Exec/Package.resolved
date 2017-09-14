@@ -1,0 +1,16 @@
+{
+  "object": {
+    "pins": [
+      {
+        "package": "SwiftCLI",
+        "repositoryURL": "https://github.com/jakeheis/SwiftCLI",
+        "state": {
+          "branch": null,
+          "revision": "36bb5dd52deed7264b6f41c1a2190d376cb9f17c",
+          "version": "3.0.3"
+        }
+      }
+    ]
+  },
+  "version": 1
+}

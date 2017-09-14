@@ -80,6 +80,9 @@ class InitCommand: Command {
             type = .executable
         }
         try SPM().initPackage(type: type)
+        
+        print("Run: ".blue.bold + "ice build")
+        print()
     }
     
 }

@@ -8,6 +8,7 @@
 import Exec
 import Regex
 import Rainbow
+import Foundation
 
 public extension Transformers {
     
@@ -39,19 +40,15 @@ private class LinkMatch: RegexMatch, Matchable {
     var product: String { return captures[0] }
 }
 
-private class NoteMatch: RegexMatch, Matchable {
-    static let regex = Regex("(/.*):([0-9]+):[0-9]+: note: (.*)")
-    var note: String { return captures[2] }
-}
-
 private final class ErrorResponse: SimpleResponse {
     
     class Match: RegexMatch, Matchable {
-        static let regex = Regex("(/.*):([0-9]+):([0-9]+): (error|warning): (.*)")
+        static let regex = Regex("(/.*):([0-9]+):([0-9]+): (error|warning|note): (.*)")
         
         enum ErrorType: String, Capturable {
             case error
             case warning
+            case note
         }
         
         var path: String { return captures[0] }
@@ -63,18 +60,17 @@ private final class ErrorResponse: SimpleResponse {
     
     private static var pastMatches: [Match] = []
     
-    enum CurrentLine: Int {
+    enum AwaitingLine {
         case code
-        case underline
-        case done
+        case highlightsOrCode(startIndex: String.Index)
+        case suggestionOrDone(startIndex: String.Index)
     }
     
     let match: Match
     let color: Color
+    let stream: StdStream
     
-    var stream: StdStream = .out
-    var currentLine: CurrentLine = .code
-    var lastLineStartIndex: String.Index?
+    var awaitingLine: AwaitingLine = .code
     
     init(match: Match) {
         self.match = match
@@ -83,49 +79,58 @@ private final class ErrorResponse: SimpleResponse {
             self.color = .red
         case .warning:
             self.color = .yellow
+        case .note:
+            self.color = .yellow
+        }
+        
+        if ErrorResponse.pastMatches.contains(match) {
+            self.stream = .null
+        } else {
+            self.stream = .out
+            ErrorResponse.pastMatches.append(match)
         }
     }
     
     func go() {
-        if ErrorResponse.pastMatches.contains(match) {
-            stream = .null
-            return
-        }
-        
         let prefix: String
         switch match.type {
         case .error:
-            prefix = "● Error:".red.bold
+            prefix = "\n  ● Error:".red.bold
         case .warning:
-            prefix = "● Warning:".yellow.bold
+            prefix = "\n  ● Warning:".yellow.bold
+        case .note:
+            prefix = "    Note:".blue
         }
-        stream.output("\n  \(prefix) \(match.message)\n")
-        
-        ErrorResponse.pastMatches.append(match)
+        stream.output("\(prefix) \(match.message)\n")
     }
     
     func keepGoing(on line: String) -> Bool {
-        switch currentLine {
+        let indentation = "    "
+        switch awaitingLine {
         case .code:
             let lineStartIndex = line.index(where: { $0 != " " }) ?? line.startIndex
-            stream.output("    " + String(line[lineStartIndex...]).lightBlack)
-            self.lastLineStartIndex = lineStartIndex
-            currentLine = .underline
-        case .underline:
-            let lineStartIndex = self.lastLineStartIndex ?? line.startIndex
-            stream.output("    " + String(line[lineStartIndex...]).replacingAll(matching: "~", with: "^").applyingColor(color))
-            currentLine = .done
-        case .done:
-            if let noteMatch = NoteMatch.match(line) {
-                stream.output("    note: " + noteMatch.note + "\n")
-                currentLine = .code
-            } else if line.hasPrefix("        ") {
-                let lineStartIndex = self.lastLineStartIndex ?? line.startIndex
-                stream.output(String(line[lineStartIndex...]) + "\n")
-                return true
+            stream.output(indentation + String(line[lineStartIndex...]).lightBlack)
+            awaitingLine = .highlightsOrCode(startIndex: lineStartIndex)
+        case let .highlightsOrCode(startIndex):
+            if line.trimmingCharacters(in: CharacterSet(charactersIn: " ~^")).isEmpty {
+                // It's a highlight line
+                stream.output(indentation + String(line[startIndex...]).replacingAll(matching: "~", with: "^").applyingColor(color))
+                awaitingLine = .suggestionOrDone(startIndex: startIndex)
             } else {
+                // It's another code line
+                stream.output(indentation + String(line[startIndex...]).lightBlack)
+            }
+        case let .suggestionOrDone(startIndex):
+            if line.hasPrefix("/") || line.hasPrefix("error:") {
+                // It's a new error
                 return false
             }
+            if let characterIndex = line.index(where: { $0 != " " }), characterIndex >= startIndex {
+                // If there's a bunch of whitespace first, it's likely a suggestion
+                stream.output(indentation + String(line[startIndex...]).applyingColor(color) + "\n")
+                return true
+            }
+            return false
         }
         return true
     }
