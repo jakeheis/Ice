@@ -13,10 +13,8 @@ public extension Transformers {
     
     static func test(t: OutputTransformer) {
         build(t: t)
-        t.ignore("^Test Suite 'All tests' started", on: .err)
+        t.ignore("^Test Suite '(All tests|Selected tests)' started", on: .err)
         t.replace(PackageTestsBegunMatch.self, on: .err) { "\n\($0.packageName):\n".bold }
-        t.ignore("^Test Suite '(.*)\\.xctest'", on: .err)
-        t.ignore("^Test Suite 'Selected tests'", on: .err)
         t.register(TestEndResponse.self, on: .err)
         t.register(TestSuiteResponse.self, on: .err)
         t.ignore("Executed [0-9]+ tests", on: .err)
@@ -227,54 +225,13 @@ private final class TestCaseResponse: Response {
     
 }
 
-protocol XCTMatchable: Matchable {
-    var message: String { get }
-}
-
-private final class AssertionResponse: Response {
+final class AssertionResponse: Response {
     
     class Match: RegexMatch, Matchable {
         static let regex = Regex("(.*):([0-9]+): error: .* : (.*)$")
         var file: String { return captures[0] }
         var lineNumber: Int { return captures[1] }
         var assertion: String { return captures[2] }
-    }
-    
-    // XCTAssertNil
-    class XCTNilMatch: RegexMatch, XCTMatchable {
-        static let regex = Regex("XCTAssertNil failed: \"(.*)\" - (.*)$")
-        var value: String { return captures[0] }
-        var message: String { return captures[1] }
-    }
-    
-    // XCTAssertEqual, XCTAssertGreaterThan, XCTAssertGreaterThanOrEqual, XCTAssertLessThan, XCTAssertLessThanOrEqual, XCTAssertNotEqual
-    class XCTInfixMatch: RegexMatch, XCTMatchable {
-        static let regex = Regex("(XCTAssert[^ ]*) failed: \\(\"(.*)\"\\) is (.*) \\(\"(.*)\"\\) - (.*)$")
-        var type: String { return captures[0] }
-        var got: String { return captures[1] }
-        var comparison: String { return captures[2] }
-        var expected: String { return captures[3] }
-        var message: String { return captures[4] }
-    }
-    
-    // XCTAssert, XCTAssertFalse, XCTAssertNotNil, XCTAssertTrue
-    class XCTBooleanMatch: RegexMatch, XCTMatchable {
-        static let regex = Regex("XCTAssert(True|False|NotNil|) failed - (.*)$")
-        var type: String { return captures[0] }
-        var message: String { return captures[1] }
-    }
-    
-    // XCTAssertThrowsError
-    class XCTThrowMatch: RegexMatch, XCTMatchable {
-        static let regex = Regex("XCTAssertThrowsError failed: did not throw an error - (.*)$")
-        var message: String { return captures[0] }
-    }
-    
-    // XCTAssertNoThrow
-    class XCTNoThrowMatch: RegexMatch, XCTMatchable {
-        static let regex = Regex("XCTAssertNoThrow failed: threw error \"(.*)\" - (.*)$")
-        var error: String { return captures[0] }
-        var message: String { return captures[1] }
     }
     
     static let newlineReplacement = "______$$$$$$$$"
@@ -305,86 +262,32 @@ private final class AssertionResponse: Response {
         return true
     }
     
-    func stop() {
-        func convert(_ str: String) -> String {
-            return str.replacingOccurrences(of: AssertionResponse.newlineReplacement, with: "\n")
-        }
-        
+    func stop() {        
         stream.output()
         
-        let xct: XCTMatchable
-        if let match = XCTNilMatch.match(assertion) {
-            printWrongValue(
-                expected: "nil",
-                received: convert(match.value)
-            )
-            xct = match
-        } else if let match = XCTInfixMatch.match(assertion) {
-            if match.type == "XCTAssertEqual" {
-                printWrongValue(
-                    expected: convert(match.expected),
-                    received: convert(match.got)
-                )
-            } else if match.type == "XCTAssertNotEqual" {
-                printWrongValue(
-                    expected: convert(match.expected),
-                    received: convert(match.got),
-                    secondHeader: "not to equal"
-                )
-            } else {
-                stream.output("\tError: ".red  + "\(match.got.red) is \(match.comparison) \(match.expected.red)")
+        var foundMatch = false
+        for matchType in xctMatches {
+            if let match = matchType.match(assertion) {
+                match.output()
+                
+                if !match.message.isEmpty {
+                    stream.output()
+                    let lines = match.message.components(separatedBy: AssertionResponse.newlineReplacement)
+                    var message = lines[0]
+                    if lines.count > 1 {
+                        message += "\n" + lines.dropFirst().map({ "\t\($0)" }).joined(separator: "\n")
+                    }
+                    stream.output("\tNote: \(message)")
+                }
+                
+                foundMatch = true
+                break
             }
-            xct = match
-        } else if let match = XCTBooleanMatch.match(assertion) {
-            if match.type == "" || match.type == "True" {
-                printWrongValue(
-                    expected: "true",
-                    received: "false"
-                )
-            } else if match.type == "NotNil" {
-                printWrongValue(
-                    expected: "not nil",
-                    received: "nil"
-                )
-            } else if match.type == "False" {
-                printWrongValue(
-                    expected: "false",
-                    received: "true"
-                )
-            } else {
-                printWrongValue(
-                    expected: match.type.lowercased(),
-                    received: "not " + match.type.lowercased()
-                )
-            }
-            xct = match
-        } else if let match = XCTThrowMatch.match(assertion) {
-            printWrongValue(
-                expected: "expression to throw",
-                received: "no throw"
-            )
-            xct = match
-        } else if let match = XCTNoThrowMatch.match(assertion) {
-            printWrongValue(
-                expected: "expression not to throw",
-                received: convert(match.error),
-                secondHeader: "Threw"
-            )
-            xct = match
-        } else {
-            print("\n\n\nWarning: Unrecognized error\n\n\n".red.bold)
-            print(assertion)
-            return
         }
         
-        if !xct.message.isEmpty {
-            stream.output()
-            let lines = convert(xct.message).components(separatedBy: "\n")
-            var message = lines[0]
-            if lines.count > 1 {
-                message += "\n" + lines.dropFirst().map({ "\t\($0)" }).joined(separator: "\n")
-            }
-            stream.output("\tNote: \(message)")
+        if !foundMatch {
+            stream.output("\nWarning: unrecognized error\n")
+            stream.output(assertion)
         }
         
         let fileLocation = file.beautifyPath
@@ -393,34 +296,32 @@ private final class AssertionResponse: Response {
         stream.output()
     }
     
-    func printWrongValue(expected: String, received: String, secondHeader: String = "Received") {
-        stream.output("\tExpected:")
-        stream.output(expected.components(separatedBy: "\n").map{ "\t\($0)" }.joined(separator: "\n").green)
-        stream.output("\t\(secondHeader):")
-        stream.output(received.components(separatedBy: "\n").map{ "\t\($0)" }.joined(separator: "\n").red)
-    }
-    
 }
 
 private final class TestEndResponse: SimpleResponse {
     
     class Match: RegexMatch, Matchable {
-        static let regex = Regex("Test Suite 'All tests' (passed|failed)")
+        static let regex = Regex("Test Suite '(All tests|Selected tests|.*\\.xctest)' (passed|failed)")
+        var suite: String { return captures[0] }
     }
     
     class CountMatch: RegexMatch, Matchable {
-        static let regex = Regex("Executed ([0-9]+) tests, with ([0-9]*) failures? .* \\(([\\.0-9]+)\\) seconds$")
+        static let regex = Regex("Executed ([0-9]+) tests?, with ([0-9]*) failures? .* \\(([\\.0-9]+)\\) seconds$")
         var totalCount: Int { return captures[0] }
         var failureCount: Int { return captures[1] }
         var duration: String { return captures[2] }
     }
     
-    static let countRegex = Regex("Executed ([0-9]+) tests, with ([0-9]*) failures? .* \\(([\\.0-9]+)\\) seconds$")
-    
-    let stream: StdStream = .err
+    let stream: StdStream
     var nextLine = true
     
-    init(match: Match) {}
+    init(match: Match) {
+        if match.suite == "All tests" || match.suite == "Selected tests" {
+            stream = .err
+        } else {
+            stream = .null
+        }
+    }
     
     func go() {
         stream.output("")

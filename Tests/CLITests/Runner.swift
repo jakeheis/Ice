@@ -54,6 +54,7 @@ class Sandbox {
     static let empty: Sandbox = Sandbox(name: "Empty")
     static let lib: Sandbox = Sandbox(name: "Lib")
     static let exec: Sandbox = Sandbox(name: "Exec")
+    static let fail: Sandbox = Sandbox(name: "Fail")
     
     let name: String
     
