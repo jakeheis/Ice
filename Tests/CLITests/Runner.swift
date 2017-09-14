@@ -48,6 +48,8 @@ class Sandbox {
 
 class Runner {
     
+    private static var currentProcess: Process?
+    
     static let sandboxedDirectory = FileManager.default.currentDirectoryPath + "/.sandbox"
     
     @discardableResult
@@ -60,6 +62,8 @@ class Runner {
             try! FileManager.default.copyItem(atPath: "Tests/Sandboxes/\(sandbox.name)", toPath: sandboxedDirectory)
             try! FileManager.default.copyItem(atPath: "Tests/Fixtures/global", toPath: sandboxedDirectory + "/global")
         }
+        
+        print("execuet with \(args)")
         
         sandboxSetup?()
         
@@ -91,6 +95,7 @@ class Runner {
         process.standardOutput = output
         process.standardError = error
         
+        currentProcess = process
         process.launch()
         process.waitUntilExit()
                 
@@ -99,6 +104,10 @@ class Runner {
             stdout: String(data: output.fileHandleForReading.availableData, encoding: .utf8) ?? "",
             stderr: String(data: error.fileHandleForReading.availableData, encoding: .utf8) ?? ""
         )
+    }
+    
+    static func interrupt() {
+        currentProcess?.interrupt()
     }
     
 }

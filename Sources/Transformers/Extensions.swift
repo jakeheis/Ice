@@ -6,15 +6,21 @@
 //
 
 import Foundation
+import Rainbow
 
 public extension String {
-    var trimmingCurrentDirectory: String {
+    
+    var beautifyPath: String {
+        var improved = self
         let workingDirPrefix = FileManager.default.currentDirectoryPath
         if hasPrefix(workingDirPrefix) {
-            return String(self[index(startIndex, offsetBy: workingDirPrefix.characters.count + 1)...])
+            improved = String(self[index(startIndex, offsetBy: workingDirPrefix.characters.count + 1)...])
         }
-        return self
+        var components = improved.components(separatedBy: "/")
+        let last = components.removeLast()
+        return components.joined(separator: "/").dim + "/\(last)"
     }
+    
     var trimmed: String {
         return trimmingCharacters(in: .whitespacesAndNewlines)
     }

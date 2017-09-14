@@ -92,9 +92,11 @@ private final class TestSuiteResponse: SimpleResponse {
     }
     
     func markFailed() {
-        stream.output("\r" + badge(text: "FAIL", color: .red))
-        stream.output("")
-        failed = true
+        if !failed {
+            stream.output("\r" + badge(text: "FAIL", color: .red))
+            stream.output("")
+            failed = true
+        }
     }
     
     func stop() {
@@ -234,19 +236,11 @@ private final class AssertionResponse: Response {
         var message: String { return captures[1] }
     }
     
-//    class XctMatch: RegexMatch, Matchable {
-//        static let regex = Regex("(XCT[^ ]*) failed(: .*)? - (.*)$")
-//        var type: String { return captures[0] }
-//        var info: String? { return captures[1] }
-//        var message: String { return captures[2] }
-//    }
-    
     static let newlineReplacement = "______$$$$$$$$"
     
     let file: String
     let lineNumber: Int
     var assertion: String
-//    var message: String?
     
     let stream = StdStream.err
     
@@ -254,8 +248,6 @@ private final class AssertionResponse: Response {
         self.file = match.file
         self.lineNumber = match.lineNumber
         self.assertion = match.assertion
-//        self.message = match.message
-//        print(match.captures)
     }
     
     func go() {}
@@ -269,31 +261,10 @@ private final class AssertionResponse: Response {
         
         assertion += AssertionResponse.newlineReplacement + line
         
-//        guard message == nil else {
-//            return false
-//        }
-//
-//        if let match = MultilineLastLineMatch.match(line) {
-//            // Last line
-//            assertion += "\n" + match.assertion
-//            message = match.message
-//        } else {
-//            // Middle line
-//            assertion += "\n" + line
-//        }
         return true
     }
     
     func stop() {
-//        guard let xctMatch = XctMatch.match(assertion) else {
-//            print(assertion)
-//            return
-//        }
-        
-//        print("\n\ndealing with assertion:")
-//        print(assertion)
-//        print()
-        
         func convert(_ str: String) -> String {
             return str.replacingOccurrences(of: AssertionResponse.newlineReplacement, with: "\n")
         }
@@ -375,7 +346,7 @@ private final class AssertionResponse: Response {
             stream.output("\tNote: \(message)")
         }
         
-        let fileLocation = file.trimmingCurrentDirectory
+        let fileLocation = file.beautifyPath
         stream.output()
         stream.output("\tat \(fileLocation):\(lineNumber)".dim)
         stream.output()

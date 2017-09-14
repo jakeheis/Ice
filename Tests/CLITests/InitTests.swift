@@ -37,9 +37,11 @@ class InitTests: XCTestCase {
         
         XCTAssertTrue(sandboxFileExists(path: "MyNewLib/Package.swift"))
     }
-    /*
+    
     func testExec() {
-        let result = Runner.execute(args: ["new", "MyNewExec", "--exec"])
+        let result = Runner.execute(args: ["init", "--exec"], dir: "MyNewExec", sandboxSetup: {
+            createSandboxDirectory(path: "MyNewExec")
+        })
         XCTAssertEqual(result.exitStatus, 0)
         XCTAssertEqual(result.stderr, "")
         XCTAssertEqual(result.stdout, """
@@ -53,12 +55,12 @@ class InitTests: XCTestCase {
             create Sources/MyNewExec/main.swift
             create Tests/
 
-        Run: cd MyNewExec && ice build
+        Run: ice build
         
         
         """)
-        XCTAssertTrue(sandboxFileExists(path: "MyNewExec"))
+        
         XCTAssertTrue(sandboxFileExists(path: "MyNewExec/Package.swift"))
-    }*/
+    }
     
 }

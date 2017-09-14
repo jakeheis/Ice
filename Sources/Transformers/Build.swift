@@ -136,11 +136,8 @@ private final class ErrorResponse: SimpleResponse {
     }
     
     func stop() {
-        let file = match.path.trimmingCurrentDirectory
-        var components = file.components(separatedBy: "/")
-        let last = components.removeLast()
-        let coloredFile = components.joined(separator: "/").dim + "/\(last)"
-        stream.output("    at \(coloredFile)" + ":\(match.lineNumber)\n")
+        let file = match.path.beautifyPath
+        stream.output("    at \(file)" + ":\(match.lineNumber)\n")
     }
     
     
