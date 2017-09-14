@@ -13,8 +13,10 @@ class TestCommand: Command {
     let name = "test"
     let shortDescription = "Tests the current package"
     
+    let filter = OptionalParameter()
+    
     func execute() throws {
-        try SPM().test()
+        try SPM().test(filter: filter.value)
     }
     
 }

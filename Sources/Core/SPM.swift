@@ -62,10 +62,14 @@ public class SPM {
         }
     }
     
-    public func test() throws {
+    public func test(filter: String?) throws {
         try resolve()
         do {
-            try exec(arguments: ["test"]).execute(transform: Transformers.test)
+            var args = ["test"]
+            if let filter = filter {
+                args += ["--filter", filter]
+            }
+            try exec(arguments: args).execute(transform: Transformers.test)
         } catch let error as Exec.Error {
             throw IceError(exitStatus: error.exitStatus)
         }

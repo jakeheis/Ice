@@ -16,12 +16,37 @@ public extension Transformers {
         t.ignore("^Test Suite 'All tests' started", on: .err)
         t.replace(PackageTestsBegunMatch.self, on: .err) { "\n\($0.packageName):\n".bold }
         t.ignore("^Test Suite '(.*)\\.xctest'", on: .err)
+        t.ignore("^Test Suite 'Selected tests'", on: .err)
         t.register(TestEndResponse.self, on: .err)
         t.register(TestSuiteResponse.self, on: .err)
         t.ignore("Executed [0-9]+ tests", on: .err)
-        t.ignore(".*", on: .out)
+        t.register(OutputAccumulator.self, on: .out)
         t.last("\n")
     }
+    
+}
+
+private final class OutputAccumulator: SimpleResponse {
+    class Match: RegexMatch, Matchable {
+        static let regex = Regex("^(.*)$")
+        var line: String { return captures[0] }
+    }
+    
+    static var accumulated = ""
+    
+    init(match: Match) {
+        OutputAccumulator.accumulated += match.line
+    }
+    
+    func go() {}
+    
+    func keepGoing(on line: String) -> Bool {
+        let separator = OutputAccumulator.accumulated.isEmpty ? "" : "\n"
+        OutputAccumulator.accumulated += separator + line
+        return true
+    }
+    
+    func stop() {}
     
 }
 
@@ -135,13 +160,16 @@ private final class TestCaseResponse: Response {
     
     var status: Match.Status = .started
     var currentAssertionFailure: AssertionResponse?
+    var markedAsFailure = false
     
     init(testSuite: TestSuiteResponse, match: Match) {
         self.testSuite = testSuite
         self.caseName = match.caseName
     }
     
-    func go() {}
+    func go() {
+        OutputAccumulator.accumulated = ""
+    }
     
     func keepGoing(on line: String) -> Bool {
         guard status == .started else {
@@ -160,7 +188,10 @@ private final class TestCaseResponse: Response {
         if let match = AssertionResponse.Match.match(line) {
             // Start assertion
             testSuite.markFailed()
-            StdStream.err.output(" ● \(caseName)".red.bold)
+            if !markedAsFailure {
+                StdStream.err.output(" ● \(caseName)".red.bold)
+                markedAsFailure = true
+            }
             
             let assertionFailure = AssertionResponse(match: match)
             assertionFailure.go()
@@ -182,7 +213,17 @@ private final class TestCaseResponse: Response {
         fatalError("\n\nError: unexpected output: \(line)\n\n")
     }
     
-    func stop() {}
+    func stop() {
+        if status == .failed {
+            if !OutputAccumulator.accumulated.isEmpty {
+                StdStream.err.output()
+                StdStream.err.output("\tOutput:")
+                let output = OutputAccumulator.accumulated.components(separatedBy: "\n").map({ "\t\($0)" }).joined(separator: "\n")
+                StdStream.err.output(output.dim)
+                StdStream.err.output()
+            }
+        }
+    }
     
 }
 
@@ -367,6 +408,13 @@ private final class TestEndResponse: SimpleResponse {
         static let regex = Regex("Test Suite 'All tests' (passed|failed)")
     }
     
+    class CountMatch: RegexMatch, Matchable {
+        static let regex = Regex("Executed ([0-9]+) tests, with ([0-9]*) failures? .* \\(([\\.0-9]+)\\) seconds$")
+        var totalCount: Int { return captures[0] }
+        var failureCount: Int { return captures[1] }
+        var duration: String { return captures[2] }
+    }
+    
     static let countRegex = Regex("Executed ([0-9]+) tests, with ([0-9]*) failures? .* \\(([\\.0-9]+)\\) seconds$")
     
     let stream: StdStream = .err
@@ -384,25 +432,20 @@ private final class TestEndResponse: SimpleResponse {
         }
         nextLine = false
         
-        if let countMatch = TestEndResponse.countRegex.firstMatch(in: line) {
-            if let totalStr = countMatch.captures[0], let totalCount = Int(totalStr),
-                let failedStr = countMatch.captures[1], let failedCount = Int(failedStr) {
-                
-                var parts: [String] = []
-                if failedCount > 0 {
-                    parts.append("\(failedCount) failed".bold.red)
-                }
-                if failedCount < totalCount {
-                    parts.append("\(totalCount - failedCount) passed".bold.green)
-                }
-                parts.append("\(totalCount) total")
-                
-                let output = "Tests:\t".bold.white + parts.joined(separator: ", ")
-                stream.output(output)
+        if let match = CountMatch.match(line) {
+            var parts: [String] = []
+            if match.failureCount > 0 {
+                parts.append("\(match.failureCount) failed".bold.red)
             }
-            if let time = countMatch.captures[2] {
-                stream.output("Time:\t".bold.white + time + "s")
+            if match.failureCount < match.totalCount {
+                parts.append("\(match.totalCount - match.failureCount) passed".bold.green)
             }
+            parts.append("\(match.totalCount) total")
+            
+            let output = "Tests:\t".bold.white + parts.joined(separator: ", ")
+            stream.output(output)
+            
+            stream.output("Time:\t".bold.white + match.duration + "s")
         }
         
         return true

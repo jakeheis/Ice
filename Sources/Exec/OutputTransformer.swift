@@ -20,37 +20,45 @@ public class OutputTransformer {
     private var outGenerators: [AnyResponseGenerator] = []
     private var errorGenerators: [AnyResponseGenerator] = []
     
-    private var currentResponse: AnyResponse?
+    private var currentOutResponse: AnyResponse?
+    private var currentErrResponse: AnyResponse?
     
     init() {
         self.out = Hose()
         self.error = Hose()
         self.transformQueue = DispatchQueue(label: "com.jakeheis.Ice.OutputTransformer")
         
-        self.out.onLine = { [weak self] in self?.readLine(stream: .out, line: $0) }
-        self.error.onLine = { [weak self] in self?.readLine(stream: .err, line: $0) }
+        self.out.onLine = { [weak self] (line) in
+            guard let `self` = self else { return }
+            self.transformQueue.async {
+                self.readLine(line: line, generators: self.outGenerators, currentResponse: &self.currentOutResponse, stream: .out)
+            }
+        }
+        self.error.onLine = { [weak self] (line) in
+            guard let `self` = self else { return }
+            self.transformQueue.async {
+                self.readLine(line: line, generators: self.errorGenerators, currentResponse: &self.currentErrResponse, stream: .err)
+            }
+        }
     }
     
-    private func readLine(stream: StdStream, line: String) {
-        self.transformQueue.async {
-            if let currentResponse = self.currentResponse {
-                if currentResponse.keepGoing(on: line) {
-                    return
-                }
-                currentResponse.stop()
-                self.currentResponse = nil
+    private func readLine(line: String, generators: [AnyResponseGenerator], currentResponse: inout AnyResponse?, stream: StdStream) {
+        if let ongoing = currentResponse {
+            if ongoing.keepGoing(on: line) {
+                return
             }
-            let generators = stream == .out ? self.outGenerators : self.errorGenerators
-            for responseGenerator in generators {
-                if responseGenerator.matches(line) {
-                    let response = responseGenerator.generateResponse(to: line)
-                    response.go()
-                    self.currentResponse = response
-                    return
-                }
-            }
-            stream.output(line)
+            ongoing.stop()
+            currentResponse = nil
         }
+        for responseGenerator in generators {
+            if responseGenerator.matches(line) {
+                let response = responseGenerator.generateResponse(to: line)
+                response.go()
+                currentResponse = response
+                return
+            }
+        }
+        stream.output(line)
     }
     
     public func first(_ str: String) {
@@ -107,9 +115,11 @@ public class OutputTransformer {
             semaphore.signal()
         }
         semaphore.wait()
-        
-        currentResponse?.stop()
-        currentResponse = nil
+
+        currentOutResponse?.stop()
+        currentOutResponse = nil
+        currentErrResponse?.stop()
+        currentErrResponse = nil
         
         if let suffix = suffix {
             print(suffix, terminator: "")

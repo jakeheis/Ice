@@ -6,6 +6,9 @@
 //
 
 import Foundation
+import XCTest
+import Regex
+import Rainbow
 
 struct ExecutionResult {
     let exitStatus: Int32
@@ -32,6 +35,19 @@ func sandboxFileExists(path: String) -> Bool {
 
 func createSandboxDirectory(path: String) {
     try! FileManager.default.createDirectory(atPath: Runner.sandboxedDirectory + "/" + path, withIntermediateDirectories: true, attributes: nil)
+}
+
+func readSandboxLink(path: String) -> String? {
+    return try? FileManager.default.destinationOfSymbolicLink(atPath: Runner.sandboxedDirectory + "/" + path)
+}
+
+func XCTAssertMatch(_ text: String?, _ regex: StaticString, file: StaticString = #file, line: UInt = #line) {
+    let message = "\(text ?? "nil") should match \(regex)"
+    guard let nonNilText = text else {
+        XCTAssertNotNil(text, message, file: file, line: line)
+        return
+    }
+    XCTAssertTrue(Regex(regex).matches(nonNilText), message, file: file, line: line)
 }
 
 class Sandbox {
@@ -62,8 +78,6 @@ class Runner {
             try! FileManager.default.copyItem(atPath: "Tests/Sandboxes/\(sandbox.name)", toPath: sandboxedDirectory)
             try! FileManager.default.copyItem(atPath: "Tests/Fixtures/global", toPath: sandboxedDirectory + "/global")
         }
-        
-        print("execuet with \(args)")
         
         sandboxSetup?()
         

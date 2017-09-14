@@ -7,6 +7,7 @@
 
 import FileKit
 import Exec
+import Foundation
 
 public class GlobalPackage {
     
@@ -56,7 +57,8 @@ public class GlobalPackage {
         for executable in try executables() {
             let potentialPath = Path(Config.get(\.bin)) + executable.fileName
             if potentialPath.isExecutable, potentialPath.resolved == executable {
-                print("Unlinking \(executable.fileName) from \(potentialPath)")
+                print("Unlinking: \(potentialPath)")
+                fflush(stdout)
                 try potentialPath.deleteFile()
             }
         }
@@ -68,7 +70,7 @@ public class GlobalPackage {
     
     func executables() throws -> [Path] {
         let bin = try spm.showBinPath(release: true)
-        return Path(bin).children().filter { $0.isExecutable && $0.pathExtension != "build" && path.fileName != "ModuleCache" }
+        return Path(bin).children().filter { $0.isExecutable && $0.pathExtension != "build" && $0.fileName != "ModuleCache" }
     }
     
 }

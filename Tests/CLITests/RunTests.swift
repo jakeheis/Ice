@@ -35,15 +35,18 @@ class RunTests: XCTestCase {
         let result = Runner.execute(args: ["run", "-w"], clean: false)
         XCTAssertEqual(result.exitStatus, 2)
         XCTAssertEqual(result.stderr, "")
-        XCTAssertEqual(result.stdout, """
+        
+        let lines = result.stdout.components(separatedBy: "\n")
+        XCTAssertEqual(lines.count, 7)
+        XCTAssertEqual(lines[0..<4].joined(separator: "\n"), """
         [ice] restarting due to changes...
         Hello, world!
         [ice] restarting due to changes...
         Compile Exec (1 sources)
-        Link ./.build/x86_64-apple-macosx10.10/debug/Exec
-        hey world
-        
         """)
+        XCTAssertMatch(lines[4], "^Link ./.build/.*/debug/Exec$")
+        XCTAssertEqual(lines[5], "hey world")
+        XCTAssertEqual(lines[6], "")
     }
     
 }
