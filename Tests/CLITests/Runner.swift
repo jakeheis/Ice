@@ -10,11 +10,15 @@ import XCTest
 import Regex
 import Rainbow
 
+// MARK: -
+
 struct ExecutionResult {
     let exitStatus: Int32
     let stdout: String
     let stderr: String
 }
+
+// MARK: -
 
 func sandboxedFileContents(_ path: String) -> String? {
     let sandboxedPath = Runner.sandboxedDirectory + "/" + path
@@ -49,6 +53,41 @@ func XCTAssertMatch(_ text: String?, _ regex: StaticString, file: StaticString =
     }
     XCTAssertTrue(Regex(regex).matches(nonNilText), message, file: file, line: line)
 }
+
+// MARK: -
+
+
+class OutputViewer {
+    
+    var lines: [String]
+    
+    init(_ str: String) {
+        self.lines = str.components(separatedBy: "\n")
+    }
+    func equals(_ str: String, file: StaticString = #file, line: UInt = #line) {
+        XCTAssertEqual(lines.removeFirst(), str, file: file, line: line)
+    }
+    func matches(_ str: StaticString, file: StaticString = #file, line: UInt = #line) {
+        XCTAssertMatch(lines.removeFirst(), str, file: file, line: line)
+    }
+    func empty(file: StaticString = #file, line: UInt = #line) {
+        equals("", file: file, line: line)
+    }
+    func done(file: StaticString = #file, line: UInt = #line) {
+        XCTAssertEqual(lines, [], file: file, line: line)
+    }
+    func any() {
+        lines.removeFirst()
+    }
+}
+
+extension String {
+    func assert(run: (_ v: OutputViewer) -> ()) {
+        run(OutputViewer(self))
+    }
+}
+
+// MARK: -
 
 class Sandbox {
     static let empty: Sandbox = Sandbox(name: "Empty")

@@ -36,17 +36,16 @@ class RunTests: XCTestCase {
         XCTAssertEqual(result.exitStatus, 2)
         XCTAssertEqual(result.stderr, "")
         
-        let lines = result.stdout.components(separatedBy: "\n")
-        XCTAssertEqual(lines.count, 7)
-        XCTAssertEqual(lines[0..<4].joined(separator: "\n"), """
-        [ice] restarting due to changes...
-        Hello, world!
-        [ice] restarting due to changes...
-        Compile Exec (1 sources)
-        """)
-        XCTAssertMatch(lines[4], "^Link ./.build/.*/debug/Exec$")
-        XCTAssertEqual(lines[5], "hey world")
-        XCTAssertEqual(lines[6], "")
+        result.stdout.assert { (v) in
+            v.equals("[ice] restarting due to changes...")
+            v.equals("Hello, world!")
+            v.equals("[ice] restarting due to changes...")
+            v.equals("Compile Exec (1 sources)")
+            v.matches("^Link ./.build/.*/debug/Exec$")
+            v.equals("hey world")
+            v.empty()
+            v.done()
+        }
     }
     
 }

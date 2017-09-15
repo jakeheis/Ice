@@ -18,12 +18,12 @@ class GlobalTests: XCTestCase {
         
         """)
         
-        print(result.stdout)
-        let lines = result.stdout.components(separatedBy: "\n")
-        XCTAssertEqual(lines.count, 3)
-        XCTAssertEqual(lines[0], "Compile IceGlobalTest (1 sources)")
-        XCTAssertMatch(lines[1], "^Link ./.build/.*/release/igt$")
-        XCTAssertEqual(lines[2], "")
+        result.stdout.assert { (v) in
+            v.equals("Compile IceGlobalTest (1 sources)")
+            v.matches("^Link ./.build/.*/release/igt$")
+            v.empty()
+            v.done()
+        }
         
         XCTAssertTrue(sandboxFileExists(path: "global/Packages"))
         XCTAssertTrue(sandboxFileExists(path: "global/Packages/IceGlobalTest"))

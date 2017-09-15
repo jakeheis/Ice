@@ -8,6 +8,7 @@
 import Exec
 import Regex
 import Rainbow
+import SwiftCLI
 
 public extension Transformers {
     
@@ -116,7 +117,7 @@ private final class TestSuiteResponse: SimpleResponse {
     
     func markFailed() {
         if !failed {
-            stream.output("\r" + badge(text: "FAIL", color: .red))
+            stream.output(rewind() + badge(text: "FAIL", color: .red))
             stream.output("")
             failed = true
         }
@@ -124,8 +125,12 @@ private final class TestSuiteResponse: SimpleResponse {
     
     func stop() {
         if failed == false {
-            stream.output("\r" + badge(text: "PASS", color: .green))
+            stream.output(rewind() + badge(text: "PASS", color: .green))
         }
+    }
+    
+    func rewind() -> String {
+        return Term.isTTY ? "\r" : "\n"
     }
     
     func badge(text: String, color: BackgroundColor) -> String {
@@ -286,8 +291,7 @@ final class AssertionResponse: Response {
         }
         
         if !foundMatch {
-            stream.output("\nWarning: unrecognized error\n")
-            stream.output(assertion)
+            stream.output("\tError: ".red + assertion)
         }
         
         let fileLocation = file.beautifyPath

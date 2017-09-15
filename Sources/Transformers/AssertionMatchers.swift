@@ -160,7 +160,7 @@ class XCTNotNilMatch: RegexMatch, XCTMatchable {
 }
 
 class XCTTrueMatch: RegexMatch, XCTMatchable {
-    static let regex = Regex("XCTAssert(True)? failed - (.*)$")
+    static let regex = Regex("^XCTAssert(True)? failed - (.*)$")
     var message: String { return captures[1] }
     
     func output() {
