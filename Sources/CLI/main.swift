@@ -6,7 +6,6 @@ ice.commands = [
     BuildCommand(),
     CleanCommand(),
     ConfigGroup(),
-    DependCommand(),
     DescribeCommand(),
     DumpCommand(),
     GenerateCompletionsCommand(cli: ice),
@@ -18,7 +17,7 @@ ice.commands = [
     ResetCommand(),
     RunCommand(),
     SearchCommand(),
-    TargetCommand(),
+    TargetGroup(),
     TestCommand(),
     UpgradeCommand(),
     XcCommand()

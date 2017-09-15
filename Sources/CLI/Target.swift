@@ -9,15 +9,25 @@ import SwiftCLI
 import Core
 import FileKit
 
-class TargetCommand: Command {
-    
+class TargetGroup: CommandGroup {
     let name = "target"
-    let shortDescription = "Creates a new target"
+    let shortDescription = "Manage the package targets"
+    let children: [Routable] = [
+        TargetAddCommand(),
+        TargetDependCommand(),
+        TargetRemoveCommand()
+    ]
+}
+
+private class TargetAddCommand: Command {
+    
+    let name = "add"
+    let shortDescription = "Add a new target"
     
     let targetName = Parameter()
 
-    let isTest = Flag("-t", "--test")
-    let dependencies = Key<String>("-d", "--depends-on")
+    let isTest = Flag("-t", "--test", description: "Marks this target as a test target")
+    let dependencies = Key<String>("-d", "--depends-on", description: "Creates the new target with the given dependencies; comma-separated")
     
     func execute() throws {
         var package = try Package.load(directory: ".")
@@ -48,6 +58,37 @@ class TargetCommand: Command {
             dependencies: dependencies.value?.commaSeparated() ?? []
         )
         try package.write()
+    }
+    
+}
+
+private class TargetDependCommand: Command {
+    
+    let name = "depend"
+    let shortDescription = "Depends the given target on another target or package"
+    
+    let target = Parameter()
+    let dependency = Parameter()
+    
+    func execute() throws {
+        var package = try Package.load(directory: ".")
+        let targets = dependency.value.commaSeparated()
+        try targets.forEach { try package.depend(target: target.value, on: $0) }
+        try package.write()
+    }
+    
+}
+
+private class TargetRemoveCommand: Command {
+    
+    let name = "remove"
+    
+    let target = Parameter()
+    
+    func execute() throws {
+        var project = try Package.load(directory: ".")
+        try project.removeTarget(named: target.value)
+        try project.write()
     }
     
 }

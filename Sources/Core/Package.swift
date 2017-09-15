@@ -32,7 +32,7 @@ public struct Package: Decodable {
     public struct Product: Decodable {
         public let name: String
         public let product_type: String
-        public let targets: [String]
+        public var targets: [String]
     }
     
     public struct Target: Decodable {
@@ -81,11 +81,7 @@ public struct Package: Decodable {
         }
         dependencies.remove(at: index)
         
-        targets = targets.map { (oldTarget) in
-            var newTarget = oldTarget
-            newTarget.dependencies = newTarget.dependencies.filter { $0.name != name }
-            return newTarget
-        }
+        removeDependencyFromTargets(named: name)
     }
     
     public mutating func addTarget(name: String, isTest: Bool, dependencies: [String]) {
@@ -102,6 +98,29 @@ public struct Package: Decodable {
             return
         }
         targets[targetIndex].dependencies.append(Target.Dependency(name: lib))
+    }
+    
+    public mutating func removeTarget(named name: String) throws {
+        guard let index = targets.index(where: { $0.name == name }) else {
+            throw IceError(message: "can't remove target \(name)")
+        }
+        targets.remove(at: index)
+        
+        removeDependencyFromTargets(named : name)
+        
+        products = products.map { (oldProduct) in
+            var newProduct = oldProduct
+            newProduct.targets = newProduct.targets.filter { $0 != name }
+            return newProduct
+        }
+    }
+    
+    private mutating func removeDependencyFromTargets(named name: String) {
+        targets = targets.map { (oldTarget) in
+            var newTarget = oldTarget
+            newTarget.dependencies = newTarget.dependencies.filter { $0.name != name }
+            return newTarget
+        }
     }
     
     public func strictVersion() -> Package {
