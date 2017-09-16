@@ -16,13 +16,18 @@ public extension Transformers {
         t.replace(CompileMatch.self) { "Compile ".dim + "\($0.module) \($0.sourceCount)" }
         t.register(CompileCResponse.self, on: .out)
         t.register(ErrorResponse.self, on: .out)
-        t.ignore("^error:", on: .err)
+        t.replace(InternalErrorMatch.self, on: .err) { "\nError: ".bold.red + $0.message }
         t.ignore(ErrorResponse.oldCompletionRegex, on: .out)
         t.ignore("^terminated\\(1\\)", on: .err)
         t.ignore("^\\s*_?\\s*$")
         t.replace(LinkMatch.self) { "Link ".blue + $0.product }
     }
     
+}
+
+private class InternalErrorMatch: RegexMatch, Matchable {
+    static let regex = Regex("^error: (.*)$")
+    var message: String { return captures[0] }
 }
 
 private class CompileMatch: RegexMatch, Matchable {
