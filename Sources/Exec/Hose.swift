@@ -31,6 +31,7 @@ class Hose {
     
     let pipe: Pipe
     var onLine: ((_ line: String) -> ())?
+    var waitLastLine: String?
     
     init() {
         self.pipe = Pipe()
@@ -40,8 +41,14 @@ class Hose {
             }
             
             var lines = str.components(separatedBy: "\n")
+            if let wait = self.waitLastLine {
+                lines[0] = wait + lines[0]
+            }
             if let last = lines.last, last.isEmpty {
                 lines.removeLast()
+                self.waitLastLine = nil
+            } else {
+                self.waitLastLine = lines.removeLast()
             }
             for line in lines {
                 self.onLine?(line)

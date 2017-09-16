@@ -14,12 +14,14 @@ public extension Transformers {
     
     static func test(t: OutputTransformer) {
         build(t: t)
-        t.ignore("^Test Suite '(All tests|Selected tests)' started", on: .err)
-        t.replace(PackageTestsBegunMatch.self, on: .err) { "\n\($0.packageName):\n".bold }
-        t.register(TestEndResponse.self, on: .err)
-        t.register(TestSuiteResponse.self, on: .err)
-        t.ignore("Executed [0-9]+ tests", on: .err)
-        t.register(OutputAccumulator.self, on: .out)
+        t.change("^Linking \\./\\.build/.*PackageTests$") {
+            t.ignore("^Test Suite '(All tests|Selected tests)' started", on: .err)
+            t.replace(PackageTestsBegunMatch.self, on: .err) { "\n\($0.packageName):\n".bold }
+            t.register(TestEndResponse.self, on: .err)
+            t.register(TestSuiteResponse.self, on: .err)
+            t.ignore("Executed [0-9]+ tests", on: .err)
+            t.register(OutputAccumulator.self, on: .out)
+        }
         t.last("\n")
     }
     

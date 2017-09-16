@@ -14,36 +14,79 @@ public extension Transformers {
     
     static func build(t: OutputTransformer) {
         t.replace(CompileMatch.self) { "Compile ".dim + "\($0.module) \($0.sourceCount)" }
-        t.replace(CompileCMatch.self) { "Compile ".dim + "\($0.module)" }
+        t.register(CompileCResponse.self, on: .out)
         t.register(ErrorResponse.self, on: .out)
         t.ignore("^error:", on: .err)
+        t.ignore(ErrorResponse.oldCompletionRegex, on: .out)
         t.ignore("^terminated\\(1\\)", on: .err)
-        t.ignore("^\\s*_\\s*$")
+        t.ignore("^\\s*_?\\s*$")
         t.replace(LinkMatch.self) { "Link ".blue + $0.product }
     }
     
 }
 
 private class CompileMatch: RegexMatch, Matchable {
-    static let regex = Regex("Compile Swift Module '(.*)' (.*)$")
+    static let regex = Regex("^Compile Swift Module '(.*)' (.*)$")
     var module: String { return captures[0] }
     var sourceCount: String { return captures[1] }
 }
 
-private class CompileCMatch: RegexMatch, Matchable {
-    static let regex = Regex("Compile ([^ ]*) .*\\.c$")
-    var module: String { return captures[0] }
+private class LinkMatch: RegexMatch, Matchable {
+    static let regex = Regex("^Linking (.*)")
+    var product: String { return captures[0] }
 }
 
-private class LinkMatch: RegexMatch, Matchable {
-    static let regex = Regex("Linking (.*)")
-    var product: String { return captures[0] }
+private final class CompileCResponse: SimpleResponse {
+    
+    class Match: RegexMatch, Matchable {
+        static let regex = Regex("Compile ([^ ]*) .*\\.(c|m|cpp|mm)$")
+        var module: String { return captures[0] }
+    }
+    
+    let module: String
+    let stream: StdStream = .out
+    
+    init(match: Match) {
+        self.module = match.module
+    }
+
+    func go() {
+        stream.output("Compile ".dim + "\(module)")
+    }
+    
+    func keepGoing(on line: String) -> Bool {
+        return line.hasPrefix("Compile \(module) ")
+    }
+    
+    func stop() {}
+    
+}
+
+private class ErrorTracker {
+
+    private static var past: [ErrorResponse.Match] = []
+    
+    private static var skippingCurrent = false
+
+    static func shouldSkip(_ match: ErrorResponse.Match) -> Bool {
+        if match.type == .note {
+            return skippingCurrent
+        } else {
+            skippingCurrent = past.contains(match)
+            return skippingCurrent
+        }
+    }
+    
+    static func record(_ match: ErrorResponse.Match) {
+        past.append(match)
+    }
+
 }
 
 private final class ErrorResponse: SimpleResponse {
     
     class Match: RegexMatch, Matchable {
-        static let regex = Regex("(/.*):([0-9]+):([0-9]+): (error|warning|note): (.*)")
+        static let regex = Regex("^(/.*):([0-9]+):([0-9]+): (error|warning|note): (.*)$")
         
         enum ErrorType: String, Capturable {
             case error
@@ -58,7 +101,7 @@ private final class ErrorResponse: SimpleResponse {
         var message: String { return captures[4] }
     }
     
-    private static var pastMatches: [Match] = []
+    static let oldCompletionRegex = Regex("^[0-9]+ warnings? generated\\.$")
     
     enum AwaitingLine {
         case code
@@ -83,11 +126,11 @@ private final class ErrorResponse: SimpleResponse {
             self.color = .yellow
         }
         
-        if ErrorResponse.pastMatches.contains(match) {
+        if ErrorTracker.shouldSkip(match) {
             self.stream = .null
         } else {
             self.stream = .out
-            ErrorResponse.pastMatches.append(match)
+            ErrorTracker.record(match)
         }
     }
     
@@ -105,9 +148,16 @@ private final class ErrorResponse: SimpleResponse {
     }
     
     func keepGoing(on line: String) -> Bool {
+        let matchesOther = CompileMatch.matches(line) || CompileCResponse.Match.matches(line) || ErrorResponse.Match.matches(line) ||
+            LinkMatch.matches(line) || ErrorResponse.oldCompletionRegex.matches(line)
+        
         let indentation = "    "
         switch awaitingLine {
         case .code:
+            if match.type == .note && matchesOther {
+                // Notes don't always have associated code
+                return false
+            }
             let lineStartIndex = line.index(where: { $0 != " " }) ?? line.startIndex
             stream.output(indentation + String(line[lineStartIndex...]).lightBlack)
             awaitingLine = .highlightsOrCode(startIndex: lineStartIndex)
@@ -121,8 +171,8 @@ private final class ErrorResponse: SimpleResponse {
                 stream.output(indentation + String(line[startIndex...]).lightBlack)
             }
         case let .suggestionOrDone(startIndex):
-            if line.hasPrefix("/") || line.hasPrefix("error:") {
-                // It's a new error
+            if matchesOther {
+                // This error is done
                 return false
             }
             if let characterIndex = line.index(where: { $0 != " " }), characterIndex >= startIndex {

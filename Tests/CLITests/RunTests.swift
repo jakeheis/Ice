@@ -24,11 +24,11 @@ class RunTests: XCTestCase {
     func testWatchRun() {
         Runner.execute(args: ["build"], sandbox: .exec)
         
-        DispatchQueue.global().asyncAfter(deadline: .now() + 3) {
+        DispatchQueue.global().asyncAfter(deadline: .now() + 4) {
             writeToSandbox(path: "Sources/Exec/main.swift", contents: "\nprint(\"hey world\")\n")
         }
         
-        DispatchQueue.global().asyncAfter(deadline: .now() + 6) {
+        DispatchQueue.global().asyncAfter(deadline: .now() + 8) {
             Runner.interrupt()
         }
         

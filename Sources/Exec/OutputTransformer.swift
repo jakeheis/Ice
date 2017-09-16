@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import Regex
 
 public class OutputTransformer {
     
@@ -19,6 +20,7 @@ public class OutputTransformer {
     
     private var outGenerators: [AnyResponseGenerator] = []
     private var errorGenerators: [AnyResponseGenerator] = []
+    private var changes: [OutputTransformerChange] = []
     
     private var currentOutResponse: AnyResponse?
     private var currentErrResponse: AnyResponse?
@@ -43,6 +45,18 @@ public class OutputTransformer {
     }
     
     private func readLine(line: String, generators: [AnyResponseGenerator], currentResponse: inout AnyResponse?, stream: StdStream) {
+        if !changes.isEmpty {
+            var waitingChanges: [OutputTransformerChange] = []
+            for change in changes {
+                if change.regex.matches(line) {
+                    change.change()
+                } else {
+                    waitingChanges.append(change)
+                }
+            }
+            changes = waitingChanges
+        }
+        
         if let ongoing = currentResponse {
             if ongoing.keepGoing(on: line) {
                 return
@@ -94,6 +108,17 @@ public class OutputTransformer {
         respond(on: stream, with: generator)
     }
     
+    public func ignore(_ matcher: Regex, on stream: StdStream = .out) {
+        let generator = ResponseGenerator(matcher: matcher) { (_) in
+            return IgnoreResponse()
+        }
+        respond(on: stream, with: generator)
+    }
+    
+    public func change(_ matcher: StaticString, on stream: StdStream = .out, change: @escaping () -> ()) {
+        changes.append(OutputTransformerChange(regex: Regex(matcher), stream: stream, change: change))
+    }
+    
     public func last(_ str: String) {
         self.suffix = str
     }
@@ -126,4 +151,10 @@ public class OutputTransformer {
         }
     }
     
+}
+
+public struct OutputTransformerChange {
+    public let regex: Regex
+    public let stream: StdStream
+    public let change: () -> ()
 }
