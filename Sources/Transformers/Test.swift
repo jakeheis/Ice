@@ -14,7 +14,7 @@ public extension Transformers {
     
     static func test(t: OutputTransformer) {
         build(t: t)
-        t.change("^Linking \\./\\.build/.*PackageTests$") {
+        t.after("^Test Suite") {
             t.ignore("^Test Suite '(All tests|Selected tests)' started", on: .err)
             t.replace(PackageTestsBegunMatch.self, on: .err) { "\n\($0.packageName):\n".bold }
             t.register(TestEndResponse.self, on: .err)
@@ -66,7 +66,6 @@ private final class TestSuiteResponse: SimpleResponse {
     static let doneRegex = Regex("Executed .* tests?")
     
     let suiteName: String
-    let stream: StdStream = .err
     
     private var failed = false
     private var done = false
@@ -78,7 +77,7 @@ private final class TestSuiteResponse: SimpleResponse {
     }
     
     func go() {
-        stream.output(badge(text: "RUNS", color: .blue), terminator: "")
+        stderr.output(badge(text: "RUNS", color: .blue), terminator: "")
     }
     
     func keepGoing(on line: String) -> Bool {
@@ -119,15 +118,15 @@ private final class TestSuiteResponse: SimpleResponse {
     
     func markFailed() {
         if !failed {
-            stream.output(rewind() + badge(text: "FAIL", color: .red))
-            stream.output("")
+            stderr <<< rewind() + badge(text: "FAIL", color: .red)
+            stderr <<< ""
             failed = true
         }
     }
     
     func stop() {
         if failed == false {
-            stream.output(rewind() + badge(text: "PASS", color: .green))
+            stderr <<< rewind() + badge(text: "PASS", color: .green)
         }
     }
     
@@ -194,7 +193,7 @@ private final class TestCaseResponse: Response {
             // Start assertion
             testSuite.markFailed()
             if !markedAsFailure {
-                StdStream.err.output(" ● \(caseName)".red.bold)
+                stderr <<< " ● \(caseName)".red.bold
                 markedAsFailure = true
             }
             
@@ -211,7 +210,7 @@ private final class TestCaseResponse: Response {
         
         if let match = FatalErrorMatch.match(line) {
             testSuite.markFailed()
-            StdStream.err.output("Fatal error: ".red.bold + match.message)
+            stderr <<< "Fatal error: ".red.bold + match.message
             return true
         }
         
@@ -221,11 +220,10 @@ private final class TestCaseResponse: Response {
     func stop() {
         if status == .failed {
             if !OutputAccumulator.accumulated.isEmpty {
-                StdStream.err.output()
-                StdStream.err.output("\tOutput:")
-                let output = OutputAccumulator.accumulated.components(separatedBy: "\n").map({ "\t\($0)" }).joined(separator: "\n")
-                StdStream.err.output(output.dim)
-                StdStream.err.output()
+                stderr <<< ""
+                stderr <<< "\tOutput:"
+                stderr <<< OutputAccumulator.accumulated.components(separatedBy: "\n").map({ "\t\($0)" }).joined(separator: "\n").dim
+                stderr <<< ""
             }
         }
     }
@@ -246,8 +244,6 @@ final class AssertionResponse: Response {
     let file: String
     let lineNumber: Int
     var assertion: String
-    
-    let stream = StdStream.err
     
     init(match: Match) {
         self.file = match.file
@@ -270,7 +266,7 @@ final class AssertionResponse: Response {
     }
     
     func stop() {        
-        stream.output()
+        stderr <<< ""
         
         var foundMatch = false
         for matchType in xctMatches {
@@ -278,13 +274,13 @@ final class AssertionResponse: Response {
                 match.output()
                 
                 if !match.message.isEmpty {
-                    stream.output()
+                    stderr <<< ""
                     let lines = match.message.components(separatedBy: AssertionResponse.newlineReplacement)
                     var message = lines[0]
                     if lines.count > 1 {
                         message += "\n" + lines.dropFirst().map({ "\t\($0)" }).joined(separator: "\n")
                     }
-                    stream.output("\tNote: \(message)")
+                    stderr <<< "\tNote: \(message)"
                 }
                 
                 foundMatch = true
@@ -293,13 +289,13 @@ final class AssertionResponse: Response {
         }
         
         if !foundMatch {
-            stream.output("\tError: ".red + assertion)
+            stderr <<< "\tError: ".red + assertion
         }
         
         let fileLocation = file.beautifyPath
-        stream.output()
-        stream.output("\tat \(fileLocation):\(lineNumber)".dim)
-        stream.output()
+        stderr <<< ""
+        stderr <<< "\tat \(fileLocation):\(lineNumber)".dim
+        stderr <<< ""
     }
     
 }
@@ -318,19 +314,19 @@ private final class TestEndResponse: SimpleResponse {
         var duration: String { return captures[2] }
     }
     
-    let stream: StdStream
+    let stream: OutputByteStream
     var nextLine = true
     
     init(match: Match) {
         if match.suite == "All tests" || match.suite == "Selected tests" {
-            stream = .err
+            stream = StderrStream()
         } else {
-            stream = .null
+            stream = NullStream()
         }
     }
     
     func go() {
-        stream.output("")
+        stream <<< ""
     }
     
     func keepGoing(on line: String) -> Bool {
@@ -349,10 +345,8 @@ private final class TestEndResponse: SimpleResponse {
             }
             parts.append("\(match.totalCount) total")
             
-            let output = "Tests:\t".bold.white + parts.joined(separator: ", ")
-            stream.output(output)
-            
-            stream.output("Time:\t".bold.white + match.duration + "s")
+            stream <<< "Tests:\t".bold.white + parts.joined(separator: ", ")
+            stream <<< "Time:\t".bold.white + match.duration + "s"
         }
         
         return true

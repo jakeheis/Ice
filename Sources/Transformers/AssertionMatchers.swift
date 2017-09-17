@@ -7,6 +7,7 @@
 
 import Exec
 import Regex
+import SwiftCLI
 
 typealias XCTMatcher = RegexMatch & XCTMatchable
 
@@ -23,16 +24,16 @@ protocol XCTMatchable: Matchable {
 }
 
 extension XCTMatchable {
-    
-    var stream: StdStream {
-        return .err
+
+    var stderr: OutputByteStream {
+        return Term.stderr
     }
     
     func print(firstHeader: String, firstValue: String, secondValue: String) {
-        stream.output("\t\(firstHeader):")
-        stream.output(firstValue.components(separatedBy: AssertionResponse.newlineReplacement).map{ "\t\($0)" }.joined(separator: "\n").green)
-        stream.output("\tReceived:")
-        stream.output(secondValue.components(separatedBy: AssertionResponse.newlineReplacement).map{ "\t\($0)" }.joined(separator: "\n").red)
+        stderr <<< "\t\(firstHeader):"
+        stderr <<< firstValue.components(separatedBy: AssertionResponse.newlineReplacement).map{ "\t\($0)" }.joined(separator: "\n").green
+        stderr <<< "\tReceived:"
+        stderr <<< secondValue.components(separatedBy: AssertionResponse.newlineReplacement).map{ "\t\($0)" }.joined(separator: "\n").red
     }
     
     func printWrongValue(expected: String, received: String)  {
@@ -46,7 +47,7 @@ class XCTFailMatch: RegexMatch, XCTMatchable {
     var message: String { return captures[0] }
     
     func output() {
-        stream.output("\tXCTFail".red)
+        stderr <<< "\tXCTFail".red
     }
 }
 

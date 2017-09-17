@@ -6,6 +6,7 @@
 //
 
 import Regex
+import SwiftCLI
 
 public protocol AnyResponseGenerator {
     func matches(_ line: String) -> Bool
@@ -57,6 +58,15 @@ public protocol Response: AnyResponse {
     associatedtype Match: RegexMatch
 }
 
+public extension Response {
+    var stdout: OutputByteStream {
+        return OutputTransformer.stdout
+    }
+    var stderr: OutputByteStream {
+        return OutputTransformer.stderr
+    }
+}
+
 public protocol SimpleResponse: Response {
     init(match: Match)
 }
@@ -69,17 +79,17 @@ public class ReplaceResponse<T: RegexMatch>: Response {
     public typealias Translation = CaptureTranslation<T>
     
     public let match: T
-    private let stream: StdStream
+    private let stream: OutputByteStream
     private let translation: Translation
     
-    init(match: T, stream: StdStream, translation: @escaping Translation) {
+    init(match: T, stream: OutputByteStream, translation: @escaping Translation) {
         self.match = match
         self.stream = stream
         self.translation = translation
     }
     
     public func go() {
-        stream.output(translation(match))
+        stream <<< translation(match)
     }
     
     public func keepGoing(on line: String) -> Bool {

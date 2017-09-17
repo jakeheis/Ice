@@ -7,8 +7,12 @@
 
 import Foundation
 import Regex
+import SwiftCLI
 
 public class OutputTransformer {
+    
+    static var stdout: OutputByteStream = Term.stdout
+    static var stderr: OutputByteStream = Term.stderr
     
     let out: Hose
     let error: Hose
@@ -33,18 +37,18 @@ public class OutputTransformer {
         self.out.onLine = { [weak self] (line) in
             guard let `self` = self else { return }
             self.transformQueue.async {
-                self.readLine(line: line, generators: self.outGenerators, currentResponse: &self.currentOutResponse, stream: .out)
+                self.readLine(line: line, generators: self.outGenerators, currentResponse: &self.currentOutResponse, stream: Term.stdout)
             }
         }
         self.error.onLine = { [weak self] (line) in
             guard let `self` = self else { return }
             self.transformQueue.async {
-                self.readLine(line: line, generators: self.errorGenerators, currentResponse: &self.currentErrResponse, stream: .err)
+                self.readLine(line: line, generators: self.errorGenerators, currentResponse: &self.currentErrResponse, stream: Term.stderr)
             }
         }
     }
     
-    private func readLine(line: String, generators: [AnyResponseGenerator], currentResponse: inout AnyResponse?, stream: StdStream) {
+    private func readLine(line: String, generators: [AnyResponseGenerator], currentResponse: inout AnyResponse?, stream: OutputByteStream) {
         if !changes.isEmpty {
             var waitingChanges: [OutputTransformerChange] = []
             for change in changes {
@@ -72,14 +76,14 @@ public class OutputTransformer {
                 return
             }
         }
-        stream.output(line)
+        stream <<< line
     }
     
     public func first(_ str: String) {
         self.prefix = str
     }
         
-    public func respond(on stream: StdStream, with generator: AnyResponseGenerator) {
+    public func respond(on stream: StandardStream, with generator: AnyResponseGenerator) {
         if stream == .out {
             outGenerators.append(generator)
         } else {
@@ -87,36 +91,37 @@ public class OutputTransformer {
         }
     }
     
-    public func register<T: Matchable, U: SimpleResponse>(_ type: U.Type, on stream: StdStream) where U.Match == T {
+    public func register<T: Matchable, U: SimpleResponse>(_ type: U.Type, on stream: StandardStream) where U.Match == T {
         let generation = { (match: T) in
             return U(match: match)
         }
         respond(on: stream, with: ResponseGenerator(matcher: T.regex, generate: generation))
     }
     
-    public func replace<T: RegexMatch & Matchable>(_ matcher: T.Type, on stream: StdStream = .out, _ translation: @escaping CaptureTranslation<T>) {
+    public func replace<T: RegexMatch & Matchable>(_ matcher: T.Type, on stdStream: StandardStream = .out, _ translation: @escaping CaptureTranslation<T>) {
+        let stream = stdStream == .out ? OutputTransformer.stdout : OutputTransformer.stderr
         let generator = ResponseGenerator(matcher: T.regex, generate: {
             ReplaceResponse(match: $0, stream: stream, translation: translation)
         })
-        respond(on: stream, with: generator)
+        respond(on: stdStream, with: generator)
     }
     
-    public func ignore(_ matcher: StaticString, on stream: StdStream = .out) {
+    public func ignore(_ matcher: StaticString, on stream: StandardStream = .out) {
         let generator = ResponseGenerator(matcher: matcher) { (_) in
             return IgnoreResponse()
         }
         respond(on: stream, with: generator)
     }
     
-    public func ignore(_ matcher: Regex, on stream: StdStream = .out) {
+    public func ignore(_ matcher: Regex, on stream: StandardStream = .out) {
         let generator = ResponseGenerator(matcher: matcher) { (_) in
             return IgnoreResponse()
         }
         respond(on: stream, with: generator)
     }
     
-    public func change(_ matcher: StaticString, on stream: StdStream = .out, change: @escaping () -> ()) {
-        changes.append(OutputTransformerChange(regex: Regex(matcher), stream: stream, change: change))
+    public func after(_ matcher: StaticString, change: @escaping () -> ()) {
+        changes.append(OutputTransformerChange(regex: Regex(matcher), change: change))
     }
     
     public func last(_ str: String) {
@@ -124,8 +129,8 @@ public class OutputTransformer {
     }
     
     public func attach(_ process: Process) {
-        out.attach(.out, process)
-        error.attach(.err, process)
+        process.attachStdout(to: out)
+        process.attachStderr(to: error)
     }
     
     func printPrefix() {
@@ -153,8 +158,12 @@ public class OutputTransformer {
     
 }
 
+public enum StandardStream {
+    case out
+    case err
+}
+
 public struct OutputTransformerChange {
     public let regex: Regex
-    public let stream: StdStream
     public let change: () -> ()
 }

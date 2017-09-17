@@ -21,5 +21,6 @@ let package = Package(
         .target(name: "Transformers", dependencies: ["Exec", "Rainbow", "Regex", "SwiftCLI"]),
         .testTarget(name: "CLITests", dependencies: []),
         .testTarget(name: "CoreTests", dependencies: ["Core"]),
+        .testTarget(name: "TransformersTests", dependencies: ["Exec", "Transformers"]),
     ]
 )

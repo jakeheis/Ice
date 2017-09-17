@@ -160,7 +160,7 @@ public struct Package: Decodable {
             out = fileStream
         }
         
-        out << """
+        out <<< """
         // swift-tools-version:4.0
         // Managed by ice
 
@@ -169,19 +169,19 @@ public struct Package: Decodable {
         let package = Package(
         """
         
-        out << "    name: \(name.quoted),"
+        out <<< "    name: \(name.quoted),"
         
         if !products.isEmpty {
-            out << "    products: ["
+            out <<< "    products: ["
             for product in products {
                 let targetsPortion = product.targets.map { $0.quoted }.joined(separator: ", ")
-                out << "        .\(product.product_type)(name: \(product.name.quoted), targets: [\(targetsPortion)]),"
+                out <<< "        .\(product.product_type)(name: \(product.name.quoted), targets: [\(targetsPortion)]),"
             }
-            out << "    ],"
+            out <<< "    ],"
         }
         
         if !dependencies.isEmpty {
-            out << "    dependencies: ["
+            out <<< "    dependencies: ["
             for dependency in dependencies {
                 let versionPortion: String
                 switch dependency.requirement.type {
@@ -192,24 +192,24 @@ public struct Package: Decodable {
                 default:
                     fatalError("Unsupported dependency requirement type: \(dependency.requirement.type)")
                 }
-                out << "        .package(url: \(dependency.url.quoted), \(versionPortion)),"
+                out <<< "        .package(url: \(dependency.url.quoted), \(versionPortion)),"
             }
-            out << "    ],"
+            out <<< "    ],"
         }
         
         if !targets.isEmpty {
-            out << "    targets: ["
+            out <<< "    targets: ["
             for target in targets {
                 let type = target.isTest ? ".testTarget" : ".target"
                 let dependenciesPortion = target.dependencies.map { $0.name.quoted }.joined(separator: ", ")
-                out << "        \(type)(name: \(target.name.quoted), dependencies: [\(dependenciesPortion)]),"
+                out <<< "        \(type)(name: \(target.name.quoted), dependencies: [\(dependenciesPortion)]),"
             }
-            out << "    ]"
+            out <<< "    ]"
         } else {
-            out << "    targets: []"
+            out <<< "    targets: []"
         }
         
-        out << ")"
+        out <<< ")"
     }
     
 }

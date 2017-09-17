@@ -9,23 +9,7 @@ import Foundation
 import SwiftCLI
 import Dispatch
 
-public enum StdStream {
-    case out
-    case err
-    case null
-    
-    public func output(_ text: String = "", terminator: String = "\n") {
-        switch self {
-        case .out:
-            print(text, terminator: terminator)
-            fflush(stdout)
-        case .err:
-            printError(text, terminator: terminator)
-            fflush(stderr)
-        case .null: break
-        }
-    }
-}
+infix operator <<<: AssignmentPrecedence
 
 class Hose {
     
@@ -56,12 +40,16 @@ class Hose {
         }
     }
     
-    func attach(_ stream: StdStream, _ process: Process) {
-        switch stream {
-        case .out: process.standardOutput = pipe
-        case .err: process.standardError = pipe
-        case .null: break
-        }
+}
+
+extension Process {
+    
+    func attachStdout(to hose: Hose) {
+        standardOutput = hose.pipe
+    }
+    
+    func attachStderr(to hose: Hose) {
+        standardError = hose.pipe
     }
     
 }

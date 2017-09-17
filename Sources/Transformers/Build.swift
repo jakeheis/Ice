@@ -9,6 +9,7 @@ import Exec
 import Regex
 import Rainbow
 import Foundation
+import SwiftCLI
 
 public extension Transformers {
     
@@ -49,14 +50,13 @@ private final class CompileCResponse: SimpleResponse {
     }
     
     let module: String
-    let stream: StdStream = .out
     
     init(match: Match) {
         self.module = match.module
     }
 
     func go() {
-        stream.output("Compile ".dim + "\(module)")
+        stdout <<< "Compile ".dim + "\(module)"
     }
     
     func keepGoing(on line: String) -> Bool {
@@ -116,7 +116,7 @@ private final class ErrorResponse: SimpleResponse {
     
     let match: Match
     let color: Color
-    let stream: StdStream
+    let stream: OutputByteStream
     
     var awaitingLine: AwaitingLine = .code
     
@@ -132,9 +132,9 @@ private final class ErrorResponse: SimpleResponse {
         }
         
         if ErrorTracker.shouldSkip(match) {
-            self.stream = .null
+            self.stream = NullStream()
         } else {
-            self.stream = .out
+            self.stream = StdoutStream()
             ErrorTracker.record(match)
         }
     }
@@ -149,7 +149,8 @@ private final class ErrorResponse: SimpleResponse {
         case .note:
             prefix = "    Note:".blue
         }
-        stream.output("\(prefix) \(match.message)\n")
+        stream <<< "\(prefix) \(match.message)"
+        stream <<< ""
     }
     
     func keepGoing(on line: String) -> Bool {
@@ -164,16 +165,16 @@ private final class ErrorResponse: SimpleResponse {
                 return false
             }
             let lineStartIndex = line.index(where: { $0 != " " }) ?? line.startIndex
-            stream.output(indentation + String(line[lineStartIndex...]).lightBlack)
+            stream <<< indentation + String(line[lineStartIndex...]).lightBlack
             awaitingLine = .highlightsOrCode(startIndex: lineStartIndex)
         case let .highlightsOrCode(startIndex):
             if line.trimmingCharacters(in: CharacterSet(charactersIn: " ~^")).isEmpty {
                 // It's a highlight line
-                stream.output(indentation + String(line[startIndex...]).replacingAll(matching: "~", with: "^").applyingColor(color))
+                stream <<< indentation + String(line[startIndex...]).replacingAll(matching: "~", with: "^").applyingColor(color)
                 awaitingLine = .suggestionOrDone(startIndex: startIndex)
             } else {
                 // It's another code line
-                stream.output(indentation + String(line[startIndex...]).lightBlack)
+                stream <<< indentation + String(line[startIndex...]).lightBlack
             }
         case let .suggestionOrDone(startIndex):
             if matchesOther {
@@ -182,7 +183,7 @@ private final class ErrorResponse: SimpleResponse {
             }
             if let characterIndex = line.index(where: { $0 != " " }), characterIndex >= startIndex {
                 // If there's a bunch of whitespace first, it's likely a suggestion
-                stream.output(indentation + String(line[startIndex...]).applyingColor(color) + "\n")
+                stream <<< indentation + String(line[startIndex...]).applyingColor(color) + "\n"
                 return true
             }
             return false
@@ -192,7 +193,7 @@ private final class ErrorResponse: SimpleResponse {
     
     func stop() {
         let file = match.path.beautifyPath
-        stream.output("    at \(file)" + ":\(match.lineNumber)\n")
+        stream <<< "    at \(file)" + ":\(match.lineNumber)\n"
     }
     
     

@@ -2,39 +2,12 @@
   "object": {
     "pins": [
       {
-        "package": "CLISpinner",
-        "repositoryURL": "https://github.com/jakeheis/CLISpinner",
-        "state": {
-          "branch": null,
-          "revision": "1b2125e222786d1c6a389023f3eccd11b06d3225",
-          "version": "0.3.5"
-        }
-      },
-      {
         "package": "FileKit",
-        "repositoryURL": "https://github.com/nvzqz/FileKit",
+        "repositoryURL": "https://github.com/jakeheis/FileKit",
         "state": {
           "branch": null,
-          "revision": "d2427f3785c33059674d6f163e11ec15abee7511",
-          "version": "4.0.1"
-        }
-      },
-      {
-        "package": "Files",
-        "repositoryURL": "https://github.com/JohnSundell/Files",
-        "state": {
-          "branch": null,
-          "revision": "b2c38a856bfe5fbba66146ab4c33e267921673ba",
-          "version": "1.11.0"
-        }
-      },
-      {
-        "package": "Just",
-        "repositoryURL": "https://github.com/JustHTTP/Just",
-        "state": {
-          "branch": null,
-          "revision": "3f64fda37dd11e50f410ba90d219fdb3ed927612",
-          "version": "0.6.0"
+          "revision": "0a42439a8f2239ce869cbea5b2a4df3a90689f62",
+          "version": "4.1.0"
         }
       },
       {
@@ -60,7 +33,7 @@
         "repositoryURL": "https://github.com/jakeheis/SwiftCLI",
         "state": {
           "branch": "master",
-          "revision": "396f3a3754e2243562300861a388dd7dacfa53d8",
+          "revision": "ea5a4fe4c0059bdfe389b50f912fb44ecf9234bb",
           "version": null
         }
       }
