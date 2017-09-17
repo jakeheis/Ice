@@ -65,10 +65,12 @@ class OutputViewer {
         self.lines = str.components(separatedBy: "\n")
     }
     func equals(_ str: String, file: StaticString = #file, line: UInt = #line) {
-        XCTAssertEqual(lines.removeFirst(), str, file: file, line: line)
+        guard let first = removeFirst(file: file, line: line) else { return }
+        XCTAssertEqual(first, str, file: file, line: line)
     }
     func matches(_ str: StaticString, file: StaticString = #file, line: UInt = #line) {
-        XCTAssertMatch(lines.removeFirst(), str, file: file, line: line)
+        guard let first = removeFirst(file: file, line: line) else { return }
+        XCTAssertMatch(first, str, file: file, line: line)
     }
     func empty(file: StaticString = #file, line: UInt = #line) {
         equals("", file: file, line: line)
@@ -76,8 +78,15 @@ class OutputViewer {
     func done(file: StaticString = #file, line: UInt = #line) {
         XCTAssertEqual(lines, [], file: file, line: line)
     }
-    func any() {
-        lines.removeFirst()
+    func any(file: StaticString = #file, line: UInt = #line) {
+        _ = removeFirst(file: file, line: line)
+    }
+    func removeFirst(file: StaticString, line: UInt) -> String? {
+        if lines.isEmpty {
+            XCTFail("No lines left", file: file, line: line)
+            return nil
+        }
+        return lines.removeFirst()
     }
 }
 

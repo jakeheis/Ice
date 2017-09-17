@@ -66,12 +66,13 @@ class BuildTests: XCTestCase {
         DispatchQueue.global().asyncAfter(deadline: .now() + 3) {
             writeToSandbox(path: "Sources/Lib/Lib.swift", contents: "\nprint(\"hey world\")\n")
         }
-        
+
         DispatchQueue.global().asyncAfter(deadline: .now() + 6) {
             Runner.interrupt()
         }
         
         let result = Runner.execute(args: ["build", "-w"], sandbox: .lib)
+        
         XCTAssertEqual(result.exitStatus, 2)
         result.stderr.assert { (v) in
             v.empty()

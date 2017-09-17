@@ -7,6 +7,7 @@
 
 import XCTest
 import SwiftCLI
+import Rainbow
 @testable import Exec
 @testable import Transformers
 
@@ -15,6 +16,14 @@ class TransformTest {
     let transformer: OutputTransformer
     let stdoutCapture: CaptureStream
     let stderrCapture: CaptureStream
+    
+    var stdout: String {
+        return stdoutCapture.content
+    }
+    
+    var stderr: String {
+        return stderrCapture.content
+    }
 
     init(_ transform: @escaping (OutputTransformer) -> ()) {
         self.stdoutCapture = CaptureStream()
@@ -22,6 +31,7 @@ class TransformTest {
         
         OutputTransformer.stdout = self.stdoutCapture
         OutputTransformer.stderr = self.stderrCapture
+        Rainbow.enabled = false
         
         let transformer = OutputTransformer()
         transform(transformer)
@@ -47,8 +57,8 @@ class TransformTest {
     func expect(stdout: String, stderr: String, file: StaticString = #file, line: UInt = #line) {
         self.transformer.printSuffix()
         
-        XCTAssertEqual(self.stdoutCapture.content, stdout, file: file, line: line)
-        XCTAssertEqual(self.stderrCapture.content, stderr, file: file, line: line)
+        XCTAssertEqual(self.stdout, stdout, file: file, line: line)
+        XCTAssertEqual(self.stderr, stderr, file: file, line: line)
     }
     
 }

@@ -37,18 +37,18 @@ public class OutputTransformer {
         self.out.onLine = { [weak self] (line) in
             guard let `self` = self else { return }
             self.transformQueue.async {
-                self.readLine(line: line, generators: self.outGenerators, currentResponse: &self.currentOutResponse, stream: Term.stdout)
+                self.readLine(line: line, generatorsPath: \.outGenerators, currentResponse: &self.currentOutResponse, stream: Term.stdout)
             }
         }
         self.error.onLine = { [weak self] (line) in
             guard let `self` = self else { return }
             self.transformQueue.async {
-                self.readLine(line: line, generators: self.errorGenerators, currentResponse: &self.currentErrResponse, stream: Term.stderr)
+                self.readLine(line: line, generatorsPath: \.errorGenerators, currentResponse: &self.currentErrResponse, stream: Term.stderr)
             }
         }
     }
     
-    private func readLine(line: String, generators: [AnyResponseGenerator], currentResponse: inout AnyResponse?, stream: OutputByteStream) {
+    private func readLine(line: String, generatorsPath: KeyPath<OutputTransformer, [AnyResponseGenerator]>, currentResponse: inout AnyResponse?, stream: OutputByteStream) {
         if !changes.isEmpty {
             var waitingChanges: [OutputTransformerChange] = []
             for change in changes {
@@ -60,6 +60,8 @@ public class OutputTransformer {
             }
             changes = waitingChanges
         }
+        
+        let generators = self[keyPath: generatorsPath]
         
         if let ongoing = currentResponse {
             if ongoing.keepGoing(on: line) {

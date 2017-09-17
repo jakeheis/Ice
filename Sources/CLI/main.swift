@@ -1,4 +1,7 @@
 import SwiftCLI
+import Rainbow
+
+Rainbow.enabled = Term.isTTY
 
 let ice = CLI(name: "ice", version: "0.0.1", description: "ice package manager")
 ice.commands = [

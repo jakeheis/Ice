@@ -28,7 +28,7 @@ class BuildCommand: Command {
         if watch.value {
             let watcher = try SourceWatcher() {
                 do {
-                    print("[ice] rebuilding due to changes...".green)
+                    self.stdout <<< "[ice] rebuilding due to changes...".green
                     try spm.build(release: self.release.value)
                 } catch {}
             }
