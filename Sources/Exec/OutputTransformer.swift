@@ -11,8 +11,8 @@ import SwiftCLI
 
 public class OutputTransformer {
     
-    static var stdout: OutputByteStream = Term.stdout
-    static var stderr: OutputByteStream = Term.stderr
+    public static var stdout: OutputByteStream = Term.stdout
+    public static var stderr: OutputByteStream = Term.stderr
     
     let out: Hose
     let error: Hose
@@ -37,13 +37,13 @@ public class OutputTransformer {
         self.out.onLine = { [weak self] (line) in
             guard let `self` = self else { return }
             self.transformQueue.async {
-                self.readLine(line: line, generatorsPath: \.outGenerators, currentResponse: &self.currentOutResponse, stream: Term.stdout)
+                self.readLine(line: line, generatorsPath: \.outGenerators, currentResponse: &self.currentOutResponse, stream: OutputTransformer.stdout)
             }
         }
         self.error.onLine = { [weak self] (line) in
             guard let `self` = self else { return }
             self.transformQueue.async {
-                self.readLine(line: line, generatorsPath: \.errorGenerators, currentResponse: &self.currentErrResponse, stream: Term.stderr)
+                self.readLine(line: line, generatorsPath: \.errorGenerators, currentResponse: &self.currentErrResponse, stream: OutputTransformer.stderr)
             }
         }
     }

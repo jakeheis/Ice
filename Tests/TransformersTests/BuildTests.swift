@@ -7,9 +7,13 @@
 
 import XCTest
 import Exec
-import Transformers
+@testable import Transformers
 
 class BuildTests: XCTestCase {
+    
+    override func setUp() {
+        ErrorTracker.past = []
+    }
     
     func testCompile() {
         let build = TransformTest(Transformers.build)
@@ -46,6 +50,132 @@ class BuildTests: XCTestCase {
         build.expect(stdout: """
         Link ./.build/x86_64-apple-macosx10.10/debug/ice
 
+        """, stderr: "")
+    }
+    
+    func testError() {
+        let build = TransformTest(Transformers.build)
+        build.send(.out, """
+        /Ice/Sources/Exec/Exec.swift:19:24: error: cannot convert value of type 'String' to specified type 'Int'
+                let arg: Int = ""
+                               ^~
+        """)
+        build.expect(stdout: """
+        
+          ● Error: cannot convert value of type 'String' to specified type 'Int'
+
+            let arg: Int = ""
+                           ^^
+            at /Ice/Sources/Exec/Exec.swift:19
+
+        
+        """, stderr: "")
+    }
+    
+    func testWarningWithSingleNote() {
+        let build = TransformTest(Transformers.build)
+        build.send(.out, """
+        /Moya/.build/checkouts/ReactiveSwift.git/Sources/UnidirectionalBinding.swift:23:17: warning: redeclaration of associated type 'Value' from protocol 'SignalProducerConvertible' is better expressed as a 'where' clause on the protocol
+        associatedtype Value
+        ~~~~~~~~~~~~~~~^~~~~
+
+        /Moya/.build/checkouts/ReactiveSwift.git/Sources/SignalProducer.swift:307:17: note: 'Value' declared here
+        associatedtype Value
+        ^
+        """)
+        build.expect(stdout: """
+        
+          ● Warning: redeclaration of associated type 'Value' from protocol 'SignalProducerConvertible' is better expressed as a 'where' clause on the protocol
+        
+            associatedtype Value
+            ^^^^^^^^^^^^^^^^^^^^
+            at /Moya/.build/checkouts/ReactiveSwift.git/Sources/UnidirectionalBinding.swift:23
+
+            Note: 'Value' declared here
+
+            associatedtype Value
+            ^
+            at /Moya/.build/checkouts/ReactiveSwift.git/Sources/SignalProducer.swift:307
+
+
+        """, stderr: "")
+    }
+    
+    func testNoteNoCode() {
+        let build = TransformTest(Transformers.build)
+        build.send(.out, """
+        /Moya/.build/checkouts/RxSwift.git/Sources/RxCocoaRuntime/_RXObjCRuntime.m:314:61: warning: block captures an autoreleasing out-parameter, which may result in use-after-free bugs [-Wblock-capture-autoreleasing]
+                                                              error:error];
+                                                                    ^
+        /Moya/.build/checkouts/RxSwift.git/Sources/RxCocoaRuntime/_RXObjCRuntime.m:297:102: note: declare the parameter __strong or capture a __block __strong variable to keep values alive across autorelease pools
+        """)
+        build.expect(stdout: """
+        
+          ● Warning: block captures an autoreleasing out-parameter, which may result in use-after-free bugs [-Wblock-capture-autoreleasing]
+
+            error:error];
+                  ^
+            at /Moya/.build/checkouts/RxSwift.git/Sources/RxCocoaRuntime/_RXObjCRuntime.m:314
+
+            Note: declare the parameter __strong or capture a __block __strong variable to keep values alive across autorelease pools
+
+            at /Moya/.build/checkouts/RxSwift.git/Sources/RxCocoaRuntime/_RXObjCRuntime.m:297
+
+
+        """, stderr: "")
+    }
+    
+    func testSuggestion() {
+        let build = TransformTest(Transformers.build)
+        build.send(.out, """
+        /Moya/.build/checkouts/RxSwift.git/Sources/RxCocoaRuntime/_RXObjCRuntime.m:314:61: warning: block captures an autoreleasing out-parameter, which may result in use-after-free bugs [-Wblock-capture-autoreleasing]
+                                                              error:error];
+                                                                    ^
+        /Moya/.build/checkouts/RxSwift.git/Sources/RxCocoaRuntime/_RXObjCRuntime.m:297:102: note: declare the parameter __autoreleasing explicitly to suppress this warning
+        IMP __nullable RX_ensure_observing(id __nonnull target, SEL __nonnull selector, NSError ** __nonnull error) {
+                                                                                                             ^
+                                                                                                  __autoreleasing
+        """)
+        
+        build.expect(stdout: """
+        
+          ● Warning: block captures an autoreleasing out-parameter, which may result in use-after-free bugs [-Wblock-capture-autoreleasing]
+
+            error:error];
+                  ^
+            at /Moya/.build/checkouts/RxSwift.git/Sources/RxCocoaRuntime/_RXObjCRuntime.m:314
+
+            Note: declare the parameter __autoreleasing explicitly to suppress this warning
+
+            IMP __nullable RX_ensure_observing(id __nonnull target, SEL __nonnull selector, NSError ** __nonnull error) {
+                                                                                                                 ^
+                                                                                                      __autoreleasing
+        
+            at /Moya/.build/checkouts/RxSwift.git/Sources/RxCocoaRuntime/_RXObjCRuntime.m:297
+
+
+        """, stderr: "")
+    }
+    
+    func testRepeated() {
+        let build = TransformTest(Transformers.build)
+        build.send(.out, """
+        /Ice/Sources/Exec/Exec.swift:19:24: error: cannot convert value of type 'String' to specified type 'Int'
+                let arg: Int = ""
+                               ^~
+        /Ice/Sources/Exec/Exec.swift:19:24: error: cannot convert value of type 'String' to specified type 'Int'
+                let arg: Int = ""
+                               ^~
+        """)
+        build.expect(stdout: """
+        
+          ● Error: cannot convert value of type 'String' to specified type 'Int'
+
+            let arg: Int = ""
+                           ^^
+            at /Ice/Sources/Exec/Exec.swift:19
+
+        
         """, stderr: "")
     }
     

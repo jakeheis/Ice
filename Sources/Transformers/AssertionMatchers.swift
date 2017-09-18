@@ -26,7 +26,7 @@ protocol XCTMatchable: Matchable {
 extension XCTMatchable {
 
     var stderr: OutputByteStream {
-        return Term.stderr
+        return OutputTransformer.stderr
     }
     
     func print(firstHeader: String, firstValue: String, secondValue: String) {

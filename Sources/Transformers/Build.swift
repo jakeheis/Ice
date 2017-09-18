@@ -67,11 +67,11 @@ private final class CompileCResponse: SimpleResponse {
     
 }
 
-private class ErrorTracker {
+class ErrorTracker {
 
-    private static var past: [ErrorResponse.Match] = []
+    static var past: [ErrorResponse.Match] = []
     
-    private static var skippingCurrent = false
+    static var skippingCurrent = false
 
     static func shouldSkip(_ match: ErrorResponse.Match) -> Bool {
         if match.type == .note {
@@ -88,7 +88,7 @@ private class ErrorTracker {
 
 }
 
-private final class ErrorResponse: SimpleResponse {
+final class ErrorResponse: SimpleResponse {
     
     class Match: RegexMatch, Matchable {
         static let regex = Regex("^(/.*):([0-9]+):([0-9]+): (error|warning|note): (.*)$")
@@ -134,7 +134,7 @@ private final class ErrorResponse: SimpleResponse {
         if ErrorTracker.shouldSkip(match) {
             self.stream = NullStream()
         } else {
-            self.stream = StdoutStream()
+            self.stream = OutputTransformer.stdout
             ErrorTracker.record(match)
         }
     }
