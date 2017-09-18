@@ -23,6 +23,7 @@ public class OutputTransformer {
     
     public static var stdout: OutputByteStream = Term.stdout
     public static var stderr: OutputByteStream = Term.stderr
+    public static var rewindCharacter = Term.isTTY ? "\r" : "\n"
     
     let out: Hose
     let error: Hose

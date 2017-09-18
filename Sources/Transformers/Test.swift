@@ -118,7 +118,7 @@ private final class TestSuiteResponse: SimpleResponse {
     
     func markFailed() {
         if !failed {
-            stderr <<< rewind() + badge(text: "FAIL", color: .red)
+            stderr <<< OutputTransformer.rewindCharacter + badge(text: "FAIL", color: .red)
             stderr <<< ""
             failed = true
         }
@@ -126,12 +126,8 @@ private final class TestSuiteResponse: SimpleResponse {
     
     func stop() {
         if failed == false {
-            stderr <<< rewind() + badge(text: "PASS", color: .green)
+            stderr <<< OutputTransformer.rewindCharacter + badge(text: "PASS", color: .green)
         }
-    }
-    
-    func rewind() -> String {
-        return Term.isTTY ? "\r" : "\n"
     }
     
     func badge(text: String, color: BackgroundColor) -> String {
@@ -214,7 +210,7 @@ private final class TestCaseResponse: MatchedResponse {
             return true
         }
         
-        fatalError("\n\nError: unexpected output: \(line)\n\n")
+        fatalError("\n\nError: unexpected output: `\(line)`\n\n")
     }
     
     func stop() {

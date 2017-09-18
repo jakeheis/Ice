@@ -1,5 +1,5 @@
 //
-//  TransformersTests.swift
+//  TransformTest.swift
 //  TransformersTests
 //
 //  Created by Jake Heiser on 9/16/17.
@@ -9,7 +9,6 @@ import XCTest
 import SwiftCLI
 import Rainbow
 @testable import Exec
-@testable import Transformers
 
 class TransformTest {
     
@@ -31,6 +30,7 @@ class TransformTest {
         
         OutputTransformer.stdout = self.stdoutCapture
         OutputTransformer.stderr = self.stderrCapture
+        OutputTransformer.rewindCharacter = "\n"
         Rainbow.enabled = false
         
         let transformer = OutputTransformer()
@@ -40,7 +40,7 @@ class TransformTest {
         self.transformer.start(with: nil)
     }
 
-    func send(_ stream: StandardStream, _ contents: String) {
+    func send(_ stream: OutputTransformer.StandardStream, _ contents: String) {
         let hose: Hose
         switch stream {
         case .out: hose = transformer.out
