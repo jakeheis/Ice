@@ -11,12 +11,21 @@ import SwiftCLI
 
 public class OutputTransformer {
     
+    public enum StandardStream {
+        case out
+        case err
+    }
+    
+    public struct Change {
+        public let regex: Regex
+        public let change: () -> ()
+    }
+    
     public static var stdout: OutputByteStream = Term.stdout
     public static var stderr: OutputByteStream = Term.stderr
     
     let out: Hose
     let error: Hose
-    
     let transformQueue: DispatchQueue
     
     private var prefix: String? = nil
@@ -24,7 +33,7 @@ public class OutputTransformer {
     
     private var outGenerators: [ResponseGenerator] = []
     private var errorGenerators: [ResponseGenerator] = []
-    private var changes: [OutputTransformerChange] = []
+    private var changes: [Change] = []
     
     private var currentOutResponse: Response?
     private var currentErrResponse: Response?
@@ -50,7 +59,7 @@ public class OutputTransformer {
     
     private func readLine(line: String, generatorsPath: KeyPath<OutputTransformer, [ResponseGenerator]>, currentResponse: inout Response?, stream: OutputByteStream) {
         if !changes.isEmpty {
-            var waitingChanges: [OutputTransformerChange] = []
+            var waitingChanges: [Change] = []
             for change in changes {
                 if change.regex.matches(line) {
                     change.change()
@@ -93,11 +102,11 @@ public class OutputTransformer {
         }
     }
     
-    public func register<T, U: SimpleResponse>(_ type: U.Type, on stream: StandardStream) where U.Match == T {
+    public func register<T: SimpleResponse>(_ type: T.Type, on stream: StandardStream) {
         respond(on: stream, with: ResponseGenerator(type))
     }
     
-    public func replace<T: Matcher>(_ matcher: T.Type, on stdStream: StandardStream = .out, _ translation: @escaping ReplaceResponse<T>.Translation) {
+    public func replace<T: Matcher>(_ matcher: T.Type, on stdStream: StandardStream, _ translation: @escaping ReplaceResponse<T>.Translation) {
         let stream = stdStream == .out ? OutputTransformer.stdout : OutputTransformer.stderr
         let generator = ResponseGenerator(ReplaceResponse<T>.self, generate: { (match) in
             return ReplaceResponse(match: match, stream: stream, translation: translation)
@@ -105,14 +114,11 @@ public class OutputTransformer {
         respond(on: stdStream, with: generator)
     }
     
-    public func ignore(_ regex: StaticString, on stream: StandardStream = .out) {
-        let generator = ResponseGenerator(regex: regex) { (_) in
-            return IgnoreResponse()
-        }
-        respond(on: stream, with: generator)
+    public func ignore(_ regex: StaticString, on stream: StandardStream) {
+        ignore(Regex(regex), on: stream)
     }
     
-    public func ignore(_ regex: Regex, on stream: StandardStream = .out) {
+    public func ignore(_ regex: Regex, on stream: StandardStream) {
         let generator = ResponseGenerator(regex: regex) { (_) in
             return IgnoreResponse()
         }
@@ -120,25 +126,25 @@ public class OutputTransformer {
     }
     
     public func after(_ matcher: StaticString, change: @escaping () -> ()) {
-        changes.append(OutputTransformerChange(regex: Regex(matcher), change: change))
+        changes.append(Change(regex: Regex(matcher), change: change))
     }
     
     public func last(_ str: String) {
         self.suffix = str
     }
     
-    public func attach(_ process: Process) {
-        process.attachStdout(to: out)
-        process.attachStderr(to: error)
-    }
-    
-    func printPrefix() {
+    public func start(with process: Process?) {
+        if let process = process {
+            process.attachStdout(to: out)
+            process.attachStderr(to: error)
+        }
+        
         if let prefix = prefix {
-            print(prefix, terminator: "")
+            OutputTransformer.stdout.output(prefix, terminator: "")
         }
     }
     
-    func printSuffix() {
+    public func finish() {
         let semaphore = DispatchSemaphore(value: 0)
         transformQueue.async {
             semaphore.signal()
@@ -151,18 +157,8 @@ public class OutputTransformer {
         currentErrResponse = nil
         
         if let suffix = suffix {
-            print(suffix, terminator: "")
+            OutputTransformer.stdout.output(suffix, terminator: "")
         }
     }
     
-}
-
-public enum StandardStream {
-    case out
-    case err
-}
-
-public struct OutputTransformerChange {
-    public let regex: Regex
-    public let change: () -> ()
 }

@@ -12,8 +12,8 @@ import Rainbow
 public extension Transformers {
     
     static func resolve(t: OutputTransformer) {
-        t.replace(ActionMatch.self) { "Fetch ".dim + $0.url }
-        t.ignore(".*")
+        t.replace(ActionMatch.self, on: .out) { "Fetch ".dim + $0.url }
+        t.ignore(".*", on: .out)
     }
     
 }

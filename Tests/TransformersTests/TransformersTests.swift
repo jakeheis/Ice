@@ -37,7 +37,7 @@ class TransformTest {
         transform(transformer)
         self.transformer = transformer
         
-        self.transformer.printPrefix()
+        self.transformer.start(with: nil)
     }
 
     func send(_ stream: StandardStream, _ contents: String) {
@@ -55,7 +55,7 @@ class TransformTest {
     }
 
     func expect(stdout: String, stderr: String, file: StaticString = #file, line: UInt = #line) {
-        self.transformer.printSuffix()
+        self.transformer.finish()
         
         XCTAssertEqual(self.stdout, stdout, file: file, line: line)
         XCTAssertEqual(self.stderr, stderr, file: file, line: line)

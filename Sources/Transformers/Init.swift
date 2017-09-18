@@ -13,8 +13,8 @@ public extension Transformers {
     
     static func initPackage(t: OutputTransformer) {
         t.first("\n")
-        t.replace(CreatingPackageMatch.self) { $0.packageType + ": " + $0.packageName.blue.bold + "\n" }
-        t.replace(CreateFileMatch.self) { "    create ".blue + $0.filePath }
+        t.replace(CreatingPackageMatch.self, on: .out) { $0.packageType + ": " + $0.packageName.blue.bold + "\n" }
+        t.replace(CreateFileMatch.self, on: .out) { "    create ".blue + $0.filePath }
         t.last("\n")
     }
     

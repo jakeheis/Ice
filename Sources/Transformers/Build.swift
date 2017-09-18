@@ -14,14 +14,14 @@ import SwiftCLI
 public extension Transformers {
     
     static func build(t: OutputTransformer) {
-        t.replace(CompileMatch.self) { "Compile ".dim + "\($0.module) \($0.sourceCount)" }
+        t.replace(CompileMatch.self, on: .out) { "Compile ".dim + "\($0.module) \($0.sourceCount)" }
         t.register(CompileCResponse.self, on: .out)
         t.register(ErrorResponse.self, on: .out)
         t.replace(InternalErrorMatch.self, on: .err) { "\nError: ".bold.red + $0.message }
         t.ignore(ErrorResponse.oldCompletionRegex, on: .out)
         t.ignore("^terminated\\(1\\)", on: .err)
-        t.ignore("^\\s*_?\\s*$")
-        t.replace(LinkMatch.self) { "Link ".blue + $0.product }
+        t.ignore("^\\s*_?\\s*$", on: .out)
+        t.replace(LinkMatch.self, on: .out) { "Link ".blue + $0.product }
     }
     
 }

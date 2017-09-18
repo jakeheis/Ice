@@ -29,16 +29,15 @@ public class Exec {
         if let transform = transform {
             let newTransformer = OutputTransformer()
             transform(newTransformer)
-            newTransformer.attach(process)
+            newTransformer.start(with: process)
             transformer = newTransformer
         }
         
         InterruptCatcher.start(process: process)
         
-        transformer?.printPrefix()
         process.launch()
         process.waitUntilExit()
-        transformer?.printSuffix()
+        transformer?.finish()
 
         InterruptCatcher.end()
         
