@@ -20,13 +20,13 @@ public extension Transformers {
     
 }
 
-private class CreatingPackageMatch: RegexMatch, Matchable {
+final class CreatingPackageMatch: Matcher {
     static let regex = Regex("(Creating .* package): (.*)")
     var packageType: String { return captures[0] }
     var packageName: String { return captures[1] }
 }
 
-private class CreateFileMatch: RegexMatch, Matchable {
+final class CreateFileMatch: Matcher {
     static let regex = Regex("Creating ([^:]+)$")
     var filePath: String { return captures[0] }
 }

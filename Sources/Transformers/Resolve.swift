@@ -18,7 +18,7 @@ public extension Transformers {
     
 }
 
-private class ActionMatch: RegexMatch, Matchable {
+final class ActionMatch: Matcher {
     static let regex = Regex("Fetching (.*)$")
     var url: String { return captures[0] }
 }

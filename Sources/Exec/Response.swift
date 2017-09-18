@@ -32,16 +32,8 @@ public class ResponseGenerator<T: Response>: AnyResponseGenerator {
         return regex.matches(line)
     }
     
-    func match(in line: String) -> T.Match? {
-        guard let match = regex.firstMatch(in: line) else {
-            return nil
-        }
-        let captures = Captures(captures: match.captures)
-        return T.Match(captures: captures)
-    }
-    
     public func generateResponse(to line: String) -> AnyResponse {
-        guard let result = match(in: line) else {
+        guard let result = T.Match.findMatch(in: line) else {
             fatalError("generateResponse should only be called if a match is guaranteed")
         }
         return generate(result)
@@ -55,7 +47,7 @@ public protocol AnyResponse: class {
 }
 
 public protocol Response: AnyResponse {
-    associatedtype Match: RegexMatch
+    associatedtype Match: Matcher
 }
 
 public extension Response {
@@ -71,9 +63,9 @@ public protocol SimpleResponse: Response {
     init(match: Match)
 }
 
-public typealias CaptureTranslation<T: RegexMatch> = (_ match: T) -> String
+public typealias CaptureTranslation<T: Matcher> = (_ match: T) -> String
 
-public class ReplaceResponse<T: RegexMatch>: Response {
+public class ReplaceResponse<T: Matcher>: Response {
     
     public typealias Match = T
     public typealias Translation = CaptureTranslation<T>
@@ -101,7 +93,10 @@ public class ReplaceResponse<T: RegexMatch>: Response {
 }
 
 public class IgnoreResponse: Response {
-    public typealias Match = RegexMatch
+    public final class Match: Matcher {
+        public static let regex = Regex(".*")
+        public init() {}
+    }
     public func go() {}
     public func keepGoing(on line: String) -> Bool { return false }
     public func stop() {}

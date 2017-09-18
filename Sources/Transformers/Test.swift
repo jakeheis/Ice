@@ -27,8 +27,8 @@ public extension Transformers {
     
 }
 
-private final class OutputAccumulator: SimpleResponse {
-    class Match: RegexMatch, Matchable {
+final class OutputAccumulator: SimpleResponse {
+    final class Match: Matcher {
         static let regex = Regex("^(.*)$")
         var line: String { return captures[0] }
     }
@@ -51,14 +51,14 @@ private final class OutputAccumulator: SimpleResponse {
     
 }
 
-private class PackageTestsBegunMatch: RegexMatch, Matchable {
+final class PackageTestsBegunMatch: Matcher {
     static let regex = Regex("^Test Suite '(.*)\\.xctest' started")
     var packageName: String { return captures[0] }
 }
 
 private final class TestSuiteResponse: SimpleResponse {
     
-    class Match: RegexMatch, Matchable {
+    final class Match: Matcher {
         static let regex = Regex("^Test Suite '(.*)'")
         var suiteName: String { return captures[0] }
     }
@@ -95,7 +95,7 @@ private final class TestSuiteResponse: SimpleResponse {
             }
         }
         
-        if let match = TestCaseResponse.Match.match(line) {
+        if let match = TestCaseResponse.Match.findMatch(in: line) {
             // Start test case
             let response = TestCaseResponse(testSuite: self, match: match)
             response.go()
@@ -103,7 +103,7 @@ private final class TestSuiteResponse: SimpleResponse {
             return true
         }
         
-        if Match.match(line) != nil {
+        if Match.matches(line) {
             // Second to last line
             return true
         }
@@ -142,7 +142,7 @@ private final class TestSuiteResponse: SimpleResponse {
 
 private final class TestCaseResponse: Response {
     
-    class Match: RegexMatch, Matchable {
+    final class Match: Matcher {
         enum Status: String, Capturable {
             case started
             case passed
@@ -154,7 +154,7 @@ private final class TestCaseResponse: Response {
         var status: Status { return captures[1] }
     }
     
-    class FatalErrorMatch: RegexMatch, Matchable {
+    final class FatalErrorMatch: Matcher {
         static let regex = Regex("^fatal error: (.*)$")
         var message: String { return captures[0] }
     }
@@ -189,7 +189,7 @@ private final class TestCaseResponse: Response {
                 self.currentAssertionFailure = nil
             }
         }
-        if let match = AssertionResponse.Match.match(line) {
+        if let match = AssertionResponse.Match.findMatch(in: line) {
             // Start assertion
             testSuite.markFailed()
             if !markedAsFailure {
@@ -203,12 +203,12 @@ private final class TestCaseResponse: Response {
             return true
         }
         
-        if let match = Match.match(line) {
+        if let match = Match.findMatch(in: line) {
             status = match.status
             return true
         }
         
-        if let match = FatalErrorMatch.match(line) {
+        if let match = FatalErrorMatch.findMatch(in: line) {
             testSuite.markFailed()
             stderr <<< "Fatal error: ".red.bold + match.message
             return true
@@ -232,7 +232,7 @@ private final class TestCaseResponse: Response {
 
 final class AssertionResponse: Response {
     
-    class Match: RegexMatch, Matchable {
+    final class Match: Matcher {
         static let regex = Regex("(.*):([0-9]+): error: .* : (.*)$")
         var file: String { return captures[0] }
         var lineNumber: Int { return captures[1] }
@@ -270,7 +270,7 @@ final class AssertionResponse: Response {
         
         var foundMatch = false
         for matchType in xctMatches {
-            if let match = matchType.match(assertion) {
+            if let match = matchType.findMatch(in: assertion) {
                 match.output()
                 
                 if !match.message.isEmpty {
@@ -302,12 +302,12 @@ final class AssertionResponse: Response {
 
 private final class TestEndResponse: SimpleResponse {
     
-    class Match: RegexMatch, Matchable {
+    final class Match: Matcher {
         static let regex = Regex("Test Suite '(All tests|Selected tests|.*\\.xctest)' (passed|failed)")
         var suite: String { return captures[0] }
     }
     
-    class CountMatch: RegexMatch, Matchable {
+    final class CountMatch: Matcher {
         static let regex = Regex("Executed ([0-9]+) tests?, with ([0-9]*) failures? .* \\(([\\.0-9]+)\\) seconds$")
         var totalCount: Int { return captures[0] }
         var failureCount: Int { return captures[1] }
@@ -335,7 +335,7 @@ private final class TestEndResponse: SimpleResponse {
         }
         nextLine = false
         
-        if let match = CountMatch.match(line) {
+        if let match = CountMatch.findMatch(in: line) {
             var parts: [String] = []
             if match.failureCount > 0 {
                 parts.append("\(match.failureCount) failed".bold.red)

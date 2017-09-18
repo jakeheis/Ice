@@ -93,14 +93,14 @@ public class OutputTransformer {
         }
     }
     
-    public func register<T: Matchable, U: SimpleResponse>(_ type: U.Type, on stream: StandardStream) where U.Match == T {
+    public func register<T, U: SimpleResponse>(_ type: U.Type, on stream: StandardStream) where U.Match == T {
         let generation = { (match: T) in
             return U(match: match)
         }
         respond(on: stream, with: ResponseGenerator(matcher: T.regex, generate: generation))
     }
     
-    public func replace<T: RegexMatch & Matchable>(_ matcher: T.Type, on stdStream: StandardStream = .out, _ translation: @escaping CaptureTranslation<T>) {
+    public func replace<T: Matcher>(_ matcher: T.Type, on stdStream: StandardStream = .out, _ translation: @escaping CaptureTranslation<T>) {
         let stream = stdStream == .out ? OutputTransformer.stdout : OutputTransformer.stderr
         let generator = ResponseGenerator(matcher: T.regex, generate: {
             ReplaceResponse(match: $0, stream: stream, translation: translation)

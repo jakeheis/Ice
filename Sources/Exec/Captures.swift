@@ -1,11 +1,13 @@
 //
-//  RegexResult.swift
-//  Core
+//  Captures.swift
+//  Exec
 //
-//  Created by Jake Heiser on 9/11/17.
+//  Created by Jake Heiser on 9/17/17.
 //
 
-import Regex
+public protocol Capturable {
+    static func fromCapture(_ text: String) -> Self?
+}
 
 public class Captures {
     
@@ -32,48 +34,9 @@ public class Captures {
 }
 
 extension Captures: CustomStringConvertible {
-    
     public var description: String {
         return captures.description
     }
-    
-}
-
-open class RegexMatch {
-    public let captures: Captures
-    required public init(captures: Captures) {
-        self.captures = captures
-    }
-}
-
-extension RegexMatch: Equatable {
-    public static func ==(lhs: RegexMatch, rhs: RegexMatch) -> Bool {
-        return !zip(lhs.captures.captures, rhs.captures.captures).contains(where: { $0 != $1 })
-    }
-}
-
-public protocol Matchable {
-    static var regex: Regex { get }
-}
-
-extension Matchable where Self: RegexMatch {
-    
-    public static func match(_ line: String) -> Self? {
-        guard let match = regex.firstMatch(in: line) else {
-            return nil
-        }
-        let captures = Captures(captures: match.captures)
-        return Self(captures: captures)
-    }
-    
-    public static func matches(_ line: String) -> Bool {
-        return match(line) != nil
-    }
-    
-}
-
-public protocol Capturable {
-    static func fromCapture(_ text: String) -> Self?
 }
 
 extension String: Capturable {

@@ -26,25 +26,25 @@ public extension Transformers {
     
 }
 
-private class InternalErrorMatch: RegexMatch, Matchable {
+final class InternalErrorMatch: Matcher {
     static let regex = Regex("^error: (.*)$")
     var message: String { return captures[0] }
 }
 
-private class CompileMatch: RegexMatch, Matchable {
+final class CompileMatch: Matcher {
     static let regex = Regex("^Compile Swift Module '(.*)' (.*)$")
     var module: String { return captures[0] }
     var sourceCount: String { return captures[1] }
 }
 
-private class LinkMatch: RegexMatch, Matchable {
+final class LinkMatch: Matcher {
     static let regex = Regex("^Linking (.*)")
     var product: String { return captures[0] }
 }
 
-private final class CompileCResponse: SimpleResponse {
+final class CompileCResponse: SimpleResponse {
     
-    class Match: RegexMatch, Matchable {
+    final class Match: Matcher {
         static let regex = Regex("Compile ([^ ]*) .*\\.(c|m|cpp|mm)$")
         var module: String { return captures[0] }
     }
@@ -90,7 +90,7 @@ class ErrorTracker {
 
 final class ErrorResponse: SimpleResponse {
     
-    class Match: RegexMatch, Matchable {
+    final class Match: Matcher, Equatable {
         static let regex = Regex("^(/.*):([0-9]+):([0-9]+): (error|warning|note): (.*)$")
         
         enum ErrorType: String, Capturable {
