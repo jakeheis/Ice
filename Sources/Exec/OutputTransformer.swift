@@ -82,7 +82,7 @@ public class OutputTransformer {
         for responseGenerator in generators {
             if responseGenerator.matches(line) {
                 let response = responseGenerator.generateResponse(to: line)
-                response.go()
+                response.start()
                 currentResponse = response
                 return
             }

@@ -55,7 +55,7 @@ final class CompileCResponse: SimpleResponse {
         self.module = match.module
     }
 
-    func go() {
+    func start() {
         stdout <<< "Compile ".dim + "\(module)"
     }
     
@@ -139,7 +139,7 @@ final class ErrorResponse: SimpleResponse {
         }
     }
     
-    func go() {
+    func start() {
         let prefix: String
         switch match.type {
         case .error:

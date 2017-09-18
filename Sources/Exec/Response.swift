@@ -8,7 +8,7 @@
 import SwiftCLI
 
 public protocol Response: class {
-    func go()
+    func start()
     func keepGoing(on line: String) -> Bool
     func stop()
 }
@@ -47,7 +47,7 @@ public class ReplaceResponse<T: Matcher>: MatchedResponse {
         self.translation = translation
     }
     
-    public func go() {
+    public func start() {
         stream <<< translation(match)
     }
     
@@ -60,7 +60,7 @@ public class ReplaceResponse<T: Matcher>: MatchedResponse {
 }
 
 public class IgnoreResponse: Response {
-    public func go() {}
+    public func start() {}
     public func keepGoing(on line: String) -> Bool { return false }
     public func stop() {}
 }

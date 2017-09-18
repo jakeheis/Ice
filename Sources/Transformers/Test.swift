@@ -39,7 +39,7 @@ final class OutputAccumulator: SimpleResponse {
         OutputAccumulator.accumulated += match.line
     }
     
-    func go() {}
+    func start() {}
     
     func keepGoing(on line: String) -> Bool {
         let separator = OutputAccumulator.accumulated.isEmpty ? "" : "\n"
@@ -76,7 +76,7 @@ private final class TestSuiteResponse: SimpleResponse {
         self.suiteName = match.suiteName
     }
     
-    func go() {
+    func start() {
         stderr.output(badge(text: "RUNS", color: .blue), terminator: "")
     }
     
@@ -98,7 +98,7 @@ private final class TestSuiteResponse: SimpleResponse {
         if let match = TestCaseResponse.Match.findMatch(in: line) {
             // Start test case
             let response = TestCaseResponse(testSuite: self, match: match)
-            response.go()
+            response.start()
             currentTestCase = response
             return true
         }
@@ -171,7 +171,7 @@ private final class TestCaseResponse: MatchedResponse {
         self.caseName = match.caseName
     }
     
-    func go() {
+    func start() {
         OutputAccumulator.accumulated = ""
     }
     
@@ -198,7 +198,7 @@ private final class TestCaseResponse: MatchedResponse {
             }
             
             let assertionFailure = AssertionResponse(match: match)
-            assertionFailure.go()
+            assertionFailure.start()
             self.currentAssertionFailure = assertionFailure
             return true
         }
@@ -251,7 +251,7 @@ final class AssertionResponse: SimpleResponse {
         self.assertion = match.assertion
     }
     
-    func go() {}
+    func start() {}
     
     func keepGoing(on line: String) -> Bool {
         if AssertionResponse.Match.matches(line)
@@ -325,7 +325,7 @@ private final class TestEndResponse: SimpleResponse {
         }
     }
     
-    func go() {
+    func start() {
         stream <<< ""
     }
     
