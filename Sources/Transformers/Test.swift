@@ -140,7 +140,7 @@ private final class TestSuiteResponse: SimpleResponse {
     
 }
 
-private final class TestCaseResponse: Response {
+private final class TestCaseResponse: MatchedResponse {
     
     final class Match: Matcher {
         enum Status: String, Capturable {
@@ -230,7 +230,7 @@ private final class TestCaseResponse: Response {
     
 }
 
-final class AssertionResponse: Response {
+final class AssertionResponse: SimpleResponse {
     
     final class Match: Matcher {
         static let regex = Regex("(.*):([0-9]+): error: .* : (.*)$")

@@ -22,12 +22,12 @@ public class OutputTransformer {
     private var prefix: String? = nil
     private var suffix: String? = nil
     
-    private var outGenerators: [AnyResponseGenerator] = []
-    private var errorGenerators: [AnyResponseGenerator] = []
+    private var outGenerators: [ResponseGenerator] = []
+    private var errorGenerators: [ResponseGenerator] = []
     private var changes: [OutputTransformerChange] = []
     
-    private var currentOutResponse: AnyResponse?
-    private var currentErrResponse: AnyResponse?
+    private var currentOutResponse: Response?
+    private var currentErrResponse: Response?
     
     init() {
         self.out = Hose()
@@ -48,7 +48,7 @@ public class OutputTransformer {
         }
     }
     
-    private func readLine(line: String, generatorsPath: KeyPath<OutputTransformer, [AnyResponseGenerator]>, currentResponse: inout AnyResponse?, stream: OutputByteStream) {
+    private func readLine(line: String, generatorsPath: KeyPath<OutputTransformer, [ResponseGenerator]>, currentResponse: inout Response?, stream: OutputByteStream) {
         if !changes.isEmpty {
             var waitingChanges: [OutputTransformerChange] = []
             for change in changes {
@@ -85,7 +85,7 @@ public class OutputTransformer {
         self.prefix = str
     }
         
-    public func respond(on stream: StandardStream, with generator: AnyResponseGenerator) {
+    public func respond(on stream: StandardStream, with generator: ResponseGenerator) {
         if stream == .out {
             outGenerators.append(generator)
         } else {
@@ -94,29 +94,26 @@ public class OutputTransformer {
     }
     
     public func register<T, U: SimpleResponse>(_ type: U.Type, on stream: StandardStream) where U.Match == T {
-        let generation = { (match: T) in
-            return U(match: match)
-        }
-        respond(on: stream, with: ResponseGenerator(matcher: T.regex, generate: generation))
+        respond(on: stream, with: ResponseGenerator(type))
     }
     
-    public func replace<T: Matcher>(_ matcher: T.Type, on stdStream: StandardStream = .out, _ translation: @escaping CaptureTranslation<T>) {
+    public func replace<T: Matcher>(_ matcher: T.Type, on stdStream: StandardStream = .out, _ translation: @escaping ReplaceResponse<T>.Translation) {
         let stream = stdStream == .out ? OutputTransformer.stdout : OutputTransformer.stderr
-        let generator = ResponseGenerator(matcher: T.regex, generate: {
-            ReplaceResponse(match: $0, stream: stream, translation: translation)
+        let generator = ResponseGenerator(ReplaceResponse<T>.self, generate: { (match) in
+            return ReplaceResponse(match: match, stream: stream, translation: translation)
         })
         respond(on: stdStream, with: generator)
     }
     
-    public func ignore(_ matcher: StaticString, on stream: StandardStream = .out) {
-        let generator = ResponseGenerator(matcher: matcher) { (_) in
+    public func ignore(_ regex: StaticString, on stream: StandardStream = .out) {
+        let generator = ResponseGenerator(regex: regex) { (_) in
             return IgnoreResponse()
         }
         respond(on: stream, with: generator)
     }
     
-    public func ignore(_ matcher: Regex, on stream: StandardStream = .out) {
-        let generator = ResponseGenerator(matcher: matcher) { (_) in
+    public func ignore(_ regex: Regex, on stream: StandardStream = .out) {
+        let generator = ResponseGenerator(regex: regex) { (_) in
             return IgnoreResponse()
         }
         respond(on: stream, with: generator)
