@@ -6,11 +6,13 @@
 //
 
 import Foundation
+import SwiftCLI
 
 public class Exec {
     
-    public struct Error: Swift.Error {
+    public struct Error: ProcessError {
         public let exitStatus: Int32
+        public let message: String? = nil
     }
     
     private let process: Process
