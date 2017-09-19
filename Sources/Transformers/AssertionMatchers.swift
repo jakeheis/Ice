@@ -28,10 +28,17 @@ extension XCTMatcher {
     }
     
     func print(firstHeader: String, firstValue: String, secondValue: String) {
+        func prepVal(_ val: String) -> String {
+            let lines = val.components(separatedBy: AssertionResponse.newlineReplacement)
+            return lines.map{ "\t\($0)" }.joined(separator: "\n")
+        }
         stderr <<< "\t\(firstHeader):"
-        stderr <<< firstValue.components(separatedBy: AssertionResponse.newlineReplacement).map{ "\t\($0)" }.joined(separator: "\n").green
+        stderr <<< prepVal(firstValue).green
         stderr <<< "\tReceived:"
-        stderr <<< secondValue.components(separatedBy: AssertionResponse.newlineReplacement).map{ "\t\($0)" }.joined(separator: "\n").red
+        stderr <<< prepVal(secondValue).red
+        if secondValue.contains(AssertionResponse.newlineReplacement) {
+            stderr <<< "\t(end)"
+        }
     }
     
     func printWrongValue(expected: String, received: String)  {

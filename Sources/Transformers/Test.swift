@@ -15,14 +15,13 @@ public extension Transformers {
     static func test(t: OutputTransformer) {
         build(t: t)
         t.after("^Test Suite") {
-            t.ignore("^Test Suite '(All tests|Selected tests)' started", on: .err)
-            t.replace(PackageTestsBegunMatch.self, on: .err) { "\n\($0.packageName):\n".bold }
+            t.register(TestsBegunResponse.self, on: .err)
+            t.register(XCTestBegunResponse.self, on: .err)
             t.register(TestEndResponse.self, on: .err)
             t.register(TestSuiteResponse.self, on: .err)
             t.ignore("Executed [0-9]+ tests", on: .err)
             t.register(OutputAccumulator.self, on: .out)
         }
-        t.last("\n")
     }
     
 }
@@ -51,9 +50,51 @@ final class OutputAccumulator: SimpleResponse {
     
 }
 
-final class PackageTestsBegunMatch: Matcher {
-    static let regex = Regex("^Test Suite '(.*)\\.xctest' started")
-    var packageName: String { return captures[0] }
+final class TestsBegunResponse: SimpleResponse {
+    final class Match: Matcher {
+        enum SuiteMode: String, Capturable {
+            case all = "All tests"
+            case selected = "Selected tests"
+        }
+        static let regex = Regex("^Test Suite '(All tests|Selected tests)' started")
+        var mode: SuiteMode { return captures[0] }
+    }
+    
+    static var mode: Match.SuiteMode = .all
+    
+    init(match: Match) {
+        TestsBegunResponse.mode = match.mode
+    }
+    
+    func start() {}
+    func keepGoing(on line: String) -> Bool { return false }
+    func stop() {}
+}
+
+final class XCTestBegunResponse: SimpleResponse {
+    final class Match: Matcher {
+        static let regex = Regex("^Test Suite '(.*)\\.xctest' started")
+        var packageName: String { return captures[0] }
+    }
+    
+    static var hasPrinted = false
+    
+    let match: Match
+    
+    init(match: Match) {
+        self.match = match
+    }
+    
+    func start() {
+        if !XCTestBegunResponse.hasPrinted {
+            stderr <<< "\n\(match.packageName):\n".bold
+            XCTestBegunResponse.hasPrinted = true
+        }
+        TestCaseResponse.failureCount = 0
+    }
+    
+    func keepGoing(on line: String) -> Bool { return false }
+    func stop() {}
 }
 
 private final class TestSuiteResponse: SimpleResponse {
@@ -65,7 +106,7 @@ private final class TestSuiteResponse: SimpleResponse {
     
     static let doneRegex = Regex("Executed .* tests?")
     
-    let suiteName: String
+    var name: String
     
     private var failed = false
     private var done = false
@@ -73,12 +114,10 @@ private final class TestSuiteResponse: SimpleResponse {
     var currentTestCase: TestCaseResponse?
     
     init(match: Match) {
-        self.suiteName = match.suiteName
+        self.name = match.suiteName
     }
     
-    func start() {
-        stderr.output(badge(text: "RUNS", color: .blue), terminator: "")
-    }
+    func start() {}
     
     func keepGoing(on line: String) -> Bool {
         if done {
@@ -98,6 +137,13 @@ private final class TestSuiteResponse: SimpleResponse {
         if let match = TestCaseResponse.Match.findMatch(in: line) {
             // Start test case
             let response = TestCaseResponse(testSuite: self, match: match)
+            if !name.contains(".") {
+                name = "\(response.match.targetName)." + name
+                if TestsBegunResponse.mode == .selected {
+                    name += "/\(response.match.caseName)"
+                }
+                stderr.output(badge(text: "RUNS", color: .blue), terminator: "")
+            }
             response.start()
             currentTestCase = response
             return true
@@ -131,12 +177,14 @@ private final class TestSuiteResponse: SimpleResponse {
     }
     
     func badge(text: String, color: BackgroundColor) -> String {
-        return " \(text) ".applyingBackgroundColor(color).black.bold + " " + suiteName.bold
+        return " \(text) ".applyingBackgroundColor(color).black.bold + " " + name.bold
     }
     
 }
 
 private final class TestCaseResponse: MatchedResponse {
+    
+    static var failureCount = 0
     
     final class Match: Matcher {
         enum Status: String, Capturable {
@@ -145,9 +193,11 @@ private final class TestCaseResponse: MatchedResponse {
             case failed
         }
         
-        static let regex = Regex("^Test Case .* ([^ ]*)\\]' (started|passed|failed)")
-        var caseName: String { return captures[0] }
-        var status: Status { return captures[1] }
+        static let regex = Regex("^Test Case '-\\[(.*)\\.(.*) (.*)\\]' (started|passed|failed)")
+        var targetName: String { return captures[0] }
+        var suiteName: String { return captures[1] }
+        var caseName: String { return captures[2] }
+        var status: Status { return captures[3] }
     }
     
     final class FatalErrorMatch: Matcher {
@@ -156,7 +206,7 @@ private final class TestCaseResponse: MatchedResponse {
     }
     
     let testSuite: TestSuiteResponse
-    let caseName: String
+    let match: Match
     
     var status: Match.Status = .started
     var currentAssertionFailure: AssertionResponse?
@@ -164,7 +214,7 @@ private final class TestCaseResponse: MatchedResponse {
     
     init(testSuite: TestSuiteResponse, match: Match) {
         self.testSuite = testSuite
-        self.caseName = match.caseName
+        self.match = match
     }
     
     func start() {
@@ -187,10 +237,11 @@ private final class TestCaseResponse: MatchedResponse {
         }
         if let match = AssertionResponse.Match.findMatch(in: line) {
             // Start assertion
-            testSuite.markFailed()
             if !markedAsFailure {
-                stderr <<< " ● \(caseName)".red.bold
+                testSuite.markFailed()
+                stderr <<< " ● \(self.match.caseName)".red.bold
                 markedAsFailure = true
+                TestCaseResponse.failureCount += 1
             }
             
             let assertionFailure = AssertionResponse(match: match)
@@ -304,10 +355,9 @@ private final class TestEndResponse: SimpleResponse {
     }
     
     final class CountMatch: Matcher {
-        static let regex = Regex("Executed ([0-9]+) tests?, with ([0-9]*) failures? .* \\(([\\.0-9]+)\\) seconds$")
+        static let regex = Regex("Executed ([0-9]+) tests?, with [0-9]* failures? .* \\(([\\.0-9]+)\\) seconds$")
         var totalCount: Int { return captures[0] }
-        var failureCount: Int { return captures[1] }
-        var duration: String { return captures[2] }
+        var duration: String { return captures[1] }
     }
     
     let stream: OutputByteStream
@@ -315,7 +365,7 @@ private final class TestEndResponse: SimpleResponse {
     
     init(match: Match) {
         if match.suite == "All tests" || match.suite == "Selected tests" {
-            stream = StderrStream()
+            stream = OutputTransformer.stderr
         } else {
             stream = NullStream()
         }
@@ -333,16 +383,17 @@ private final class TestEndResponse: SimpleResponse {
         
         if let match = CountMatch.findMatch(in: line) {
             var parts: [String] = []
-            if match.failureCount > 0 {
-                parts.append("\(match.failureCount) failed".bold.red)
+            if TestCaseResponse.failureCount > 0 {
+                parts.append("\(TestCaseResponse.failureCount) failed".bold.red)
             }
-            if match.failureCount < match.totalCount {
-                parts.append("\(match.totalCount - match.failureCount) passed".bold.green)
+            if TestCaseResponse.failureCount < match.totalCount {
+                parts.append("\(match.totalCount - TestCaseResponse.failureCount) passed".bold.green)
             }
             parts.append("\(match.totalCount) total")
             
             stream <<< "Tests:\t".bold.white + parts.joined(separator: ", ")
             stream <<< "Time:\t".bold.white + match.duration + "s"
+            stream <<< ""
         }
         
         return true
