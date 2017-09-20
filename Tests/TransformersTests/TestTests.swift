@@ -11,8 +11,8 @@ import XCTest
 class TestTests: XCTestCase {
     
     override func setUp() {
-        XCTestBegunResponse.hasPrinted = false
-        TestsBegunResponse.mode = .all
+        AllTestsStartResponse.mode = .all
+        PackageTestsStartResponse.hasPrinted = false
     }
     
     func testPackageTestsBegun() {

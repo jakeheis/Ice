@@ -8,25 +8,42 @@
 import Exec
 import Regex
 import Rainbow
+import SwiftCLI
 
 public extension Transformers {
-    
     static func initPackage(t: OutputTransformer) {
         t.first("\n")
-        t.replace(CreatingPackageMatch.self, on: .out) { $0.packageType + ": " + $0.packageName.blue.bold + "\n" }
-        t.replace(CreateFileMatch.self, on: .out) { "    create ".blue + $0.filePath }
+        t.add(CreatePackageResponse.self)
+        t.add(CreateFileResponse.self)
         t.last("\n")
     }
-    
 }
 
-final class CreatingPackageMatch: Matcher {
+final class CreatePackageResponse: SingleLineResponse {
+    static func respond(to line: CreatePackageLine) {
+        stdout <<< line.packageType + ": " + line.packageName.blue.bold + "\n"
+    }
+}
+
+final class CreateFileResponse: SingleLineResponse {
+    static func respond(to line: CreateFileLine) {
+        stdout <<< "    create ".blue + line.filePath
+    }
+}
+
+// MARK: - Lines
+
+final class CreatePackageLine: Line {
     static let regex = Regex("(Creating .* package): (.*)")
+    static let stream: StandardStream = .out
+    
     var packageType: String { return captures[0] }
     var packageName: String { return captures[1] }
 }
 
-final class CreateFileMatch: Matcher {
+final class CreateFileLine: Line {
     static let regex = Regex("Creating ([^:]+)$")
+    static let stream: StandardStream = .out
+    
     var filePath: String { return captures[0] }
 }

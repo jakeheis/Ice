@@ -32,12 +32,11 @@ public class OutputTransformer {
     private var prefix: String? = nil
     private var suffix: String? = nil
     
-    private var outGenerators: [ResponseGenerator] = []
-    private var errorGenerators: [ResponseGenerator] = []
+    private var responses: [LineResponse.Type] = []
     private var changes: [Change] = []
     
-    private var currentOutResponse: Response?
-    private var currentErrResponse: Response?
+    private var currentOutResponse: AnyMultiLineResponse?
+    private var currentErrResponse: AnyMultiLineResponse?
     
     init() {
         self.out = Hose()
@@ -47,18 +46,18 @@ public class OutputTransformer {
         self.out.onLine = { [weak self] (line) in
             guard let `self` = self else { return }
             self.transformQueue.async {
-                self.readLine(line: line, generatorsPath: \.outGenerators, currentResponse: &self.currentOutResponse, stream: OutputTransformer.stdout)
+                self.readLine(line: line, currentResponse: &self.currentOutResponse, stream: .out)
             }
         }
         self.error.onLine = { [weak self] (line) in
             guard let `self` = self else { return }
             self.transformQueue.async {
-                self.readLine(line: line, generatorsPath: \.errorGenerators, currentResponse: &self.currentErrResponse, stream: OutputTransformer.stderr)
+                self.readLine(line: line, currentResponse: &self.currentErrResponse, stream: .err)
             }
         }
     }
     
-    private func readLine(line: String, generatorsPath: KeyPath<OutputTransformer, [ResponseGenerator]>, currentResponse: inout Response?, stream: OutputByteStream) {
+    private func readLine(line: String, currentResponse: inout AnyMultiLineResponse?, stream: StandardStream) {
         if !changes.isEmpty {
             var waitingChanges: [Change] = []
             for change in changes {
@@ -71,110 +70,34 @@ public class OutputTransformer {
             changes = waitingChanges
         }
         
-        let generators = self[keyPath: generatorsPath]
-        
         if let ongoing = currentResponse {
-            if ongoing.keepGoing(on: line) {
+            if ongoing.consume(line: line) {
                 return
             }
-            ongoing.stop()
+            ongoing.finish()
             currentResponse = nil
         }
-        for responseGenerator in generators {
-            if responseGenerator.matches(line) {
-                let response = responseGenerator.generateResponse(to: line)
-                response.start()
-                currentResponse = response
+        for response in responses {
+            if response.matches(line, stream) {
+                currentResponse = response.respond(to: line)
                 return
             }
         }
-        stream <<< line
+        
+        let outputStream = stream == .out ? OutputTransformer.stdout : OutputTransformer.stderr
+        outputStream <<< line
     }
     
     public func first(_ str: String) {
         self.prefix = str
     }
-        
-    public func respond(on stream: StandardStream, with generator: ResponseGenerator) {
-        if stream == .out {
-            outGenerators.append(generator)
-        } else {
-            errorGenerators.append(generator)
-        }
-    }
     
-    final class SingleLineResponseWrapper<T: SingleLineResponse>: SimpleResponse {
-        
-        typealias Match = T.MatchedLine
-        
-        let match: Match
-        
-        init(match: Match) {
-            self.match = match
-        }
-        
-        func start() { T.respond(to: match) }
-        func keepGoing(on line: String) -> Bool { return false }
-        func stop() {}
-    }
-    
-    final class MultiLineResponseWrapper<T: MultiLineResponse>: SimpleResponse {
-        
-        typealias Match = T.FirstLine
-        
-        let match: Match
-        var response: T?
-        
-        init(match: Match) {
-            self.match = match
-        }
-        
-        func start() {
-            response = T(line: match)
-        }
-        
-        func keepGoing(on line: String) -> Bool {
-            return response!.consume(line: line)
-        }
-        
-        func stop() {
-            response?.finish()
-        }
-    }
-    
-    public func add<T: SingleLineResponse>(_ type: T.Type) {
-        respond(on: T.MatchedLine.stream, with: ResponseGenerator(SingleLineResponseWrapper<T>.self))
-    }
-    
-    public func add<T: MultiLineResponse>(_ type: T.Type) {
-        respond(on: T.FirstLine.stream, with: ResponseGenerator(MultiLineResponseWrapper<T>.self))
+    public func add<T: LineResponse>(_ type: T.Type) {
+        responses.append(type)
     }
     
     public func ignore<T: Line>(_ type: T.Type) {
         add(IgnoreLineResponse<T>.self)
-    }
-    
-    public func register<T: SimpleResponse>(_ type: T.Type, on stream: StandardStream) {
-        respond(on: stream, with: ResponseGenerator(type))
-    }
-    
-    public func replace<T: Matcher>(_ matcher: T.Type, on stdStream: StandardStream, _ translation: @escaping ReplaceResponse<T>.Translation) {
-        let stream = stdStream == .out ? OutputTransformer.stdout : OutputTransformer.stderr
-        let generator = ResponseGenerator(ReplaceResponse<T>.self, generate: { (match) in
-            return ReplaceResponse(match: match, stream: stream, translation: translation)
-        })
-        respond(on: stdStream, with: generator)
-    }
-    
-    public func ignore(_ regex: StaticString, on stream: StandardStream) {
-        ignore(Regex(regex), on: stream)
-    }
-    
-    public func ignore(_ regex: Regex, on stream: StandardStream) {
-        let generator = ResponseGenerator(regex: regex) { (_) in
-            return IgnoreResponse()
-        }
-        respond(on: stream, with: generator)
     }
     
     public func after(_ matcher: StaticString, change: @escaping () -> ()) {
@@ -203,9 +126,9 @@ public class OutputTransformer {
         }
         semaphore.wait()
 
-        currentOutResponse?.stop()
+        currentOutResponse?.finish()
         currentOutResponse = nil
-        currentErrResponse?.stop()
+        currentErrResponse?.finish()
         currentErrResponse = nil
         
         if let suffix = suffix {

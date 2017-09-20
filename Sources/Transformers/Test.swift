@@ -15,152 +15,97 @@ public extension Transformers {
     static func test(t: OutputTransformer) {
         build(t: t)
         t.after("^Test Suite") {
-            t.register(TestsBegunResponse.self, on: .err)
-            t.register(XCTestBegunResponse.self, on: .err)
-            t.register(TestEndResponse.self, on: .err)
-            t.register(TestSuiteResponse.self, on: .err)
-            t.ignore("Executed [0-9]+ tests", on: .err)
-            t.register(OutputAccumulator.self, on: .out)
+            t.add(AllTestsStartResponse.self)
+            t.add(PackageTestsStartResponse.self)
+            t.add(TestEndResponse.self)
+            t.add(TestSuiteResponse.self)
+            t.ignore(TestCountLine.self)
+            t.add(OutResponse.self)
         }
     }
     
 }
 
-final class OutputAccumulator: SimpleResponse {
-    final class Match: Matcher {
-        static let regex = Regex("^(.*)$")
-        var line: String { return captures[0] }
-    }
-    
+final class OutResponse: SingleLineResponse {
     static var accumulated = ""
-    
-    init(match: Match) {
-        OutputAccumulator.accumulated += match.line
+    static func respond(to line: AnyOutLine) {
+        accumulated += (accumulated.isEmpty ? "" : "\n") + line.text
     }
-    
-    func start() {}
-    
-    func keepGoing(on line: String) -> Bool {
-        let separator = OutputAccumulator.accumulated.isEmpty ? "" : "\n"
-        OutputAccumulator.accumulated += separator + line
-        return true
-    }
-    
-    func stop() {}
-    
 }
 
-final class TestsBegunResponse: SimpleResponse {
-    final class Match: Matcher {
-        enum SuiteMode: String, Capturable {
-            case all = "All tests"
-            case selected = "Selected tests"
-        }
-        static let regex = Regex("^Test Suite '(All tests|Selected tests)' started")
-        var mode: SuiteMode { return captures[0] }
+final class AllTestsStartResponse: SingleLineResponse {
+    static var mode: AllTestsStartLine.SuiteMode = .all
+    static func respond(to line: AllTestsStartLine) {
+        mode = line.mode
     }
-    
-    static var mode: Match.SuiteMode = .all
-    
-    init(match: Match) {
-        TestsBegunResponse.mode = match.mode
-    }
-    
-    func start() {}
-    func keepGoing(on line: String) -> Bool { return false }
-    func stop() {}
 }
 
-final class XCTestBegunResponse: SimpleResponse {
-    final class Match: Matcher {
-        static let regex = Regex("^Test Suite '(.*)\\.xctest' started")
-        var packageName: String { return captures[0] }
-    }
-    
+final class PackageTestsStartResponse: SingleLineResponse {
     static var hasPrinted = false
-    
-    let match: Match
-    
-    init(match: Match) {
-        self.match = match
-    }
-    
-    func start() {
-        if !XCTestBegunResponse.hasPrinted {
-            stderr <<< "\n\(match.packageName):\n".bold
-            XCTestBegunResponse.hasPrinted = true
+    static func respond(to line: PackageTestsStartMatch) {
+        if !hasPrinted {
+            stderr <<< "\n\(line.packageName):\n".bold
+            hasPrinted = true
         }
         TestCaseResponse.failureCount = 0
     }
-    
-    func keepGoing(on line: String) -> Bool { return false }
-    func stop() {}
 }
 
-private final class TestSuiteResponse: SimpleResponse {
-    
-    final class Match: Matcher {
-        static let regex = Regex("^Test Suite '(.*)'")
-        var suiteName: String { return captures[0] }
-    }
-    
-    static let doneRegex = Regex("Executed .* tests?")
+final class TestSuiteResponse: MultiLineResponse {
     
     var name: String
     
     private var failed = false
     private var done = false
     
-    var currentTestCase: TestCaseResponse?
+    private var currentTestCase: TestCaseResponse?
     
-    init(match: Match) {
-        self.name = match.suiteName
+    init(line: TestSuiteLine) {
+        name = line.suiteName
     }
     
-    func start() {}
-    
-    func keepGoing(on line: String) -> Bool {
+    func consume(line: String) -> Bool {
         if done {
             return false
         }
         
-        if let currentTestCase = currentTestCase {
-            // Continue/end test case
-            if currentTestCase.keepGoing(on: line) {
-                return true
-            } else {
-                currentTestCase.stop()
-                self.currentTestCase = nil
-            }
+        if yield(to: &currentTestCase, line: line) {
+            return true
         }
         
-        if let match = TestCaseResponse.Match.findMatch(in: line) {
+        if let line = TestCaseLine.findMatch(in: line) {
             // Start test case
-            let response = TestCaseResponse(testSuite: self, match: match)
+            let response = TestCaseResponse(line: line)
+            response.testSuite = self
             if !name.contains(".") {
-                name = "\(response.match.targetName)." + name
-                if TestsBegunResponse.mode == .selected {
-                    name += "/\(response.match.caseName)"
+                name = "\(response.line.targetName)." + name
+                if AllTestsStartResponse.mode == .selected {
+                    name += "/\(response.line.caseName)"
                 }
                 stderr.output(badge(text: "RUNS", color: .blue), terminator: "")
                 // TODO: flush pipe
             }
-            response.start()
             currentTestCase = response
             return true
         }
         
-        if Match.matches(line) {
+        if TestSuiteLine.matches(line) {
             // Second to last line
             return true
         }
         
-        if TestSuiteResponse.doneRegex.matches(line) {
+        if TestCountLine.matches(line) {
             done = true
             return true
         }
         
         fatalError("\n\nError: unexpected output: \(line)\n\n")
+    }
+    
+    func finish() {
+        if failed == false {
+            stderr <<< OutputTransformer.rewindCharacter + badge(text: "PASS", color: .green)
+        }
     }
     
     func markFailed() {
@@ -171,93 +116,56 @@ private final class TestSuiteResponse: SimpleResponse {
         }
     }
     
-    func stop() {
-        if failed == false {
-            stderr <<< OutputTransformer.rewindCharacter + badge(text: "PASS", color: .green)
-        }
-    }
-    
     func badge(text: String, color: BackgroundColor) -> String {
         return " \(text) ".applyingBackgroundColor(color).black.bold + " " + name.bold
     }
     
 }
 
-private final class TestCaseResponse: MatchedResponse {
+final class TestCaseResponse: MultiLineResponse {
     
     static var failureCount = 0
     
-    final class Match: Matcher {
-        enum Status: String, Capturable {
-            case started
-            case passed
-            case failed
-        }
-        
-        static let regex = Regex("^Test Case '-\\[(.*)\\.(.*) (.*)\\]' (started|passed|failed)")
-        var targetName: String { return captures[0] }
-        var suiteName: String { return captures[1] }
-        var caseName: String { return captures[2] }
-        var status: Status { return captures[3] }
-    }
-    
-    final class FatalErrorMatch: Matcher {
-        static let regex = Regex("^fatal error: (.*)$")
-        var message: String { return captures[0] }
-    }
-    
-    let testSuite: TestSuiteResponse
-    let match: Match
-    
-    var status: Match.Status = .started
-    var currentAssertionFailure: AssertionResponse?
+    let line: TestCaseLine
+    var status: TestCaseLine.Status = .started
+    weak var testSuite: TestSuiteResponse?
+    var currentAssertionFailure: AssertionFailureResponse?
     var markedAsFailure = false
     
-    init(testSuite: TestSuiteResponse, match: Match) {
-        self.testSuite = testSuite
-        self.match = match
+    init(line: TestCaseLine) {
+        self.line = line
+        OutResponse.accumulated = ""
     }
     
-    func start() {
-        OutputAccumulator.accumulated = ""
-    }
-    
-    func keepGoing(on line: String) -> Bool {
+    func consume(line: String) -> Bool {
         guard status == .started else {
             return false
         }
-
-        if let currentAssertionFailure = currentAssertionFailure {
-            // Continue/end assertion
-            if currentAssertionFailure.keepGoing(on: line) {
-                return true
-            } else {
-                currentAssertionFailure.stop()
-                self.currentAssertionFailure = nil
-            }
+        
+        if yield(to: &currentAssertionFailure, line: line) {
+            return true
         }
-        if let match = AssertionResponse.Match.findMatch(in: line) {
+
+        if let match = AssertionFailureResponse.FirstLine.findMatch(in: line) {
             // Start assertion
             if !markedAsFailure {
-                testSuite.markFailed()
-                stderr <<< " ● \(self.match.caseName)".red.bold
+                testSuite?.markFailed()
+                stderr <<< " ● \(self.line.caseName)".red.bold
                 markedAsFailure = true
                 TestCaseResponse.failureCount += 1
             }
             
-            let assertionFailure = AssertionResponse(match: match)
-            assertionFailure.start()
-            self.currentAssertionFailure = assertionFailure
+            self.currentAssertionFailure = AssertionFailureResponse(line: match)
             return true
         }
         
-        if let match = Match.findMatch(in: line) {
+        if let match = TestCaseLine.findMatch(in: line) {
             status = match.status
             return true
         }
         
-        if let match = FatalErrorMatch.findMatch(in: line) {
-            testSuite.markFailed()
+        if let match = FatalErrorLine.findMatch(in: line) {
+            testSuite?.markFailed()
             stderr <<< "Fatal error: ".red.bold + match.message
             return true
         }
@@ -267,10 +175,10 @@ private final class TestCaseResponse: MatchedResponse {
     
     func stop() {
         if status == .failed {
-            if !OutputAccumulator.accumulated.isEmpty {
+            if !OutResponse.accumulated.isEmpty {
                 stderr <<< ""
                 stderr <<< "\tOutput:"
-                stderr <<< OutputAccumulator.accumulated.components(separatedBy: "\n").map({ "\t\($0)" }).joined(separator: "\n").dim
+                stderr <<< OutResponse.accumulated.components(separatedBy: "\n").map({ "\t\($0)" }).joined(separator: "\n").dim
                 stderr <<< ""
             }
         }
@@ -278,14 +186,7 @@ private final class TestCaseResponse: MatchedResponse {
     
 }
 
-final class AssertionResponse: SimpleResponse {
-    
-    final class Match: Matcher {
-        static let regex = Regex("(.*):([0-9]+): error: .* : (.*)$")
-        var file: String { return captures[0] }
-        var lineNumber: Int { return captures[1] }
-        var assertion: String { return captures[2] }
-    }
+final class AssertionFailureResponse: MultiLineResponse {
     
     static let newlineReplacement = "______$$$$$$$$"
     
@@ -293,27 +194,23 @@ final class AssertionResponse: SimpleResponse {
     let lineNumber: Int
     var assertion: String
     
-    init(match: Match) {
-        self.file = match.file
-        self.lineNumber = match.lineNumber
-        self.assertion = match.assertion
+    init(line: AssertionFailureLine) {
+        self.file = line.file
+        self.lineNumber = line.lineNumber
+        self.assertion = line.assertion
     }
     
-    func start() {}
-    
-    func keepGoing(on line: String) -> Bool {
-        if AssertionResponse.Match.matches(line)
-            || TestCaseResponse.FatalErrorMatch.matches(line)
-            || TestCaseResponse.Match.matches(line) {
+    func consume(line: String) -> Bool {
+        if AssertionFailureLine.matches(line)
+            || FatalErrorLine.matches(line)
+            || TestCaseLine.matches(line) {
             return false
         }
-        
-        assertion += AssertionResponse.newlineReplacement + line
-        
+        assertion += AssertionFailureResponse.newlineReplacement + line
         return true
     }
     
-    func stop() {        
+    func finish() {
         stderr <<< ""
         
         var foundMatch = false
@@ -323,7 +220,7 @@ final class AssertionResponse: SimpleResponse {
                 
                 if !match.message.isEmpty {
                     stderr <<< ""
-                    let lines = match.message.components(separatedBy: AssertionResponse.newlineReplacement)
+                    let lines = match.message.components(separatedBy: AssertionFailureResponse.newlineReplacement)
                     var message = lines[0]
                     if lines.count > 1 {
                         message += "\n" + lines.dropFirst().map({ "\t\($0)" }).joined(separator: "\n")
@@ -348,59 +245,42 @@ final class AssertionResponse: SimpleResponse {
     
 }
 
-private final class TestEndResponse: SimpleResponse {
-    
-    final class Match: Matcher {
-        static let regex = Regex("Test Suite '(All tests|Selected tests|.*\\.xctest)' (passed|failed)")
-        var suite: String { return captures[0] }
-    }
-    
-    final class CountMatch: Matcher {
-        static let regex = Regex("Executed ([0-9]+) tests?, with [0-9]* failures? .* \\(([\\.0-9]+)\\) seconds$")
-        var totalCount: Int { return captures[0] }
-        var duration: String { return captures[1] }
-    }
+final class TestEndResponse: MultiLineResponse {
     
     let stream: OutputByteStream
-    var nextLine = true
+    var shouldConsumeNextLine = true
     
-    init(match: Match) {
-        if match.suite == "All tests" || match.suite == "Selected tests" {
+    init(line: AllTestsEndLine) {
+        if line.suite == "All tests" || line.suite == "Selected tests" {
             stream = OutputTransformer.stderr
         } else {
             stream = NullStream()
         }
-    }
-    
-    func start() {
+        
         stream <<< ""
     }
     
-    func keepGoing(on line: String) -> Bool {
-        guard nextLine else {
+    func consume(line: String) -> Bool {
+        if !shouldConsumeNextLine {
             return false
         }
-        nextLine = false
-        
-        if let match = CountMatch.findMatch(in: line) {
+        shouldConsumeNextLine = false
+        if let line = TestCountLine.findMatch(in: line) {
             var parts: [String] = []
             if TestCaseResponse.failureCount > 0 {
                 parts.append("\(TestCaseResponse.failureCount) failed".bold.red)
             }
-            if TestCaseResponse.failureCount < match.totalCount {
-                parts.append("\(match.totalCount - TestCaseResponse.failureCount) passed".bold.green)
+            if TestCaseResponse.failureCount < line.totalCount {
+                parts.append("\(line.totalCount - TestCaseResponse.failureCount) passed".bold.green)
             }
-            parts.append("\(match.totalCount) total")
+            parts.append("\(line.totalCount) total")
             
             stream <<< "Tests:\t".bold.white + parts.joined(separator: ", ")
-            stream <<< "Time:\t".bold.white + match.duration + "s"
+            stream <<< "Time:\t".bold.white + line.duration + "s"
             stream <<< ""
+            return true
         }
-        
-        return true
+        fatalError("Unrecognized line: `\(line)`")
     }
     
-    func stop() {}
-    
 }
-

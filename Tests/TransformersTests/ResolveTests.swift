@@ -14,6 +14,8 @@ class ResolveTests: XCTestCase {
         let fetch = TransformTest(Transformers.resolve)
         fetch.send(.out, """
         Fetching https://github.com/jakeheis/SwiftCLI
+        Garbage that should be
+        ignored
         
         """)
         fetch.expect(stdout: """

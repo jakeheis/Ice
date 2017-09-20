@@ -29,14 +29,14 @@ extension XCTMatcher {
     
     func print(firstHeader: String, firstValue: String, secondValue: String) {
         func prepVal(_ val: String) -> String {
-            let lines = val.components(separatedBy: AssertionResponse.newlineReplacement)
+            let lines = val.components(separatedBy: AssertionFailureResponse.newlineReplacement)
             return lines.map{ "\t\($0)" }.joined(separator: "\n")
         }
         stderr <<< "\t\(firstHeader):"
         stderr <<< prepVal(firstValue).green
         stderr <<< "\tReceived:"
         stderr <<< prepVal(secondValue).red
-        if secondValue.contains(AssertionResponse.newlineReplacement) {
+        if secondValue.contains(AssertionFailureResponse.newlineReplacement) {
             stderr <<< "\t(end)"
         }
     }

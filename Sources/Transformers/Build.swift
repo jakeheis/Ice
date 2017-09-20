@@ -123,7 +123,7 @@ final class ErrorResponse: MultiLineResponse {
     }
     
     func consume(line: String) -> Bool {
-        let matchesOther = CompileSwiftLine.matches(line) || CompileCLine.matches(line) || BuildErrorLine.matches(line) ||
+        let matchesOther = CompileSwiftLine.matches(line, .err) || CompileCLine.matches(line) || BuildErrorLine.matches(line) ||
             LinkLine.matches(line) || WarningsGeneratedLine.matches(line)
         
         let indentation = "    "

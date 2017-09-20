@@ -7,24 +7,12 @@
 
 import Regex
 
-public protocol Line: Matcher {
-    static var stream: StandardStream { get }
-}
-
 public protocol Matcher: class, CustomStringConvertible {
     static var regex: Regex { get }
     init()
 }
 
 public extension Matcher {
-    
-    var captures: Captures {
-        return MatcherManager.captures(for: self)
-    }
-    
-    var description: String {
-        return captures.description
-    }
     
     public static func matches(_ line: String) -> Bool {
         return regex.matches(line)
@@ -34,11 +22,35 @@ public extension Matcher {
         return MatcherManager.createMatcher(from: line)
     }
     
+    var captures: Captures {
+        return MatcherManager.captures(for: self)
+    }
+    
+    var description: String {
+        return captures.description
+    }
+    
     public static func ==<U: Matcher>(lhs: Self, rhs: U) -> Bool {
         return !zip(lhs.captures.captures, rhs.captures.captures).contains(where: { $0 != $1 })
     }
     
 }
+
+// MARK: -
+
+public protocol Line: Matcher {
+    static var stream: StandardStream { get }
+}
+
+extension Line {
+    
+    public static func matches(_ line: String, _ stream: StandardStream) -> Bool {
+        return stream == self.stream && regex.matches(line)
+    }
+    
+}
+
+// MARK: -
 
 private class MatcherManager {
     
