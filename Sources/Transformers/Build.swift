@@ -14,99 +14,74 @@ import SwiftCLI
 public extension Transformers {
     
     static func build(t: OutputTransformer) {
-        t.replace(CompileMatch.self, on: .out) { "Compile ".dim + "\($0.module) \($0.sourceCount)" }
-        t.register(CompileCResponse.self, on: .out)
-        t.register(ErrorResponse.self, on: .out)
-        t.replace(InternalErrorMatch.self, on: .err) { "\nError: ".bold.red + $0.message }
-        t.ignore(ErrorResponse.oldCompletionRegex, on: .out)
-        t.ignore("^terminated\\(1\\)", on: .err)
-        t.ignore("^\\s*_?\\s*$", on: .out)
-        t.replace(LinkMatch.self, on: .out) { "Link ".blue + $0.product }
+        t.add(CompileSwiftResponse.self)
+        t.add(CompileCResponse.self)
+        t.add(ErrorResponse.self)
+        t.add(InternalErrorResponse.self)
+        t.ignore(WarningsGeneratedLine.self)
+        t.ignore(TerminatedLine.self)
+        t.ignore(UnderscoreLine.self)
+        t.ignore(WhitespaceOutLine.self)
+        t.add(LinkResponse.self)
     }
     
 }
 
-final class InternalErrorMatch: Matcher {
-    static let regex = Regex("^error: (.*)$")
-    var message: String { return captures[0] }
-}
-
-final class CompileMatch: Matcher {
-    static let regex = Regex("^Compile Swift Module '(.*)' (.*)$")
-    var module: String { return captures[0] }
-    var sourceCount: String { return captures[1] }
-}
-
-final class LinkMatch: Matcher {
-    static let regex = Regex("^Linking (.*)")
-    var product: String { return captures[0] }
-}
-
-final class CompileCResponse: SimpleResponse {
-    
-    final class Match: Matcher {
-        static let regex = Regex("Compile ([^ ]*) .*\\.(c|m|cpp|mm)$")
-        var module: String { return captures[0] }
+class InternalErrorResponse: SingleLineResponse {
+    static func respond(to line: InternalErrorLine) {
+        stderr <<< "\nError: ".bold.red + line.message
     }
-    
+}
+
+class CompileSwiftResponse: SingleLineResponse {
+    static func respond(to line: CompileSwiftLine) {
+        stdout <<< "Compile ".dim + "\(line.module) \(line.sourceCount)"
+    }
+}
+
+class LinkResponse: SingleLineResponse {
+    static func respond(to line: LinkLine) {
+        stdout <<< "Link ".blue + line.product
+    }
+}
+
+final class CompileCResponse: MultiLineResponse {
     let module: String
-    
-    init(match: Match) {
-        self.module = match.module
+    init(line: CompileCLine) {
+        self.module = line.module
+        stdout <<< "Compile ".dim + "\(line.module)"
     }
-
-    func start() {
-        stdout <<< "Compile ".dim + "\(module)"
+    func consume(line: String) -> Bool {
+        if let continued = CompileCLine.findMatch(in: line),
+            continued.module == self.module {
+            return true
+        }
+        return false
     }
-    
-    func keepGoing(on line: String) -> Bool {
-        return line.hasPrefix("Compile \(module) ")
-    }
-    
-    func stop() {}
-    
 }
 
 class ErrorTracker {
-
-    static var past: [ErrorResponse.Match] = []
+    
+    static var past: [BuildErrorLine] = []
     
     static var skippingCurrent = false
-
-    static func shouldSkip(_ match: ErrorResponse.Match) -> Bool {
-        if match.type == .note {
+    
+    static func shouldSkip(_ line: BuildErrorLine) -> Bool {
+        if line.type == .note {
             return skippingCurrent
         } else {
-            skippingCurrent = past.contains(match)
+            skippingCurrent = past.contains(line)
             return skippingCurrent
         }
     }
     
-    static func record(_ match: ErrorResponse.Match) {
-        past.append(match)
+    static func record(_ line: BuildErrorLine) {
+        past.append(line)
     }
-
+    
 }
 
-final class ErrorResponse: SimpleResponse {
-    
-    final class Match: Matcher, Equatable {
-        static let regex = Regex("^(/.*):([0-9]+):([0-9]+): (error|warning|note): (.*)$")
-        
-        enum ErrorType: String, Capturable {
-            case error
-            case warning
-            case note
-        }
-        
-        var path: String { return captures[0] }
-        var lineNumber: Int { return captures[1] }
-        var columnNumber: Int { return captures[2] }
-        var type: ErrorType { return captures[3] }
-        var message: String { return captures[4] }
-    }
-    
-    static let oldCompletionRegex = Regex("^[0-9]+ warnings? generated\\.$")
+final class ErrorResponse: MultiLineResponse {
     
     enum AwaitingLine {
         case code
@@ -114,53 +89,47 @@ final class ErrorResponse: SimpleResponse {
         case suggestionOrDone(startIndex: String.Index)
     }
     
-    let match: Match
+    let line: BuildErrorLine
     let color: Color
     let stream: OutputByteStream
     
     var awaitingLine: AwaitingLine = .code
     
-    init(match: Match) {
-        self.match = match
-        switch match.type {
-        case .error:
-            self.color = .red
-        case .warning:
-            self.color = .yellow
-        case .note:
-            self.color = .yellow
-        }
+    init(line: BuildErrorLine) {
+        self.line = line
         
-        if ErrorTracker.shouldSkip(match) {
+        if ErrorTracker.shouldSkip(line) {
             self.stream = NullStream()
         } else {
             self.stream = OutputTransformer.stdout
-            ErrorTracker.record(match)
+            ErrorTracker.record(line)
         }
-    }
-    
-    func start() {
+        
         let prefix: String
-        switch match.type {
+        switch line.type {
         case .error:
+            self.color = .red
             prefix = "\n  ● Error:".red.bold
         case .warning:
+            self.color = .yellow
             prefix = "\n  ● Warning:".yellow.bold
         case .note:
+            self.color = .yellow
             prefix = "    Note:".blue
         }
-        stream <<< "\(prefix) \(match.message)"
+        
+        stream <<< "\(prefix) \(line.message)"
         stream <<< ""
     }
     
-    func keepGoing(on line: String) -> Bool {
-        let matchesOther = CompileMatch.matches(line) || CompileCResponse.Match.matches(line) || ErrorResponse.Match.matches(line) ||
-            LinkMatch.matches(line) || ErrorResponse.oldCompletionRegex.matches(line)
+    func consume(line: String) -> Bool {
+        let matchesOther = CompileSwiftLine.matches(line) || CompileCLine.matches(line) || BuildErrorLine.matches(line) ||
+            LinkLine.matches(line) || WarningsGeneratedLine.matches(line)
         
         let indentation = "    "
         switch awaitingLine {
         case .code:
-            if match.type == .note && matchesOther {
+            if self.line.type == .note && matchesOther {
                 // Notes don't always have associated code
                 return false
             }
@@ -168,8 +137,7 @@ final class ErrorResponse: SimpleResponse {
             stream <<< indentation + String(line[lineStartIndex...]).lightBlack
             awaitingLine = .highlightsOrCode(startIndex: lineStartIndex)
         case let .highlightsOrCode(startIndex):
-            if line.trimmingCharacters(in: CharacterSet(charactersIn: " ~^")).isEmpty {
-                // It's a highlight line
+            if HighlightsLine.matches(line) {
                 stream <<< indentation + String(line[startIndex...]).replacingAll(matching: "~", with: "^").applyingColor(color)
                 awaitingLine = .suggestionOrDone(startIndex: startIndex)
             } else {
@@ -191,11 +159,10 @@ final class ErrorResponse: SimpleResponse {
         return true
     }
     
-    func stop() {
-        let file = match.path.beautifyPath
-        stream <<< "    at \(file)" + ":\(match.lineNumber)\n"
+    func finish() {
+        let file = line.path.beautifyPath
+        stream <<< "    at \(file)" + ":\(line.lineNumber)\n"
     }
     
     
 }
-

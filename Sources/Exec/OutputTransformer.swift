@@ -9,12 +9,12 @@ import Foundation
 import Regex
 import SwiftCLI
 
+public enum StandardStream {
+    case out
+    case err
+}
+
 public class OutputTransformer {
-    
-    public enum StandardStream {
-        case out
-        case err
-    }
     
     public struct Change {
         public let regex: Regex
@@ -101,6 +101,57 @@ public class OutputTransformer {
         } else {
             errorGenerators.append(generator)
         }
+    }
+    
+    final class SingleLineResponseWrapper<T: SingleLineResponse>: SimpleResponse {
+        
+        typealias Match = T.MatchedLine
+        
+        let match: Match
+        
+        init(match: Match) {
+            self.match = match
+        }
+        
+        func start() { T.respond(to: match) }
+        func keepGoing(on line: String) -> Bool { return false }
+        func stop() {}
+    }
+    
+    final class MultiLineResponseWrapper<T: MultiLineResponse>: SimpleResponse {
+        
+        typealias Match = T.FirstLine
+        
+        let match: Match
+        var response: T?
+        
+        init(match: Match) {
+            self.match = match
+        }
+        
+        func start() {
+            response = T(line: match)
+        }
+        
+        func keepGoing(on line: String) -> Bool {
+            return response!.consume(line: line)
+        }
+        
+        func stop() {
+            response?.finish()
+        }
+    }
+    
+    public func add<T: SingleLineResponse>(_ type: T.Type) {
+        respond(on: T.MatchedLine.stream, with: ResponseGenerator(SingleLineResponseWrapper<T>.self))
+    }
+    
+    public func add<T: MultiLineResponse>(_ type: T.Type) {
+        respond(on: T.FirstLine.stream, with: ResponseGenerator(MultiLineResponseWrapper<T>.self))
+    }
+    
+    public func ignore<T: Line>(_ type: T.Type) {
+        add(IgnoreLineResponse<T>.self)
     }
     
     public func register<T: SimpleResponse>(_ type: T.Type, on stream: StandardStream) {

@@ -40,7 +40,7 @@ class TransformTest {
         self.transformer.start(with: nil)
     }
 
-    func send(_ stream: OutputTransformer.StandardStream, _ contents: String) {
+    func send(_ stream: StandardStream, _ contents: String) {
         let hose: Hose
         switch stream {
         case .out: hose = transformer.out

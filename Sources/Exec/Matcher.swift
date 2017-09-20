@@ -7,6 +7,10 @@
 
 import Regex
 
+public protocol Line: Matcher {
+    static var stream: StandardStream { get }
+}
+
 public protocol Matcher: class, CustomStringConvertible {
     static var regex: Regex { get }
     init()

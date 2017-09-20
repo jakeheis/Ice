@@ -143,6 +143,7 @@ private final class TestSuiteResponse: SimpleResponse {
                     name += "/\(response.match.caseName)"
                 }
                 stderr.output(badge(text: "RUNS", color: .blue), terminator: "")
+                // TODO: flush pipe
             }
             response.start()
             currentTestCase = response

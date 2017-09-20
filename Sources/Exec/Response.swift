@@ -7,6 +7,47 @@
 
 import SwiftCLI
 
+public protocol LineResponse {}
+
+public extension LineResponse {
+    static var stdout: OutputByteStream {
+        return OutputTransformer.stdout
+    }
+    static var stderr: OutputByteStream {
+        return OutputTransformer.stderr
+    }
+    var stdout: OutputByteStream {
+        return OutputTransformer.stdout
+    }
+    var stderr: OutputByteStream {
+        return OutputTransformer.stderr
+    }
+}
+
+public protocol SingleLineResponse: LineResponse {
+    associatedtype MatchedLine: Line
+    static func respond(to line: MatchedLine)
+}
+
+open class IgnoreLineResponse<MatchedLine: Line>: SingleLineResponse {
+    public static func respond(to line: MatchedLine) {}
+}
+
+public protocol MultiLineResponse: LineResponse {
+    associatedtype FirstLine: Line
+    
+    init(line: FirstLine)
+    func consume(line: String) -> Bool
+    func finish()
+}
+
+public extension MultiLineResponse {
+    func finish() {
+        
+    }
+}
+
+
 public protocol Response: class {
     func start()
     func keepGoing(on line: String) -> Bool

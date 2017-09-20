@@ -31,7 +31,7 @@ class PackageTests: XCTestCase {
         )
         
         """
-        XCTAssertEqual(try testWritePackage(path: "SwiftCLI.json"), expected)
+        XCTAssertEqual(try writePackage(path: "SwiftCLI.json"), expected)
     }
     
     func testComplex() throws {
@@ -62,10 +62,10 @@ class PackageTests: XCTestCase {
         )
 
         """
-        XCTAssertEqual(try testWritePackage(path: "Ice.json"), expected)
+        XCTAssertEqual(try writePackage(path: "Ice.json"), expected)
     }
     
-    func testWritePackage(path: String) throws -> String {
+    func writePackage(path: String) throws -> String {
         let data = try Data(contentsOf: URL(fileURLWithPath: "Tests/Fixtures/\(path)"))
         let package = try Package.load(data: data)
         let captureStream = CaptureStream()
