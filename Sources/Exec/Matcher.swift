@@ -50,6 +50,32 @@ extension Line {
     
 }
 
+public final class AnyOutLine: Line {
+    public static let regex = Regex("^(.*)$")
+    public static let stream: StandardStream = .out
+    public var text: String { return captures[0] }
+    public init() {}
+}
+
+public final class WhitespaceOutLine: Line {
+    public static let regex = Regex("^\\s*$")
+    public static let stream: StandardStream = .out
+    public init() {}
+}
+
+public final class AnyErrLine: Line {
+    public static let regex = Regex("^(.*)$")
+    public static let stream: StandardStream = .err
+    public var text: String { return captures[0] }
+    public init() {}
+}
+
+public final class WhitespaceErrLine: Line {
+    public static let regex = Regex("^\\s*$")
+    public static let stream: StandardStream = .out
+    public init() {}
+}
+
 // MARK: -
 
 private class MatcherManager {

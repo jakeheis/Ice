@@ -12,6 +12,10 @@ import SwiftCLI
 public enum StandardStream {
     case out
     case err
+    
+    public func toOutput() -> OutputByteStream {
+        return self == .out ? OutputTransformer.stdout : OutputTransformer.stderr
+    }
 }
 
 public class OutputTransformer {
@@ -58,6 +62,9 @@ public class OutputTransformer {
     }
     
     private func readLine(line: String, currentResponse: inout AnyMultiLineResponse?, stream: StandardStream) {
+        if line.isEmpty {
+            return
+        }
         if !changes.isEmpty {
             var waitingChanges: [Change] = []
             for change in changes {
@@ -84,8 +91,7 @@ public class OutputTransformer {
             }
         }
         
-        let outputStream = stream == .out ? OutputTransformer.stdout : OutputTransformer.stderr
-        outputStream <<< line
+        stream.toOutput() <<< line
     }
     
     public func first(_ str: String) {

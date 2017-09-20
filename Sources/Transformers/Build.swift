@@ -45,18 +45,15 @@ class LinkResponse: SingleLineResponse {
     }
 }
 
-final class CompileCResponse: MultiLineResponse {
+final class CompileCResponse: InputMultiLineResponse {
     let module: String
     init(line: CompileCLine) {
         self.module = line.module
         stdout <<< "Compile ".dim + "\(line.module)"
     }
-    func consume(line: String) -> Bool {
-        if let continued = CompileCLine.findMatch(in: line),
-            continued.module == self.module {
-            return true
-        }
-        return false
+    func consume(input: InputMatcher) {
+        input.continueIf(CompileCLine.self, where: { $0.module == self.module })
+        input.fallback(.stop)
     }
 }
 
@@ -81,7 +78,7 @@ class ErrorTracker {
     
 }
 
-final class ErrorResponse: MultiLineResponse {
+final class ErrorResponse: InputMultiLineResponse {
     
     enum AwaitingLine {
         case code
@@ -122,41 +119,44 @@ final class ErrorResponse: MultiLineResponse {
         stream <<< ""
     }
     
-    func consume(line: String) -> Bool {
-        let matchesOther = CompileSwiftLine.matches(line, .err) || CompileCLine.matches(line) || BuildErrorLine.matches(line) ||
-            LinkLine.matches(line) || WarningsGeneratedLine.matches(line)
-        
+    func consume(input: InputMatcher) {
         let indentation = "    "
         switch awaitingLine {
         case .code:
-            if self.line.type == .note && matchesOther {
-                // Notes don't always have associated code
-                return false
+            if self.line.type == .note  {
+                input.stopIf(CompileSwiftLine.self)
+                input.stopIf(CompileCLine.self)
+                input.stopIf(BuildErrorLine.self)
+                input.stopIf(LinkLine.self)
+                input.stopIf(WarningsGeneratedLine.self)
             }
-            let lineStartIndex = line.index(where: { $0 != " " }) ?? line.startIndex
-            stream <<< indentation + String(line[lineStartIndex...]).lightBlack
-            awaitingLine = .highlightsOrCode(startIndex: lineStartIndex)
+            input.expect(CodeLine.self) { (line) in
+                let text = line.text
+                let lineStartIndex = text.index(where: { $0 != " " }) ?? text.startIndex
+                stream <<< indentation + String(text[lineStartIndex...]).lightBlack
+                awaitingLine = .highlightsOrCode(startIndex: lineStartIndex)
+            }
         case let .highlightsOrCode(startIndex):
-            if HighlightsLine.matches(line) {
-                stream <<< indentation + String(line[startIndex...]).replacingAll(matching: "~", with: "^").applyingColor(color)
+            input.expect(HighlightsLine.self) { (line) in
+                stream <<< indentation + String(line.highlights[startIndex...]).replacingAll(matching: "~", with: "^").applyingColor(color)
                 awaitingLine = .suggestionOrDone(startIndex: startIndex)
-            } else {
-                // It's another code line
-                stream <<< indentation + String(line[startIndex...]).lightBlack
+            }
+            input.expect(CodeLine.self) { (line) in
+                stream <<< indentation + String(line.text[startIndex...]).lightBlack
             }
         case let .suggestionOrDone(startIndex):
-            if matchesOther {
-                // This error is done
-                return false
+            input.stopIf(CompileSwiftLine.self)
+            input.stopIf(CompileCLine.self)
+            input.stopIf(BuildErrorLine.self)
+            input.stopIf(LinkLine.self)
+            input.stopIf(WarningsGeneratedLine.self)
+            
+            input.expect(SuggestionLine.self) { (line) in
+                stream <<< indentation + String(line.text[startIndex...]).applyingColor(color) + "\n"
             }
-            if let characterIndex = line.index(where: { $0 != " " }), characterIndex >= startIndex {
-                // If there's a bunch of whitespace first, it's likely a suggestion
-                stream <<< indentation + String(line[startIndex...]).applyingColor(color) + "\n"
-                return true
-            }
-            return false
         }
-        return true
+
+        input.fallback(.fatalError)
     }
     
     func finish() {

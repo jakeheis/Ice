@@ -75,24 +75,5 @@ final class WarningsGeneratedLine: Line {
     static let stream: StandardStream = .out
 }
 
-final class AnyOutLine: Line {
-    static let regex = Regex("^(.*)$")
-    static let stream: StandardStream = .out
-    var text: String { return captures[0] }
-}
-
-final class WhitespaceOutLine: Line {
-    static let regex = Regex("^\\s*$")
-    static let stream: StandardStream = .out
-}
-
-final class AnyErrLine: Line {
-    static let regex = Regex("^(.*)$")
-    static let stream: StandardStream = .err
-    var text: String { return captures[0] }
-}
-
-final class WhitespaceErrLine: Line {
-    static let regex = Regex("^\\s*$")
-    static let stream: StandardStream = .out
-}
+typealias CodeLine = AnyErrLine
+typealias SuggestionLine = AnyErrLine

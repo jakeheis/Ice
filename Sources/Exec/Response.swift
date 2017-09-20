@@ -65,6 +65,18 @@ public protocol MultiLineResponse: AnyMultiLineResponse {
     init(line: FirstLine)
 }
 
+public protocol InputMultiLineResponse: MultiLineResponse {
+    func consume(input: InputMatcher)
+}
+
+extension InputMultiLineResponse {
+    public func consume(line: String) -> Bool {
+        let input = InputMatcher(line: line, stream: Self.FirstLine.stream)
+        consume(input: input)
+        return input.finish()
+    }
+}
+
 public extension MultiLineResponse {
     
     public static func matches(_ line: String, _ stream: StandardStream) -> Bool {
@@ -92,6 +104,89 @@ public extension MultiLineResponse {
             currentResponse.finish()
             response = nil
             return false
+        }
+    }
+    
+}
+
+// MARK: -
+
+public class InputMatcher {
+    
+    public enum FallbackBehavior {
+        case stop
+        case print
+        case fatalError
+    }
+    
+    private enum Status {
+        case consume
+        case stop
+        case none
+    }
+    
+    private let line: String
+    private let stream: StandardStream
+    private var status: Status = .none
+    
+    private var fallbackBehavior: FallbackBehavior = .print
+    
+    init(line: String, stream: StandardStream) {
+        self.line = line
+        self.stream = stream
+    }
+    
+    public typealias Filter<T: Line> = (T) -> Bool
+    
+    public func continueIf<T: Line>(_ type: T.Type, where filter: Filter<T>? = nil) {
+        if matchLine(where: filter) != nil {
+            status = .consume
+        }
+    }
+    
+    public func expect<T: Line>(_ type: T.Type, where filter: Filter<T>? = nil, respond: (T) -> ()) {
+        if let line = matchLine(where: filter) {
+            respond(line)
+            status = .consume
+        }
+    }
+    
+    public func stopIf<T: Line>(_ type: T.Type, where filter: Filter<T>? = nil) {
+        if matchLine(where: filter) != nil {
+            status = .stop
+        }
+    }
+
+    private func matchLine<T: Line>(where filter: Filter<T>?) -> T? {
+        guard status == .none else {
+            return nil
+        }
+        if let match = T.findMatch(in: line), filter?(match) ?? true {
+            return match
+        }
+        return nil
+    }
+    
+    public func fallback(_ behavior: FallbackBehavior) {
+        fallbackBehavior = behavior
+    }
+    
+    func finish() -> Bool {
+        switch status {
+        case .consume:
+            return true
+        case .stop:
+            return false
+        case .none:
+            switch fallbackBehavior {
+            case .stop:
+                return false
+            case .print:
+                stream.toOutput() <<< line
+                return true
+            case .fatalError:
+                fatalError("Unrecognized line: `\(line)`")
+            }
         }
     }
     
