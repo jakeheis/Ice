@@ -18,7 +18,6 @@ class InitTests: XCTestCase {
         build.expect(stdout: """
         
         Creating library package: Ice
-
         
         
         """, stderr: "")
@@ -38,7 +37,6 @@ class InitTests: XCTestCase {
         Creating Tests/MyNewLibTests/MyNewLibTests.swift
         """)
         build.expect(stdout: """
-        
             create Package.swift
             create README.md
             create .gitignore
@@ -48,7 +46,6 @@ class InitTests: XCTestCase {
             create Tests/LinuxMain.swift
             create Tests/MyNewLibTests/
             create Tests/MyNewLibTests/MyNewLibTests.swift
-        
         
         """, stderr: "")
     }

@@ -33,12 +33,8 @@ public class OutputTransformer {
     let error: Hose
     let transformQueue: DispatchQueue
     
-    private var prefix: String? = nil
-    private var suffix: String? = nil
-    
     private var responses: [LineResponse.Type] = []
     private var changes: [Change] = []
-    
     private var currentOutResponse: AnyMultiLineResponse?
     private var currentErrResponse: AnyMultiLineResponse?
     
@@ -60,6 +56,44 @@ public class OutputTransformer {
             }
         }
     }
+    
+    // MARK: -
+    
+    public func add<T: LineResponse>(_ type: T.Type) {
+        responses.append(type)
+    }
+    
+    public func ignore<T: Line>(_ type: T.Type) {
+        add(IgnoreLineResponse<T>.self)
+    }
+    
+    public func after(_ matcher: StaticString, change: @escaping () -> ()) {
+        changes.append(Change(regex: Regex(matcher), change: change))
+    }
+    
+    // MARK: -
+    
+    func start(with process: Process?) {
+        if let process = process {
+            process.attachStdout(to: out)
+            process.attachStderr(to: error)
+        }
+    }
+    
+    func finish() {
+        let semaphore = DispatchSemaphore(value: 0)
+        transformQueue.async {
+            semaphore.signal()
+        }
+        semaphore.wait()
+
+        currentOutResponse?.finish()
+        currentOutResponse = nil
+        currentErrResponse?.finish()
+        currentErrResponse = nil
+    }
+    
+    // MARK: -
     
     private func readLine(line: String, currentResponse: inout AnyMultiLineResponse?, stream: StandardStream) {
         if line.isEmpty {
@@ -92,54 +126,6 @@ public class OutputTransformer {
         }
         
         stream.toOutput() <<< line
-    }
-    
-    public func first(_ str: String) {
-        self.prefix = str
-    }
-    
-    public func add<T: LineResponse>(_ type: T.Type) {
-        responses.append(type)
-    }
-    
-    public func ignore<T: Line>(_ type: T.Type) {
-        add(IgnoreLineResponse<T>.self)
-    }
-    
-    public func after(_ matcher: StaticString, change: @escaping () -> ()) {
-        changes.append(Change(regex: Regex(matcher), change: change))
-    }
-    
-    public func last(_ str: String) {
-        self.suffix = str
-    }
-    
-    public func start(with process: Process?) {
-        if let process = process {
-            process.attachStdout(to: out)
-            process.attachStderr(to: error)
-        }
-        
-        if let prefix = prefix {
-            OutputTransformer.stdout.output(prefix, terminator: "")
-        }
-    }
-    
-    public func finish() {
-        let semaphore = DispatchSemaphore(value: 0)
-        transformQueue.async {
-            semaphore.signal()
-        }
-        semaphore.wait()
-
-        currentOutResponse?.finish()
-        currentOutResponse = nil
-        currentErrResponse?.finish()
-        currentErrResponse = nil
-        
-        if let suffix = suffix {
-            OutputTransformer.stdout.output(suffix, terminator: "")
-        }
     }
     
 }

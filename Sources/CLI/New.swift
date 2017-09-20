@@ -38,8 +38,9 @@ class NewCommand: Command {
         }
         try SPM(path: path).initPackage(type: type)
         
-        print("Run: ".blue.bold + "cd \(projectName.value) && ice build")
-        print()
+        stdout <<< ""
+        stdout <<< "Run: ".blue.bold + "cd \(projectName.value) && ice build"
+        stdout <<< ""
     }
 
 }

@@ -63,49 +63,29 @@ public protocol MultiLineResponse: AnyMultiLineResponse {
     associatedtype FirstLine: Line
     
     init(line: FirstLine)
-}
-
-public protocol InputMultiLineResponse: MultiLineResponse {
     func consume(input: InputMatcher)
-}
-
-extension InputMultiLineResponse {
-    public func consume(line: String) -> Bool {
-        let input = InputMatcher(line: line, stream: Self.FirstLine.stream)
-        consume(input: input)
-        return input.finish()
-    }
 }
 
 public extension MultiLineResponse {
     
-    public static func matches(_ line: String, _ stream: StandardStream) -> Bool {
+    static func matches(_ line: String, _ stream: StandardStream) -> Bool {
         return FirstLine.matches(line, stream)
     }
     
-    public static func respond(to line: String) -> AnyMultiLineResponse? {
+    static func respond(to line: String) -> AnyMultiLineResponse? {
         guard let line = FirstLine.findMatch(in: line) else {
             fatalError("Ensure matches() is true before calling respond")
         }
         return Self(line: line)
     }
     
-    func finish() {
-        
+    func consume(line: String) -> Bool {
+        let input = InputMatcher(line: line, stream: Self.FirstLine.stream)
+        consume(input: input)
+        return input.finish()
     }
     
-    func yield<T: MultiLineResponse>(to response: inout T?, line: String) -> Bool {
-        guard let currentResponse = response else {
-             return false
-        }
-        if currentResponse.consume(line: line) {
-            return true
-        } else {
-            currentResponse.finish()
-            response = nil
-            return false
-        }
-    }
+    func finish() {}
     
 }
 
@@ -156,6 +136,28 @@ public class InputMatcher {
             status = .stop
         }
     }
+    
+    public func yield<T: MultiLineResponse>(to response: inout T?) -> Bool {
+        guard let currentResponse = response else {
+            return false
+        }
+        let copy = InputMatcher(line: line, stream: stream)
+        currentResponse.consume(input: copy)
+        if copy.status == .consume {
+            status = .consume
+            return true
+        } else {
+            currentResponse.finish()
+            response = nil
+            return false
+        }
+    }
+    
+    public func stop() {
+        if status == .none {
+            status = .stop
+        }
+    }
 
     private func matchLine<T: Line>(where filter: Filter<T>?) -> T? {
         guard status == .none else {
@@ -171,7 +173,7 @@ public class InputMatcher {
         fallbackBehavior = behavior
     }
     
-    func finish() -> Bool {
+    func finish(file: StaticString = #file, line: UInt = #line) -> Bool {
         switch status {
         case .consume:
             return true
@@ -182,10 +184,10 @@ public class InputMatcher {
             case .stop:
                 return false
             case .print:
-                stream.toOutput() <<< line
+                stream.toOutput() <<< self.line
                 return true
             case .fatalError:
-                fatalError("Unrecognized line: `\(line)`")
+                fatalError("Unrecognized line: `\(line)`", file: file, line: line)
             }
         }
     }

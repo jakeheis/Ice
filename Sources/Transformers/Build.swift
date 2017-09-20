@@ -45,7 +45,7 @@ class LinkResponse: SingleLineResponse {
     }
 }
 
-final class CompileCResponse: InputMultiLineResponse {
+final class CompileCResponse: MultiLineResponse {
     let module: String
     init(line: CompileCLine) {
         self.module = line.module
@@ -78,7 +78,7 @@ class ErrorTracker {
     
 }
 
-final class ErrorResponse: InputMultiLineResponse {
+final class ErrorResponse: MultiLineResponse {
     
     enum AwaitingLine {
         case code

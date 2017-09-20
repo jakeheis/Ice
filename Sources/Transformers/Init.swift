@@ -12,16 +12,16 @@ import SwiftCLI
 
 public extension Transformers {
     static func initPackage(t: OutputTransformer) {
-        t.first("\n")
         t.add(CreatePackageResponse.self)
         t.add(CreateFileResponse.self)
-        t.last("\n")
     }
 }
 
 final class CreatePackageResponse: SingleLineResponse {
     static func respond(to line: CreatePackageLine) {
-        stdout <<< line.packageType + ": " + line.packageName.blue.bold + "\n"
+        stdout <<< ""
+        stdout <<< line.packageType + ": " + line.packageName.blue.bold
+        stdout <<< ""
     }
 }
 

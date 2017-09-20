@@ -64,19 +64,21 @@ final class TestSuiteResponse: MultiLineResponse {
         name = line.suiteName
     }
     
-    func consume(line: String) -> Bool {
+    func consume(input: InputMatcher) {
         if done {
-            return false
+            input.stop()
+            return
         }
         
-        if yield(to: &currentTestCase, line: line) {
-            return true
+        if input.yield(to: &currentTestCase) {
+            return
         }
         
-        if let line = TestCaseLine.findMatch(in: line) {
-            // Start test case
+        input.expect(TestCaseLine.self) { (line) in
             let response = TestCaseResponse(line: line)
             response.testSuite = self
+            currentTestCase = response
+            
             if !name.contains(".") {
                 name = "\(response.line.targetName)." + name
                 if AllTestsStartResponse.mode == .selected {
@@ -85,25 +87,18 @@ final class TestSuiteResponse: MultiLineResponse {
                 stderr.output(badge(text: "RUNS", color: .blue), terminator: "")
                 // TODO: flush pipe
             }
-            currentTestCase = response
-            return true
         }
         
-        if TestSuiteLine.matches(line) {
-            // Second to last line
-            return true
-        }
-        
-        if TestCountLine.matches(line) {
+        input.continueIf(TestSuiteLine.self) // Second to last line
+        input.expect(TestCountLine.self) { (line) in
             done = true
-            return true
         }
         
-        fatalError("\n\nError: unexpected output: \(line)\n\n")
+        input.fallback(.fatalError)
     }
     
     func finish() {
-        if failed == false {
+        if !failed {
             stderr <<< OutputTransformer.rewindCharacter + badge(text: "PASS", color: .green)
         }
     }
@@ -137,40 +132,34 @@ final class TestCaseResponse: MultiLineResponse {
         OutResponse.accumulated = ""
     }
     
-    func consume(line: String) -> Bool {
+    func consume(input: InputMatcher) {
         guard status == .started else {
-            return false
+            input.stop()
+            return
         }
         
-        if yield(to: &currentAssertionFailure, line: line) {
-            return true
+        if input.yield(to: &currentAssertionFailure) {
+            return
         }
-
-        if let match = AssertionFailureResponse.FirstLine.findMatch(in: line) {
-            // Start assertion
+        
+        input.expect(AssertionFailureLine.self) { (line) in
+            currentAssertionFailure = AssertionFailureResponse(line: line)
             if !markedAsFailure {
                 testSuite?.markFailed()
                 stderr <<< " ● \(self.line.caseName)".red.bold
                 markedAsFailure = true
                 TestCaseResponse.failureCount += 1
             }
-            
-            self.currentAssertionFailure = AssertionFailureResponse(line: match)
-            return true
         }
-        
-        if let match = TestCaseLine.findMatch(in: line) {
-            status = match.status
-            return true
+        input.expect(TestCaseLine.self) { (line) in
+            status = line.status
         }
-        
-        if let match = FatalErrorLine.findMatch(in: line) {
+        input.expect(FatalErrorLine.self) { (line) in
             testSuite?.markFailed()
-            stderr <<< "Fatal error: ".red.bold + match.message
-            return true
+            stderr <<< "Fatal error: ".red.bold + line.message
         }
         
-        fatalError("\n\nError: unexpected output: `\(line)`\n\n")
+        input.fallback(.fatalError)
     }
     
     func stop() {
@@ -200,14 +189,14 @@ final class AssertionFailureResponse: MultiLineResponse {
         self.assertion = line.assertion
     }
     
-    func consume(line: String) -> Bool {
-        if AssertionFailureLine.matches(line)
-            || FatalErrorLine.matches(line)
-            || TestCaseLine.matches(line) {
-            return false
+    func consume(input: InputMatcher) {
+        input.stopIf(AssertionFailureLine.self)
+        input.stopIf(FatalErrorLine.self)
+        input.stopIf(TestCaseLine.self)
+        
+        input.expect(AnyErrLine.self) { (line) in
+            assertion += AssertionFailureResponse.newlineReplacement + line.text
         }
-        assertion += AssertionFailureResponse.newlineReplacement + line
-        return true
     }
     
     func finish() {
@@ -248,7 +237,6 @@ final class AssertionFailureResponse: MultiLineResponse {
 final class TestEndResponse: MultiLineResponse {
     
     let stream: OutputByteStream
-    var shouldConsumeNextLine = true
     
     init(line: AllTestsEndLine) {
         if line.suite == "All tests" || line.suite == "Selected tests" {
@@ -260,12 +248,8 @@ final class TestEndResponse: MultiLineResponse {
         stream <<< ""
     }
     
-    func consume(line: String) -> Bool {
-        if !shouldConsumeNextLine {
-            return false
-        }
-        shouldConsumeNextLine = false
-        if let line = TestCountLine.findMatch(in: line) {
+    func consume(input: InputMatcher) {
+        input.expect(TestCountLine.self) { (line) in
             var parts: [String] = []
             if TestCaseResponse.failureCount > 0 {
                 parts.append("\(TestCaseResponse.failureCount) failed".bold.red)
@@ -278,9 +262,8 @@ final class TestEndResponse: MultiLineResponse {
             stream <<< "Tests:\t".bold.white + parts.joined(separator: ", ")
             stream <<< "Time:\t".bold.white + line.duration + "s"
             stream <<< ""
-            return true
         }
-        fatalError("Unrecognized line: `\(line)`")
+        input.fallback(.stop)
     }
     
 }

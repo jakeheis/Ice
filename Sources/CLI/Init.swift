@@ -81,8 +81,9 @@ class InitCommand: Command {
         }
         try SPM().initPackage(type: type)
         
-        print("Run: ".blue.bold + "ice build")
-        print()
+        stdout <<< ""
+        stdout <<< "Run: ".blue.bold + "ice build"
+        stdout <<< ""
     }
     
 }
