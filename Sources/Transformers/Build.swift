@@ -21,7 +21,6 @@ public extension Transformers {
         t.ignore(WarningsGeneratedLine.self)
         t.ignore(TerminatedLine.self)
         t.ignore(UnderscoreLine.self)
-        t.ignore(WhitespaceOutLine.self)
         t.add(LinkResponse.self)
     }
     
