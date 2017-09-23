@@ -12,7 +12,7 @@ let package = Package(
         .package(url: "https://github.com/jakeheis/FileKit", from: "4.1.0"),
         .package(url: "https://github.com/onevcat/Rainbow", from: "2.1.0"),
         .package(url: "https://github.com/sharplet/Regex", from: "1.1.0"),
-        .package(url: "https://github.com/jakeheis/SwiftCLI", .branchItem("master")),
+        .package(url: "https://github.com/jakeheis/SwiftCLI", from: "4.0.0"),
     ],
     targets: [
         .target(name: "CLI", dependencies: ["Core", "FileKit", "SwiftCLI"]),
