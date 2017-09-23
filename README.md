@@ -1,6 +1,6 @@
 # Ice
 
-The package manager Swift deserves. 100% compatible with Swift Package Manager
+❄️ A developer friendly package manager for Swift; 100% compatible with Swift Package Manager
 
 ### Motivation
 
@@ -117,6 +117,9 @@ Configure Ice behavior. Recognized keys:
 - strict: when writing `Package.swift`, should Ice reformat the file to be alphabetized
 
 ## FAQ
+
+#### Can I use Ice and SPM side by side?
+Yes! Because Ice is built on SPM, you can seamlessly go back and forth between `ice` and `swift` commands.
 
 #### Why does Ice internally use Swift Package Manager at all? Why not write an entirely new package manager?
 
