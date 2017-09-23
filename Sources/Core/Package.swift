@@ -143,7 +143,7 @@ public struct Package: Decodable {
     }
     
     private func write(to stream: OutputByteStream?, isStrict: Bool) throws {
-        if Global.config.get(\.strict) && !isStrict {
+        if Ice.config.get(\.strict) && !isStrict {
             try strictVersion().write(to: stream, isStrict: true)
             return
         }

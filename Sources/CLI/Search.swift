@@ -20,7 +20,7 @@ class SearchCommand: Command {
     let onlyName = Flag("-n", "--name-only", description: "Only search for packages matching the name")
     
     func execute() throws {
-        let entries = try Registry.search(query: query.value, includeDescription: !onlyName.value)
+        let entries = try Ice.registry.search(query: query.value, includeDescription: !onlyName.value)
         
         if entries.isEmpty {
             print("Warning:".yellow, "no results found")

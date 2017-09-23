@@ -54,6 +54,11 @@ final class HighlightsLine: Line {
     var highlights: String { return captures[0] }
 }
 
+final class InternalTerminatedErrorLine: Line {
+    static let regex = Regex("^error: terminated\\(1\\): (.*)$")
+    static let stream: StandardStream = .err
+}
+
 final class InternalErrorLine: Line {
     static let regex = Regex("^error: (.*)$")
     static let stream: StandardStream = .err

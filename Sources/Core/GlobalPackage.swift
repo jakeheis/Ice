@@ -11,12 +11,12 @@ import Foundation
 
 public class GlobalPackage {
     
-    static let directory = Global.root + "Packages"
-    
     let name: String
+    let packageRoot: Path
+    let config: Config
     
     var path: Path {
-        return GlobalPackage.directory + name
+        return packageRoot + name
     }
     
     private lazy var spm: SPM = {
@@ -27,8 +27,10 @@ public class GlobalPackage {
         return path.exists
     }
     
-    init(name: String) {
+    init(name: String, packageRoot: Path, config: Config) {
         self.name = name
+        self.packageRoot = packageRoot
+        self.config = config
     }
     
     func build() throws {
@@ -44,6 +46,8 @@ public class GlobalPackage {
     }
     
     func symlinkExecutables() throws -> Bool {
+        try iceBin().createDirectory(withIntermediateDirectories: true)
+        
         var any = false
         for executable in try executables() {
             let path = iceBin() + executable.fileName
@@ -76,7 +80,7 @@ public class GlobalPackage {
     }
     
     private func iceBin() -> Path {
-        return Path(Global.config.get(\.bin))
+        return Path(config.get(\.bin))
     }
     
 }

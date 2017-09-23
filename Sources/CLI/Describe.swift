@@ -17,7 +17,7 @@ class DescribeCommand: Command {
     let package = Parameter()
     
     func execute() throws {
-        if let entry = Registry.get(package.value) {
+        if let entry = Ice.registry.get(package.value) {
             guard let ref = RepositoryReference(entry.url) else {
                 fatalError("Malformed registry entry: \(entry.url)")
             }

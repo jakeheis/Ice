@@ -11,31 +11,27 @@ import FileKit
 public class Registry {
     
     private static let url = "https://github.com/jakeheis/IceRegistry"
-    private static let directory = Global.root + "Registry"
-    private static let localPath = directory + "local.json"
-    private static let sharedRepo = directory + "shared"
-    private static let sharedPath = sharedRepo + "Registry"
     
-    private static var localRegistry = RegistryFile.load(from: localPath)
+    let directory: Path
+    private lazy var localPath = directory + "local.json"
+    private lazy var sharedRepo = directory + "shared"
+    private lazy var sharedPath = sharedRepo + "Registry"
     
-    private static func setup() throws {
-        try Global.setup()
-        try directory.createDirectory(withIntermediateDirectories: true)
+    private lazy var localRegistry = RegistryFile.load(from: localPath)
+    
+    init(registryPath: Path) {
+        self.directory = registryPath
     }
     
-    public static func refresh(silent: Bool = false) throws {
-        try setup()
-        
+    public func refresh(silent: Bool = false) throws {
         if sharedRepo.exists {
             try Git.pull(path: sharedRepo.rawValue, silent: silent)
         } else {
-            try Git.clone(url: url, to: sharedRepo.rawValue, version: nil, silent: silent)
+            try Git.clone(url: Registry.url, to: sharedRepo.rawValue, version: nil, silent: silent)
         }
     }
     
-    public static func add(name: String, url: String) throws {
-        try setup()
-        
+    public func add(name: String, url: String) throws {
         var newRegistry: RegistryFile
         if let localRegistry = localRegistry {
             newRegistry = localRegistry
@@ -48,7 +44,7 @@ public class Registry {
         try JSONEncoder().encode(newRegistry).write(to: localPath)
     }
     
-    public static func get(_ name: String) -> RegistryEntry? {
+    public func get(_ name: String) -> RegistryEntry? {
         if let matching = localRegistry?.entries.first(where: { $0.name == name }) {
             return matching
         }
@@ -62,7 +58,7 @@ public class Registry {
         return nil
     }
     
-    public static func remove(_ name: String) throws {
+    public func remove(_ name: String) throws {
         guard var localRegistry = localRegistry else {
             throw IceError(message: "no registry file found")
         }
@@ -75,7 +71,7 @@ public class Registry {
         try JSONEncoder().encode(localRegistry).write(to: localPath)
     }
     
-    public static func search(query: String, includeDescription: Bool) throws -> [RegistryEntry] {
+    public func search(query: String, includeDescription: Bool) throws -> [RegistryEntry] {
         try refresh(silent: true)
         
         var all = Set<String>()
@@ -113,7 +109,7 @@ public class Registry {
         return localEntries + entries
     }
     
-    private static func forEachShared(block: (_ file: RegistryFile, _ fileName: String) -> ()) {
+    private func forEachShared(block: (_ file: RegistryFile, _ fileName: String) -> ()) {
         let paths = sharedPath.children()
         paths.forEach { (path) in
             if let file = RegistryFile.load(from: path) {

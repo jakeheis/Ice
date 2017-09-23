@@ -700,4 +700,34 @@ class TestTests: XCTestCase {
         """)
     }
     
+    func testInterleavedOutput() {
+        let test = TransformTest(Transformers.test)
+        test.send(.err, """
+        Test Suite 'Selected tests' started at 2017-09-23 08:49:17.352
+        Test Suite 'IcePackageTests.xctest' started at 2017-09-23 08:49:17.353
+        Test Suite 'RegistryTests' started at 2017-09-23 08:49:17.353
+        Test Case '-[CoreTests.RegistryTests testRefresh]' started.
+        Cloning into 'Registry/shared'...
+        Test Case '-[CoreTests.RegistryTests testRefresh]' passed (0.936 seconds).
+        Test Suite 'RegistryTests' passed at 2017-09-23 08:49:18.289.
+        Executed 1 test, with 0 failures (0 unexpected) in 0.936 (0.936) seconds
+        Test Suite 'IcePackageTests.xctest' passed at 2017-09-23 08:49:18.289.
+        Executed 1 test, with 0 failures (0 unexpected) in 0.936 (0.936) seconds
+        Test Suite 'Selected tests' passed at 2017-09-23 08:49:18.289.
+        Executed 1 test, with 0 failures (0 unexpected) in 0.936 (0.936) seconds
+        """)
+        test.expect(stdout: "", stderr: """
+        
+        IcePackageTests:
+
+         RUNS  CoreTests.RegistryTests/testRefresh
+         PASS  CoreTests.RegistryTests/testRefresh
+
+        Tests:\t1 passed, 1 total
+        Time:\t0.936s
+        
+        
+        """)
+    }
+    
 }

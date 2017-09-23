@@ -17,10 +17,11 @@ public extension Transformers {
         t.add(CompileSwiftResponse.self)
         t.add(CompileCResponse.self)
         t.add(ErrorResponse.self)
-        t.add(InternalErrorResponse.self)
+        t.ignore(InternalTerminatedErrorLine.self)
         t.ignore(WarningsGeneratedLine.self)
         t.ignore(TerminatedLine.self)
         t.ignore(UnderscoreLine.self)
+        t.add(InternalErrorResponse.self)
         t.add(LinkResponse.self)
     }
     
@@ -28,7 +29,9 @@ public extension Transformers {
 
 class InternalErrorResponse: SingleLineResponse {
     static func respond(to line: InternalErrorLine) {
-        stderr <<< "\nError: ".bold.red + line.message
+        stderr <<< ""
+        stderr <<< "Error: ".bold.red + line.message
+        stderr <<< ""
     }
 }
 

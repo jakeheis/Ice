@@ -10,29 +10,20 @@ import Foundation
 
 public class Global {
     
-    static let root: Path = {
-        if let root = ProcessInfo.processInfo.environment["ICE_GLOBAL_ROOT"] {
-            return Path(root)
-        }
-        return Path.userHome + ".icebox"
-    }()
-    
-    public static let config = Config(globalRoot: root)
-    
     enum Error: Swift.Error {
         case alreadyInstalled
     }
     
-    public static func setup() throws {
-        try root.createDirectory(withIntermediateDirectories: true)
-        let bin = Path(config.get(\.bin))
-        try bin.createDirectory(withIntermediateDirectories: true)
+    let root: Path
+    let config: Config
+    
+    init(packagesPath: Path, config: Config) {
+        self.root = packagesPath
+        self.config = config
     }
     
-    public static func add(ref: RepositoryReference, version: Version?) throws {
-        try setup()
-        
-        let globalPackage = GlobalPackage(name: ref.name)
+    public func add(ref: RepositoryReference, version: Version?) throws {
+        let globalPackage = GlobalPackage(name: ref.name, packageRoot: root, config: config)
         
         if globalPackage.exists {
             print("Project already downloaded")
@@ -55,7 +46,7 @@ public class Global {
         }
     }
     
-    public static func upgrade(name: String, version: Version?) throws {
+    public func upgrade(name: String, version: Version?) throws {
         let packageName: String
         if let ref = RepositoryReference(name) {
             packageName = ref.name
@@ -63,7 +54,7 @@ public class Global {
             packageName = name
         }
         
-        let package = GlobalPackage(name: packageName)
+        let package = GlobalPackage(name: packageName, packageRoot: root, config: config)
         
         guard package.exists else {
             throw IceError(message: "\(name) not installed")
@@ -88,7 +79,7 @@ public class Global {
         try add(ref: ref, version: version)
     }
 
-    public static func remove(name: String) throws {
+    public func remove(name: String) throws {
         let packageName: String
         if let ref = RepositoryReference(name) {
             packageName = ref.name
@@ -96,7 +87,7 @@ public class Global {
             packageName = name
         }
         
-        let package = GlobalPackage(name: packageName)
+        let package = GlobalPackage(name: packageName, packageRoot: root, config: config)
         
         guard package.exists else {
             throw IceError(message: "\(name) not installed")

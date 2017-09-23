@@ -26,7 +26,7 @@ private class AddEntryCommand: Command {
             throw IceError(message: "invalid repository reference")
         }
         
-        try Registry.add(name: shortName.value, url: ref.url)
+        try Ice.registry.add(name: shortName.value, url: ref.url)
     }
     
 }
@@ -38,7 +38,7 @@ private class RemoveEntryCommand: Command {
     let from = Parameter()
     
     func execute() throws {
-        try Registry.remove(from.value)
+        try Ice.registry.remove(from.value)
     }
     
 }
@@ -50,7 +50,7 @@ private class LookupEntryCommand: Command {
     let from = Parameter()
     
     func execute() throws {
-        guard let value = Registry.get(from.value) else {
+        guard let value = Ice.registry.get(from.value) else {
             throw IceError(message: "couldn't find \(from.value)")
         }
         print(value.url)
@@ -63,7 +63,7 @@ private class RefreshCommand: Command {
     let name = "refresh"
     
     func execute() throws {
-        try Registry.refresh()
+        try Ice.registry.refresh()
     }
     
 }

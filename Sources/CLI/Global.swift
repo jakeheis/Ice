@@ -39,7 +39,7 @@ class GlobalAddCommand: Command {
             packageVersion = nil
         }
         
-        try Global.add(ref: ref, version: packageVersion)
+        try Ice.global.add(ref: ref, version: packageVersion)
     }
     
 }
@@ -59,7 +59,7 @@ class GlobalUpgradeCommand: Command {
         } else {
             version = nil
         }
-        try Global.upgrade(name: package.value, version: version)
+        try Ice.global.upgrade(name: package.value, version: version)
     }
     
 }
@@ -72,7 +72,7 @@ class GlobalRemoveCommand: Command {
     let package = Parameter()
     
     func execute() throws {
-       try Global.remove(name: package.value)
+       try Ice.global.remove(name: package.value)
     }
     
 }

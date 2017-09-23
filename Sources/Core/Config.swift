@@ -11,15 +11,12 @@ import FileKit
 public class Config {
     
     let globalPath: Path
+    
     public let localConfig: ConfigFile?
     public private(set) var globalConfig: ConfigFile?
-    public let defaultConfig = ConfigFile(
-        bin: (Global.root + "bin").rawValue,
-        strict: false
-    )
     
-    init(globalRoot: Path) {
-        globalPath = globalRoot + "config.json"
+    init(globalConfigPath: Path) {
+        globalPath = globalConfigPath
         localConfig = ConfigFile.from(path: Path.current + "ice.json")
         globalConfig = ConfigFile.from(path: globalPath)
     }
@@ -31,7 +28,7 @@ public class Config {
         if let globalConfig = globalConfig, let value = globalConfig[keyPath: path] {
             return value
         }
-        return defaultConfig[keyPath: path]!
+        return ConfigFile.defaultConfig[keyPath: path]!
     }
     
     public func set<T>(_ path: WritableKeyPath<ConfigFile, T?>, value: T) throws {
@@ -39,7 +36,6 @@ public class Config {
         if let existing = self.globalConfig {
             file = existing
         } else {
-            try Global.setup()
             let new = ConfigFile(bin: nil, strict: nil)
             file = new
         }
@@ -63,6 +59,12 @@ public struct ConfigFile: Codable {
     public static let decoder: JSONDecoder = {
         return JSONDecoder()
     }()
+    
+    public static let defaultBin = Ice.Paths.root + "bin"
+    public static let defaultConfig = ConfigFile(
+        bin: defaultBin.rawValue,
+        strict: false
+    )
     
     public var bin: String?
     public var strict: Bool?

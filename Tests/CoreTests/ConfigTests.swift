@@ -11,15 +11,12 @@ import FileKit
 
 class ConfigTests: XCTestCase {
     
-    let root = Path(".sandboxed_config")
-    lazy var configPath = root + "config.json"
-
-    override func setUp() {
-        try! root.createDirectory(withIntermediateDirectories: true)
-    }
+    let configPath = Path("config.json")
     
     override func tearDown() {
-        try! root.deleteFile()
+        if configPath.exists {
+            try! configPath.deleteFile()
+        }
     }
     
     func testGet() {
@@ -30,7 +27,7 @@ class ConfigTests: XCTestCase {
         }
         """.write(to: configPath)
         
-        let config = Config(globalRoot: root)
+        let config = Config(globalConfigPath: configPath)
         XCTAssertEqual(config.get(\.bin), "/.icebox/bin")
         XCTAssertEqual(config.get(\.strict), true)
     }
@@ -43,7 +40,7 @@ class ConfigTests: XCTestCase {
         }
         """.write(to: configPath)
 
-        let config = Config(globalRoot: root)
+        let config = Config(globalConfigPath: configPath)
         try! config.set(\.bin, value: "/my/special/bin")
 
         

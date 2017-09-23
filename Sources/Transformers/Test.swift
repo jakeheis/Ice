@@ -5,6 +5,7 @@
 //  Created by Jake Heiser on 9/12/17.
 //
 
+import Foundation
 import Exec
 import Regex
 import Rainbow
@@ -85,7 +86,7 @@ final class TestSuiteResponse: MultiLineResponse {
                     name += "/\(response.line.caseName)"
                 }
                 stderr.output(badge(text: "RUNS", color: .blue), terminator: "")
-                // TODO: flush pipe
+                fflush(Foundation.stderr)
             }
         }
         
@@ -159,7 +160,7 @@ final class TestCaseResponse: MultiLineResponse {
             stderr <<< "Fatal error: ".red.bold + line.message
         }
         
-        input.fallback(.fatalError)
+        input.fallback(.ignore)
     }
     
     func stop() {

@@ -23,7 +23,7 @@ class ListConfigCommand: Command {
     let name = "list"
     let shortDescription = "List the current global config"
     func execute() throws {
-        let list = ConfigFile.layer(config: Global.config.globalConfig, onto: Global.config.defaultConfig)
+        let list = ConfigFile.layer(config: Ice.config.globalConfig, onto: ConfigFile.defaultConfig)
         guard let data = try? ConfigFile.encoder.encode(list),
             let str = String(data: data, encoding: .utf8) else {
                 throw IceError(message: "couldn't retrieve config")
@@ -42,8 +42,8 @@ class GetConfigCommand: Command {
     func execute() throws {
         let value: Any
         switch key.value {
-        case "bin": value = Global.config.get(\.bin)
-        case "strict": value = Global.config.get(\.strict)
+        case "bin": value = Ice.config.get(\.bin)
+        case "strict": value = Ice.config.get(\.strict)
         default: throw IceError(message: "config key '\(key)' not recognized")
         }
         stdout <<< String(describing: value)
@@ -59,8 +59,8 @@ class SetConfigCommand: Command {
     
     func execute() throws {
         switch key.value {
-        case "bin": try Global.config.set(\.bin, value: value.value)
-        case "strict": try Global.config.set(\.strict, value: (value.value.lowercased() == "true" || value.value.lowercased() == "yes"))
+        case "bin": try Ice.config.set(\.bin, value: value.value)
+        case "strict": try Ice.config.set(\.strict, value: (value.value.lowercased() == "true" || value.value.lowercased() == "yes"))
         default: throw IceError(message: "config key '\(key)' not recognized")
         }
     }

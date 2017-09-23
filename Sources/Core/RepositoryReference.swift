@@ -29,7 +29,7 @@ public struct RepositoryReference {
             }
             self.init(url: url)
         } else if Regex("^[a-zA-Z]+$").matches(blob) {
-            if let entry = Registry.get(blob) {
+            if let entry = Ice.registry.get(blob) {
                 self.init(url: entry.url)
             } else {
                 return nil

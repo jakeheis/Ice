@@ -96,6 +96,7 @@ public class InputMatcher {
     public enum FallbackBehavior {
         case stop
         case print
+        case ignore
         case fatalError
     }
     
@@ -110,6 +111,8 @@ public class InputMatcher {
     private var status: Status = .none
     
     private var fallbackBehavior: FallbackBehavior = .print
+    private var fallbackFile: StaticString?
+    private var fallbackLine: UInt?
     
     init(line: String, stream: StandardStream) {
         self.line = line
@@ -143,7 +146,7 @@ public class InputMatcher {
         }
         let copy = InputMatcher(line: line, stream: stream)
         currentResponse.consume(input: copy)
-        if copy.status == .consume {
+        if copy.finish() {
             status = .consume
             return true
         } else {
@@ -169,11 +172,13 @@ public class InputMatcher {
         return nil
     }
     
-    public func fallback(_ behavior: FallbackBehavior) {
+    public func fallback(_ behavior: FallbackBehavior, file: StaticString = #file, line: UInt = #line) {
         fallbackBehavior = behavior
+        fallbackFile = file
+        fallbackLine = line
     }
     
-    func finish(file: StaticString = #file, line: UInt = #line) -> Bool {
+    func finish() -> Bool {
         switch status {
         case .consume:
             return true
@@ -183,11 +188,13 @@ public class InputMatcher {
             switch fallbackBehavior {
             case .stop:
                 return false
+            case .ignore:
+                return true
             case .print:
                 stream.toOutput() <<< self.line
                 return true
             case .fatalError:
-                fatalError("Unrecognized line: `\(line)`", file: file, line: line)
+                fatalError("Unrecognized line: `\(self.line)`", file: fallbackFile ?? #file, line: fallbackLine ?? #line)
             }
         }
     }

@@ -39,7 +39,6 @@ class BuildTests: XCTestCase {
         let followup = Runner.execute(args: ["build", "-c"], clean: false)
         XCTAssertEqual(followup.exitStatus, 0)
         XCTAssertEqual(followup.stderr, "")
-        
         XCTAssertEqual(followup.stdout, """
         Compile Lib (1 sources)
 
@@ -74,12 +73,7 @@ class BuildTests: XCTestCase {
         let result = Runner.execute(args: ["build", "-w"], sandbox: .lib)
         
         XCTAssertEqual(result.exitStatus, 2)
-        result.stderr.assert { (v) in
-            v.empty()
-            v.matches("^Error: terminated\\(1\\):")
-            v.empty()
-            v.done()
-        }
+        XCTAssertEqual(result.stderr, "")
         XCTAssertEqual(result.stdout, """
         [ice] rebuilding due to changes...
         Compile Lib (1 sources)
@@ -109,12 +103,7 @@ class BuildTests: XCTestCase {
         })
         
         XCTAssertEqual(result.exitStatus, 1)
-        result.stderr.assert { (v) in
-            v.empty()
-            v.matches("^Error: terminated\\(1\\):")
-            v.empty()
-            v.done()
-        }
+        XCTAssertEqual(result.stderr, "")
         XCTAssertEqual(result.stdout, """
         Fetch https://github.com/jakeheis/SwiftCLI
         Compile SwiftCLI (21 sources)
