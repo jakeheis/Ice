@@ -28,7 +28,7 @@ A few features Ice has that SPM lacks:
 
 Manage dependencies:
 
-```swift
+```shell
 ice add RxSwift
 ice add Alamofire 4.5.1
 ice add jakeheis/SwiftCLI
@@ -37,7 +37,7 @@ ice remove Alamofire
 
 Manage targets:
 
-```swift
+```shell
 ice target add Core
 ice target add --test CoreTests
 ice target depend CoreTests Core
@@ -48,7 +48,7 @@ ice target remove CoreTests
 
 The built in registry (https://github.com/jakeheis/IceRegistry) consists of the most-starred Swift repositories on Github. You get these for free, but you can also create your own personal entries to a local registry:
 
-```swift
+```shell
 > ice registry lookup Alamofire
 https://github.com/Alamofire/Alamofire
 > ice registry lookup SwiftCLI
