@@ -60,11 +60,53 @@ Error: couldn't find SwiftCLI
 > ice registry remove SwiftCLI
 ```
 
-## Package registry
+## Automatic rebuilding / restarting
+
+`ice build` and `ice run` both accept a watch flag which instructs them to rebuild/restart your app whenever a source file changes:
+
+```shell
+> ice build -w
+[ice] rebuilding due to changes...
+Compile CLI (20 sources)
+
+  ● Error: use of unresolved identifier 'dsf'
+
+    dsf
+    ^^^
+    at Sources/CLI/Target.swift:74
+
+[ice] rebuilding due to changes...
+Compile CLI (20 sources)
+Link ./.build/x86_64-apple-macosx10.10/debug/ice
+```
+
+```shell
+> ice run -w
+[ice] restarting due to changes...
+```
+
+## Other commands
+
+```shell
+> ice clean
+> ice reset
+> ice init
+> ice config set <key> <value>
+> ice dump
+> ice describe SwiftCLI
+> ice search CLI
+
+# Generate an Xcode project
+> ice xc
+generated: ./Ice.xcodeproj
+
+# Rebuild every time a source file changes
+> 
+```
 
 ### FAQ
 
-#### Why use Swift Package Manager at all? Why not write an entirely new package manager?
+#### Why does Ice internally use Swift Package Manager at all? Why not write an entirely new package manager?
 
 A goal of Ice is to retain 100% compatibilty with SPM -- the goal is not to splinter the ecosystem in any way. By building Ice on top of SPM, we can easily attain that goal.
 
