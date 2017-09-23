@@ -28,6 +28,9 @@ class NewCommand: Command {
 
     func execute() throws {
         let path = Path.current + projectName.value
+        if path.exists {
+            throw IceError(message: "\(projectName.value) already exists")
+        }
         try path.createDirectory()
         
         var type: SPM.InitType?
