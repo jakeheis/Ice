@@ -7,8 +7,8 @@ The package manager Swift deserves. 100% compatible with Swift Package Manager
 The official [Swift Package Manager](https://github.com/apple/swift-package-manager) is great at actually managing packages (resolving package versions, compiling source, etc.), but it lacks in developer friendliness. Ice uses Swift Package Manger in its core, but provides a much more developer friendly layer on top of SPM.
 
 A few features Ice has that SPM lacks:
-- Beautiful, information dense output (particularly while building and testing)
-- Imperative managing of `Packages.swift`
+- Beautiful, yet information dense output (particularly while building and testing)
+- Imperatively manage `Package.swift` (e.g. `ice add RxSwift`)
 - A centralized registry of packages
 - Short command names for the most used commands
 - Automatic rebuilding / restarting an app upon source changes
@@ -24,12 +24,40 @@ A few features Ice has that SPM lacks:
 ### Test
 ![test](https://github.com/jakeheis/Ice/raw/gifs/test.gif)
 
-## Imperative managing of `Package.swift`
+## Imperatively manage `Package.swift`
+
+Manage dependencies:
 
 ```swift
 ice add RxSwift
-ice target add --test CoreTests
+ice add Alamofire 4.5.1
+ice add jakeheis/SwiftCLI
 ice remove Alamofire
+```
+
+Manage targets:
+
+```swift
+ice target add Core
+ice target add --test CoreTests
+ice target depend CoreTests Core
+ice target remove CoreTests
+```
+
+## Centralized package registry
+
+The built in registry (https://github.com/jakeheis/IceRegistry) consists of the most-starred Swift repositories on Github. You get these for free, but you can also create your own personal entries to a local registry:
+
+```swift
+> ice registry lookup Alamofire
+https://github.com/Alamofire/Alamofire
+> ice registry lookup SwiftCLI
+
+Error: couldn't find SwiftCLI
+
+> ice registry add https://github.com/jakeheis/SwiftCLI SwiftCLI
+> ice add SwiftCLI
+> ice registry remove SwiftCLI
 ```
 
 ## Package registry
