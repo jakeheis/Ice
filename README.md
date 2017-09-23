@@ -16,12 +16,13 @@ A few features Ice has that SPM lacks:
 ## Prettified output
 
 ### Init
-
+![new](https://github.com/jakeheis/Ice/raw/gifs/new.gif)
 
 ### Build
-
+![build](https://github.com/jakeheis/Ice/raw/gifs/build.gif)
 
 ### Test
+![test](https://github.com/jakeheis/Ice/raw/gifs/test.gif)
 
 ## Imperative managing of `Package.swift`
 
