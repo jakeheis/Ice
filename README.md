@@ -10,8 +10,8 @@ A few features Ice has that SPM lacks:
 - Beautiful, yet information dense output (particularly while building and testing)
 - Imperatively manage `Package.swift` (e.g. `ice add RxSwift`)
 - A centralized registry of packages
-- Short command names for the most used commands
 - Automatic rebuilding / restarting an app upon source changes
+- Short command names for the most used commands
 
 ## Prettified output
 
@@ -51,13 +51,16 @@ The built in registry (https://github.com/jakeheis/IceRegistry) consists of the 
 ```shell
 > ice registry lookup Alamofire
 https://github.com/Alamofire/Alamofire
-> ice registry lookup SwiftCLI
-
-Error: couldn't find SwiftCLI
-
 > ice registry add https://github.com/jakeheis/SwiftCLI SwiftCLI
+> ice registry lookup SwiftCLI
+https://github.com/jakeheis/SwiftCLI
+```
+
+Once packages are in the registry (either the shared registry or your local registry), you can refer to them just by the project name:
+
+```shell
+> ice add Alamofire
 > ice add SwiftCLI
-> ice registry remove SwiftCLI
 ```
 
 ## Automatic rebuilding / restarting
@@ -87,28 +90,37 @@ Link ./.build/x86_64-apple-macosx10.10/debug/ice
 
 ## Other commands
 
-```shell
-> ice clean
-> ice reset
-> ice init
-> ice config set <key> <value>
-> ice dump
-> ice describe SwiftCLI
-> ice search CLI
+#### ice clean
+Clean the current project by removing build artifacts
 
-# Generate an Xcode project
-> ice xc
-generated: ./Ice.xcodeproj
+#### ice reset
+Remove everything in the `.build` folder (build artifacts, checked out dependencies, etc.)
 
-# Rebuild every time a source file changes
-> 
-```
+#### ice init
+Initialize a new package in the current directory
 
-### FAQ
+#### ice dump
+Dump the current package as JSON
+
+#### ice describe Alamofire
+Describe the package in the registry with the name "Alamofire"
+
+#### ice search CLI
+Search for packages in the registry with "CLI" in their name or description
+
+#### ice xc
+Generate an Xcode project for the current project and open it
+
+#### ice config get/set
+Configure Ice behavior. Recognized keys:
+- bin: when Ice installs global packages, where should it symlink executables to?
+- strict: when writing `Package.swift`, should Ice reformat the file to be alphabetized
+
+## FAQ
 
 #### Why does Ice internally use Swift Package Manager at all? Why not write an entirely new package manager?
 
-A goal of Ice is to retain 100% compatibilty with SPM -- the goal is not to splinter the ecosystem in any way. By building Ice on top of SPM, we can easily attain that goal.
+A goal of Ice is to retain 100% compatibilty with SPM -- Ice should not splinter the ecosystem in any way. By building Ice on top of SPM, we can easily attain that goal.
 
 #### Why not contribute these improvements directly to SPM rather than creating a new layer on top of it?
 
