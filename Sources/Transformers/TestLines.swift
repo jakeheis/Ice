@@ -56,7 +56,7 @@ final class FatalErrorLine: Line {
 }
 
 final class AssertionFailureLine: Line {
-    static let regex = Regex("(.*):([0-9]+): error: .* : (.*)$")
+    static let regex = Regex("^(.*):([0-9]+): error: -\\[\\w+\\.\\w+ \\w+\\] : (.*)$")
     static let stream: StandardStream = .err
     
     var file: String { return captures[0] }

@@ -23,10 +23,8 @@ class ListConfigCommand: Command {
     let name = "list"
     let shortDescription = "List the current global config"
     func execute() throws {
-        let list = Config.layer(config: Config.globalConfig, onto: Config.defaultConfig)
-        let encoder = JSONEncoder()
-        encoder.outputFormatting = .prettyPrinted
-        guard let data = try? encoder.encode(list),
+        let list = ConfigFile.layer(config: Global.config.globalConfig, onto: Global.config.defaultConfig)
+        guard let data = try? ConfigFile.encoder.encode(list),
             let str = String(data: data, encoding: .utf8) else {
                 throw IceError(message: "couldn't retrieve config")
         }
@@ -44,11 +42,11 @@ class GetConfigCommand: Command {
     func execute() throws {
         let value: Any
         switch key.value {
-        case "bin": value = Config.get(\.bin)
-        case "strict": value = Config.get(\.strict)
-        default: throw IceError(message: "key \(key) not recognized")
+        case "bin": value = Global.config.get(\.bin)
+        case "strict": value = Global.config.get(\.strict)
+        default: throw IceError(message: "config key '\(key)' not recognized")
         }
-        print(value)
+        stdout <<< String(describing: value)
     }
 }
 
@@ -61,9 +59,9 @@ class SetConfigCommand: Command {
     
     func execute() throws {
         switch key.value {
-        case "bin": try Config.set(\ConfigFile.bin, value: value.value)
-        case "strict": try Config.set(\ConfigFile.strict, value: (value.value.lowercased() == "true" || value.value.lowercased() == "yes"))
-        default: throw IceError(message: "key \(key) not recognized")
+        case "bin": try Global.config.set(\.bin, value: value.value)
+        case "strict": try Global.config.set(\.strict, value: (value.value.lowercased() == "true" || value.value.lowercased() == "yes"))
+        default: throw IceError(message: "config key '\(key)' not recognized")
         }
     }
 }

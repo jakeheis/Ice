@@ -17,13 +17,15 @@ public class Global {
         return Path.userHome + ".icebox"
     }()
     
+    public static let config = Config(globalRoot: root)
+    
     enum Error: Swift.Error {
         case alreadyInstalled
     }
     
     public static func setup() throws {
         try root.createDirectory(withIntermediateDirectories: true)
-        let bin = Path(Config.get(\.bin))
+        let bin = Path(config.get(\.bin))
         try bin.createDirectory(withIntermediateDirectories: true)
     }
     

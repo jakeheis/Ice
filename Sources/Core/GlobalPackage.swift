@@ -46,7 +46,7 @@ public class GlobalPackage {
     func symlinkExecutables() throws -> Bool {
         var any = false
         for executable in try executables() {
-            let path = Path(Config.get(\.bin)) + executable.fileName
+            let path = iceBin() + executable.fileName
             try executable.symlinkFile(to: path)
             any = true
         }
@@ -55,7 +55,7 @@ public class GlobalPackage {
     
     func unlinkExecutables() throws {
         for executable in try executables() {
-            let potentialPath = Path(Config.get(\.bin)) + executable.fileName
+            let potentialPath = iceBin() + executable.fileName
             if potentialPath.isExecutable, potentialPath.resolved == executable {
                 print("Unlinking: \(potentialPath)")
                 fflush(stdout)
@@ -68,9 +68,15 @@ public class GlobalPackage {
         try path.deleteFile()
     }
     
-    func executables() throws -> [Path] {
+    // MARK: -
+    
+    private func executables() throws -> [Path] {
         let bin = try spm.showBinPath(release: true)
         return Path(bin).children().filter { $0.isExecutable && $0.pathExtension != "build" && $0.fileName != "ModuleCache" }
+    }
+    
+    private func iceBin() -> Path {
+        return Path(Global.config.get(\.bin))
     }
     
 }

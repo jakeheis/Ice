@@ -1,5 +1,6 @@
 import SwiftCLI
 import Rainbow
+import Core
 
 Rainbow.enabled = Term.isTTY
 
