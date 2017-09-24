@@ -33,6 +33,11 @@ public struct Package: Decodable {
         public let name: String
         public let product_type: String
         public var targets: [String]
+        public let type: String?
+        
+        public var isExecutable: Bool {
+            return product_type == "executable"
+        }
     }
     
     public struct Target: Decodable {
@@ -71,6 +76,8 @@ public struct Package: Decodable {
         }
     }
     
+    // MARK: - Dependencies
+    
     public mutating func addDependency(ref: RepositoryReference, version: Version) {
         dependencies.append(Dependency(url: ref.url, version: version))
     }
@@ -83,6 +90,8 @@ public struct Package: Decodable {
         
         removeDependencyFromTargets(named: name)
     }
+    
+    // MARK: - Targets
     
     public mutating func addTarget(name: String, isTest: Bool, dependencies: [String]) {
         let dependencies = dependencies.map { Package.Target.Dependency(name: $0) }
@@ -123,13 +132,51 @@ public struct Package: Decodable {
         }
     }
     
+    // MARK: - Products
+    
+    public enum ProductType {
+        case executable
+        case library
+        case staticLibrary
+        case dynamicLibrary
+    }
+    
+    public mutating func addProduct(name: String, type: ProductType, targets: [String]) {
+        let productType: String
+        switch type {
+        case .executable: productType = "executable"
+        case .library, .staticLibrary, .dynamicLibrary: productType = "library"
+        }
+        let libraryType: String?
+        switch type {
+        case .staticLibrary: libraryType = "static"
+        case .dynamicLibrary: libraryType = "dynamic"
+        case .library, .executable: libraryType = nil
+        }
+        let newProduct = Product(name: name, product_type: productType, targets: targets, type: libraryType)
+        products.append(newProduct)
+    }
+    
+    public mutating func removeProduct(name: String) throws {
+        guard let index = products.index(where: { $0.name == name }) else {
+            throw IceError(message: "can't remove product \(name)")
+        }
+        products.remove(at: index)
+    }
+    
+    // MARK: -
+    
     public func strictVersion() -> Package {
         return Package(
             name: name,
             dependencies: dependencies.sorted {
                 RepositoryReference(url: $0.url).name < RepositoryReference(url: $1.url).name
             },
-            products: products.sorted { $0.name < $1.name },
+            products: products.sorted {
+                if $0.isExecutable && !$1.isExecutable { return true }
+                if !$0.isExecutable && $1.isExecutable { return false }
+                return $0.name < $1.name
+            },
             targets: targets.sorted {
                 if $0.isTest && !$1.isTest { return false }
                 if !$0.isTest && $1.isTest { return true }
@@ -175,7 +222,13 @@ public struct Package: Decodable {
             out <<< "    products: ["
             for product in products {
                 let targetsPortion = product.targets.map { $0.quoted }.joined(separator: ", ")
-                out <<< "        .\(product.product_type)(name: \(product.name.quoted), targets: [\(targetsPortion)]),"
+                let typePortion: String
+                if let type = product.type {
+                    typePortion = ", type: .\(type)"
+                } else {
+                    typePortion = ""
+                }
+                out <<< "        .\(product.product_type)(name: \(product.name.quoted)\(typePortion), targets: [\(targetsPortion)]),"
             }
             out <<< "    ],"
         }

@@ -13,7 +13,7 @@ import SwiftCLI
 class PackageTests: XCTestCase {
     
     func testBasic() throws {
-        let expected = """
+        XCTAssertEqual(try writePackage(path: "SwiftCLI.json"), """
         // swift-tools-version:4.0
         // Managed by ice
 
@@ -30,12 +30,11 @@ class PackageTests: XCTestCase {
             ]
         )
         
-        """
-        XCTAssertEqual(try writePackage(path: "SwiftCLI.json"), expected)
+        """)
     }
     
     func testComplex() throws {
-        let expected = """
+        XCTAssertEqual(try writePackage(path: "Ice.json"), """
         // swift-tools-version:4.0
         // Managed by ice
 
@@ -61,8 +60,31 @@ class PackageTests: XCTestCase {
             ]
         )
 
-        """
-        XCTAssertEqual(try writePackage(path: "Ice.json"), expected)
+        """)
+    }
+    
+    func testProducts() throws {
+        XCTAssertEqual(try writePackage(path: "products.json"), """
+        // swift-tools-version:4.0
+        // Managed by ice
+
+        import PackageDescription
+
+        let package = Package(
+            name: "MyLibrary",
+            products: [
+                .executable(name: "MyLibraryExec", targets: ["MyLibrary"]),
+                .library(name: "MyLibrary", targets: ["MyLibrary"]),
+                .library(name: "MyLibraryDynamic", type: .dynamic, targets: ["MyLibrary"]),
+                .library(name: "MyLibraryStatic", type: .static, targets: ["MyLibrary"]),
+            ],
+            targets: [
+                .target(name: "MyLibrary", dependencies: []),
+                .testTarget(name: "MyLibraryTests", dependencies: ["MyLibrary"]),
+            ]
+        )
+
+        """)
     }
     
     func writePackage(path: String) throws -> String {
