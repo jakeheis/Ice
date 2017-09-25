@@ -19,6 +19,15 @@ class ConfigGroup: CommandGroup {
     ]
 }
 
+private let unrecognizedKeyError = IceError(message: """
+unrecognized config key
+
+Valid keys:
+
+  bin           the directory to which Ice should symlink global executables; defaults to /usr/bin/local/bin
+  reformat      whether Ice should organize your Package.swift (alphabetize, etc.); defaults to false
+""")
+
 class ListConfigCommand: Command {
     let name = "list"
     let shortDescription = "List the current global config"
@@ -43,8 +52,8 @@ class GetConfigCommand: Command {
         let value: Any
         switch key.value {
         case "bin": value = Ice.config.get(\.bin)
-        case "strict": value = Ice.config.get(\.strict)
-        default: throw IceError(message: "config key '\(key)' not recognized")
+        case "reformat": value = Ice.config.get(\.reformat)
+        default: throw unrecognizedKeyError
         }
         stdout <<< String(describing: value)
     }
@@ -60,8 +69,8 @@ class SetConfigCommand: Command {
     func execute() throws {
         switch key.value {
         case "bin": try Ice.config.set(\.bin, value: value.value)
-        case "strict": try Ice.config.set(\.strict, value: (value.value.lowercased() == "true" || value.value.lowercased() == "yes"))
-        default: throw IceError(message: "config key '\(key)' not recognized")
+        case "reformat": try Ice.config.set(\.reformat, value: (value.value.lowercased() == "true" || value.value.lowercased() == "yes"))
+        default: throw unrecognizedKeyError
         }
     }
 }

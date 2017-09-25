@@ -183,7 +183,7 @@ public struct Package: Decodable {
     // MARK: -
     
     public func write(to stream: OutputByteStream? = nil) throws {
-        let writePackage = Ice.config.get(\.strict) ? formatted() : self
+        let writePackage = Ice.config.get(\.reformat) ? formatted() : self
         let writer = try PackageWriter(stream: stream)
         writer.write(package: writePackage)
     }

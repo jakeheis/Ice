@@ -23,20 +23,20 @@ class ConfigTests: XCTestCase {
         try! """
         {
           "bin" : "/.icebox/bin",
-          "strict" : true
+          "reformat" : true
         }
         """.write(to: configPath)
         
         let config = Config(globalConfigPath: configPath)
         XCTAssertEqual(config.get(\.bin), "/.icebox/bin")
-        XCTAssertEqual(config.get(\.strict), true)
+        XCTAssertEqual(config.get(\.reformat), true)
     }
     
     func testSet() {
         try! """
         {
           "bin" : "/.icebox/bin",
-          "strict" : true
+          "reformat" : true
         }
         """.write(to: configPath)
 
@@ -47,26 +47,26 @@ class ConfigTests: XCTestCase {
         XCTAssertEqual(try? String.read(from: configPath), """
         {
           "bin" : "\\/my\\/special\\/bin",
-          "strict" : true
+          "reformat" : true
         }
         """)
         XCTAssertEqual(config.get(\.bin), "/my/special/bin")
-        XCTAssertEqual(config.get(\.strict), true)
+        XCTAssertEqual(config.get(\.reformat), true)
     }
     
     func testLayer() {
         let top = ConfigFile(
             bin: "/my/bin",
-            strict: nil
+            reformat: nil
         )
         let bottom = ConfigFile(
             bin: "/.icebox/bin",
-            strict: false
+            reformat: false
         )
         
         let result = ConfigFile.layer(config: top, onto: bottom)
         XCTAssertEqual(result.bin, "/my/bin")
-        XCTAssertEqual(result.strict, false)
+        XCTAssertEqual(result.reformat, false)
     }
     
 }

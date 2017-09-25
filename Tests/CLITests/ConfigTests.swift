@@ -18,10 +18,10 @@ class ConfigTests: XCTestCase {
 
         """)
         
-        let strictResult = Runner.execute(args: ["config", "get", "strict"])
-        XCTAssertEqual(strictResult.exitStatus, 0)
-        XCTAssertEqual(strictResult.stderr, "")
-        XCTAssertEqual(strictResult.stdout, """
+        let reformatResult = Runner.execute(args: ["config", "get", "reformat"])
+        XCTAssertEqual(reformatResult.exitStatus, 0)
+        XCTAssertEqual(reformatResult.stderr, "")
+        XCTAssertEqual(reformatResult.stdout, """
         false
 
         """)
@@ -48,15 +48,32 @@ class ConfigTests: XCTestCase {
             "{\n  \"bin\" : \"localBin\"\n}"
         )
         
-        let strictResult = Runner.execute(args: ["config", "set", "strict", "true"])
-        XCTAssertEqual(strictResult.exitStatus, 0)
-        XCTAssertEqual(strictResult.stderr, "")
-        XCTAssertEqual(strictResult.stdout, "")
+        let reformatResult = Runner.execute(args: ["config", "set", "reformat", "true"])
+        XCTAssertEqual(reformatResult.exitStatus, 0)
+        XCTAssertEqual(reformatResult.stderr, "")
+        XCTAssertEqual(reformatResult.stdout, "")
         
         XCTAssertEqual(
             sandboxedFileContents("global/config.json"),
-            "{\n  \"strict\" : true\n}"
+            "{\n  \"reformat\" : true\n}"
         )
+    }
+    
+    func testSetInvalid() {
+        let binResult = Runner.execute(args: ["config", "set", "email", "hi@hi.com"])
+        XCTAssertEqual(binResult.exitStatus, 1)
+        XCTAssertEqual(binResult.stderr, """
+        
+        Error: unrecognized config key
+
+        Valid keys:
+        
+          bin           the directory to which Ice should symlink global executables; defaults to /usr/bin/local/bin
+          reformat      whether Ice should organize your Package.swift (alphabetize, etc.); defaults to false
+
+        
+        """)
+        XCTAssertEqual(binResult.stdout, "")
     }
     
     func testList() {
@@ -68,7 +85,7 @@ class ConfigTests: XCTestCase {
         XCTAssertEqual(result.stdout, """
         {
           "bin" : "localBin",
-          "strict" : false
+          "reformat" : false
         }
         
         """)

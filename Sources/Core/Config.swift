@@ -36,7 +36,7 @@ public class Config {
         if let existing = self.globalConfig {
             file = existing
         } else {
-            let new = ConfigFile(bin: nil, strict: nil)
+            let new = ConfigFile(bin: nil, reformat: nil)
             file = new
         }
         
@@ -63,14 +63,14 @@ public struct ConfigFile: Codable {
     public static let defaultBin = Ice.Paths.root + "bin"
     public static let defaultConfig = ConfigFile(
         bin: defaultBin.rawValue,
-        strict: false
+        reformat: false
     )
     
     public var bin: String?
-    public var strict: Bool?
+    public var reformat: Bool?
     
     public static func layer(config: ConfigFile?, onto: ConfigFile) -> ConfigFile {
-        return ConfigFile(bin: config?.bin ?? onto.bin, strict: config?.strict ?? onto.strict)
+        return ConfigFile(bin: config?.bin ?? onto.bin, reformat: config?.reformat ?? onto.reformat)
     }
     
     static func from(path: Path) -> ConfigFile? {
