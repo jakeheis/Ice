@@ -26,7 +26,7 @@ public class Captures {
     
     public subscript<T: Capturable>(index: Int) -> T {
         guard let result: T = self[index] else {
-            fatalError("\(type(of: self)) error: didn't have required \(index) group")
+            preconditionFailure("\(type(of: self)) error: didn't have required \(index) group")
         }
         return result
     }

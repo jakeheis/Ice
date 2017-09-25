@@ -7,6 +7,7 @@
 
 import Foundation
 import FileKit
+import Exec
 
 public class Ice {
     
@@ -51,7 +52,7 @@ public class Ice {
             try Paths.packagesDirectory.createDirectory(withIntermediateDirectories: true)
             try Paths.registryDirectory.createDirectory(withIntermediateDirectories: true)
         } catch {
-            fatalError("Error: couldn't set up Ice at \(Paths.root)")
+            niceFatalError("Error: couldn't set up Ice at \(Paths.root)")
         }
     }
     

@@ -96,9 +96,6 @@ public class OutputTransformer {
     // MARK: -
     
     private func readLine(line: String, currentResponse: inout AnyMultiLineResponse?, stream: StandardStream) {
-        if line.isEmpty {
-            return
-        }
         if !changes.isEmpty {
             var waitingChanges: [Change] = []
             for change in changes {

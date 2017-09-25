@@ -153,6 +153,7 @@ final class ErrorResponse: MultiLineResponse {
             input.stopIf(LinkLine.self)
             input.stopIf(WarningsGeneratedLine.self)
             
+            input.continueIf(WhitespaceErrLine.self)
             input.expect(SuggestionLine.self) { (line) in
                 stream <<< indentation + String(line.text[startIndex...]).applyingColor(color) + "\n"
             }

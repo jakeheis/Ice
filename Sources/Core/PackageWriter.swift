@@ -7,6 +7,7 @@
 
 import FileKit
 import SwiftCLI
+import Exec
 
 class PackageWriter {
     
@@ -121,7 +122,7 @@ class PackageWriter {
                 case "branch": function = "branchItem"
                 case "exact": function = "exact"
                 case "revision": function = "revision"
-                default: fatalError("Unsupported dependency requirement type: \(dependency.requirement.type)")
+                default: niceFatalError("Unsupported dependency requirement type: \(dependency.requirement.type)")
                 }
                 versionPortion = ".\(function)(\(identifier.quoted))"
             }

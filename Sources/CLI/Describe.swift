@@ -8,6 +8,7 @@
 import SwiftCLI
 import Core
 import Rainbow
+import Exec
 
 class DescribeCommand: Command {
     
@@ -19,7 +20,7 @@ class DescribeCommand: Command {
     func execute() throws {
         if let entry = Ice.registry.get(package.value) {
             guard let ref = RepositoryReference(entry.url) else {
-                fatalError("Malformed registry entry: \(entry.url)")
+                niceFatalError("Malformed registry entry: \(entry.url)")
             }
             try printRef(ref, description: entry.description)
         } else if let ref = RepositoryReference(package.value) {

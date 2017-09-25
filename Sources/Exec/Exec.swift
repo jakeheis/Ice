@@ -7,6 +7,7 @@
 
 import Foundation
 import SwiftCLI
+import Rainbow
 
 public class Exec {
     
@@ -72,4 +73,12 @@ public class Exec {
         return String(data: data, encoding: .utf8) ?? ""
     }
     
+}
+
+public func niceFatalError(_ message: String, file: StaticString = #file, line: UInt = #line) -> Never {
+    printError("\n\nFatal error:".bold.red + " \(message)\n")
+    if _isDebugAssertConfiguration() {
+        printError("\(file):\(line)\n")
+    }
+    exit(1)
 }

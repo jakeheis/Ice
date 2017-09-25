@@ -17,7 +17,7 @@ let package = Package(
     targets: [
         .target(name: "CLI", dependencies: ["Core", "FileKit", "SwiftCLI"]),
         .target(name: "Core", dependencies: ["Exec", "FileKit", "Rainbow", "Regex", "Transformers"]),
-        .target(name: "Exec", dependencies: ["Regex", "SwiftCLI"]),
+        .target(name: "Exec", dependencies: ["Regex", "SwiftCLI", "Rainbow"]),
         .target(name: "Transformers", dependencies: ["Exec", "Rainbow", "Regex", "SwiftCLI"]),
         .testTarget(name: "CLITests", dependencies: []),
         .testTarget(name: "CoreTests", dependencies: ["Core"]),

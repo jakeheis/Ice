@@ -95,7 +95,7 @@ final class TestSuiteResponse: MultiLineResponse {
             done = true
         }
         
-        input.fallback(.fatalError)
+        input.fallback(.ignore)
     }
     
     func finish() {

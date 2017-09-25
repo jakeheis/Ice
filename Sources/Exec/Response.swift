@@ -40,7 +40,7 @@ extension SingleLineResponse {
     
     public static func respond(to line: String) -> AnyMultiLineResponse? {
         guard let line = MatchedLine.findMatch(in: line) else {
-            fatalError("Ensure matches() is true before calling respond")
+            preconditionFailure("Ensure matches() is true before calling respond")
         }
         respond(to: line)
         return nil
@@ -74,7 +74,7 @@ public extension MultiLineResponse {
     
     static func respond(to line: String) -> AnyMultiLineResponse? {
         guard let line = FirstLine.findMatch(in: line) else {
-            fatalError("Ensure matches() is true before calling respond")
+            preconditionFailure("Ensure matches() is true before calling respond")
         }
         return Self(line: line)
     }
@@ -194,7 +194,7 @@ public class InputMatcher {
                 stream.toOutput() <<< self.line
                 return true
             case .fatalError:
-                fatalError("Unrecognized line: `\(self.line)`", file: fallbackFile ?? #file, line: fallbackLine ?? #line)
+                niceFatalError("Unrecognized line: `\(self.line)`", file: fallbackFile ?? #file, line: fallbackLine ?? #line)
             }
         }
     }

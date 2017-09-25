@@ -61,10 +61,22 @@ public final class AnyOutLine: Line {
     public init() {}
 }
 
+public final class WhitespaceOutLine: Line {
+    public static let regex = Regex("^\\s*$")
+    public static let stream: StandardStream = .out
+    public init() {}
+}
+
 public final class AnyErrLine: Line {
     public static let regex = Regex("^(.*)$")
     public static let stream: StandardStream = .err
     public var text: String { return captures[0] }
+    public init() {}
+}
+
+public final class WhitespaceErrLine: Line {
+    public static let regex = Regex("^\\s*$")
+    public static let stream: StandardStream = .out
     public init() {}
 }
 
@@ -87,7 +99,7 @@ private class MatcherManager {
     static func captures<T: Matchable>(for matcher: T) -> Captures {
         let id = ObjectIdentifier(matcher)
         guard let captures = map[id] else {
-            fatalError("Cannot create a Matcher manually; must create through Matcher.findMatch()")
+            preconditionFailure("Cannot create a Matcher manually; must create through Matcher.findMatch()")
         }
         return captures
     }

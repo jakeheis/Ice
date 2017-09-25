@@ -46,7 +46,7 @@ func readSandboxLink(path: String) -> String? {
 }
 
 func XCTAssertMatch(_ text: String?, _ regex: StaticString, file: StaticString = #file, line: UInt = #line) {
-    let message = "\(text ?? "nil") should match \(regex)"
+    let message = "`\(text ?? "nil")` should match \(regex)"
     guard let nonNilText = text else {
         XCTAssertNotNil(text, message, file: file, line: line)
         return
