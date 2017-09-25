@@ -8,6 +8,7 @@
 import Foundation
 import SwiftCLI
 import Rainbow
+import Dispatch
 
 public class Exec {
     
@@ -16,15 +17,17 @@ public class Exec {
         public let message: String? = nil
     }
     
-    private let process: Process
+    let process: Process
+    let timeout: Int?
     
-    public init(command: String, args: [String], in currentDirectory: String? = nil) {
+    public init(command: String, args: [String], in currentDirectory: String? = nil, timeout: Int? = nil) {
         self.process = Process()
         self.process.launchPath = "/usr/bin/env"
         self.process.arguments = [command] + args
         if let currentDirectory = currentDirectory {
             self.process.currentDirectoryPath = currentDirectory
         }
+        self.timeout = timeout
     }
     
     public func execute(transform: ((_ transformer: OutputTransformer) -> ())? = nil) throws {
@@ -36,6 +39,7 @@ public class Exec {
             transformer = newTransformer
         }
         
+        let item = createInterruptItem()
         InterruptCatcher.start(process: process)
         
         process.launch()
@@ -43,34 +47,52 @@ public class Exec {
         transformer?.finish()
 
         InterruptCatcher.end()
-        
+        item?.cancel()
+
         guard process.terminationStatus == 0 else {
             throw Error(exitStatus: process.terminationStatus)
         }
     }
     
-    public func captureData() throws -> Data {
+    public func captureData() throws -> (stdout: Data, stderr: Data) {
         let output = Pipe()
         process.standardOutput = output
         
+        let err = Pipe()
+        process.standardError = err
+        
+        let item = createInterruptItem()
         InterruptCatcher.start(process: process)
         
         process.launch()
         process.waitUntilExit()
         
         InterruptCatcher.end()
+        item?.cancel()
         
         guard process.terminationStatus == 0 else {
             throw Error(exitStatus: process.terminationStatus)
         }
         
-        return output.fileHandleForReading.availableData
+        return (output.fileHandleForReading.availableData, err.fileHandleForReading.availableData)
     }
     
-    public func capture() throws -> String {
-        let data = try captureData()
+    public func capture() throws -> (stdout: String, stderr: String) {
+        let (stdout, stderr) = try captureData()
         
-        return String(data: data, encoding: .utf8) ?? ""
+        return (String(data: stdout, encoding: .utf8) ?? "", String(data: stderr, encoding: .utf8) ?? "")
+    }
+    
+    private func createInterruptItem() -> DispatchWorkItem? {
+        if let timeout = timeout {
+            let item = DispatchWorkItem(block: { [weak self] in
+                self?.process.interrupt()
+            })
+            DispatchQueue.global().asyncAfter(deadline: .now() + .seconds(timeout), execute: item)
+            return item
+        } else {
+            return nil
+        }
     }
     
 }

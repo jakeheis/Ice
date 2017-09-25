@@ -10,18 +10,24 @@ import XCTest
 
 class RegistryTests: XCTestCase {
     
+    override func tearDown() {
+        Runner.clean()
+    }
+    
     func testAdd() {
-        XCTAssertEqual(sandboxedFileContents("global/Registry/local.json"), nil)
+        XCTAssertNil(sandboxedFileContents("global/Registry/local.json"))
         
         let result = Runner.execute(args: ["registry", "add", "jakeheis/dne", "dne"])
         XCTAssertEqual(result.exitStatus, 0)
         XCTAssertEqual(result.stderr, "")
         XCTAssertEqual(result.stdout, "")
         
-        XCTAssertEqual(
-            sandboxedFileContents("global/Registry/local.json"),
-            "{\"entries\":[{\"name\":\"dne\",\"url\":\"https:\\/\\/github.com\\/jakeheis\\/dne\"}]}"
-        )
+        let json = try! JSONSerialization.jsonObject(with: sandboxedFileData("global/Registry/local.json")!, options: []) as! [String: Any]
+        let entries = json["entries"] as! [[String: Any]]
+        XCTAssertEqual(entries.count, 1)
+        XCTAssertEqual(entries[0]["name"] as? String, "dne")
+        XCTAssertEqual(entries[0]["url"] as? String, "https://github.com/jakeheis/dne")
+        XCTAssertNotNil(json["lastRefreshed"])
     }
     
     func testSharedLookup() {
@@ -61,7 +67,10 @@ class RegistryTests: XCTestCase {
         XCTAssertEqual(result.stderr, "")
         XCTAssertEqual(result.stdout, "")
         
-        XCTAssertEqual(sandboxedFileContents("global/Registry/local.json"), "{\"entries\":[]}")
+        let json = try! JSONSerialization.jsonObject(with: sandboxedFileData("global/Registry/local.json")!, options: []) as! [String: Any]
+        let entries = json["entries"] as! [[String: Any]]
+        XCTAssertEqual(entries.count, 0)
+        XCTAssertNotNil(json["lastRefreshed"])
     }
     
 }

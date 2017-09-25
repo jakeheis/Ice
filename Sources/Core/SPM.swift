@@ -98,7 +98,7 @@ public class SPM {
         if release {
             args += ["-c", "release"]
         }
-        let path = try exec(arguments: args).capture()
+        let path = try exec(arguments: args).capture().stdout
         guard !path.isEmpty else {
             throw IceError(message: "couldn't retrieve executable path")
         }
@@ -106,7 +106,7 @@ public class SPM {
     }
 
     public func dumpPackage() throws -> Data {
-        let data = try exec(arguments: ["package", "dump-package"]).captureData()
+        let data = try exec(arguments: ["package", "dump-package"]).captureData().stdout
         guard let jsonStart = data.index(of: UInt8("{".cString(using: .ascii)![0])) else {
             throw IceError(message: "couldn't parse package")
         }

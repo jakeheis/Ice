@@ -28,6 +28,11 @@ func sandboxedFileContents(_ path: String) -> String? {
     return String(data: data, encoding: .utf8)
 }
 
+func sandboxedFileData(_ path: String) -> Data? {
+    let sandboxedPath = Runner.sandboxedDirectory + "/" + path
+    return FileManager.default.contents(atPath: sandboxedPath)
+}
+
 func writeToSandbox(path: String, contents: String) {
     let sandboxedPath = Runner.sandboxedDirectory + "/" + path
     try! contents.write(toFile: sandboxedPath, atomically: true, encoding: .utf8)
@@ -117,12 +122,16 @@ class Runner {
     
     static let sandboxedDirectory = FileManager.default.currentDirectoryPath + "/.sandbox"
     
+    static func clean() {
+        if FileManager.default.fileExists(atPath: sandboxedDirectory) {
+            try! FileManager.default.removeItem(atPath: sandboxedDirectory)
+        }
+    }
+    
     @discardableResult
     static func execute(args: [String], sandbox: Sandbox = .empty, dir: String? = nil, sandboxSetup: (() -> ())? = nil, clean: Bool = true) -> ExecutionResult {
         if clean {
-            if FileManager.default.fileExists(atPath: sandboxedDirectory) {
-                try! FileManager.default.removeItem(atPath: sandboxedDirectory)
-            }
+            self.clean()
             
             try! FileManager.default.copyItem(atPath: "Tests/Sandboxes/\(sandbox.name)", toPath: sandboxedDirectory)
             try! FileManager.default.copyItem(atPath: "Tests/Fixtures/global", toPath: sandboxedDirectory + "/global")

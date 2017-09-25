@@ -7,6 +7,7 @@
 
 import XCTest
 import FileKit
+import Regex
 @testable import Core
 
 class RegistryTests: XCTestCase {
@@ -23,12 +24,9 @@ class RegistryTests: XCTestCase {
         try! registryPath.deleteFile()
     }
     
-    func testRefresh() throws {
-        let registry = Registry(registryPath: registryPath)
+    func testAutoRefresh() throws {
         XCTAssertFalse(sharedPath.exists)
-        
-        try registry.refresh()
-        
+        _ = Registry(registryPath: registryPath)
         XCTAssertTrue(sharedPath.exists)
         XCTAssertTrue((sharedPath + "A.json").exists)
     }
@@ -37,13 +35,15 @@ class RegistryTests: XCTestCase {
         let registry = Registry(registryPath: registryPath)
         try registry.add(name: "Ice-fake", url: "https://github.com/jakeheis/Ice-fake")
         
-        XCTAssertEqual(try String.read(from: localPath), """
-        {"entries":[{"name":"Ice-fake","url":"https:\\/\\/github.com\\/jakeheis\\/Ice-fake"}]}
-        """)
+        let json = try JSONSerialization.jsonObject(with: try Data.read(from: localPath), options: []) as! [String: Any]
+        let entries = json["entries"] as! [[String: Any]]
+        XCTAssertEqual(entries.count, 1)
+        XCTAssertEqual(entries[0]["name"] as? String, "Ice-fake")
+        XCTAssertEqual(entries[0]["url"] as? String, "https://github.com/jakeheis/Ice-fake")
+        XCTAssertNotNil(json["lastRefreshed"])
     }
     
     func testGet() throws {
-        let registry = Registry(registryPath: registryPath)
         try """
         {
           "entries": [
@@ -54,6 +54,7 @@ class RegistryTests: XCTestCase {
           ]
         }
         """.write(to: localPath)
+        let registry = Registry(registryPath: registryPath)
         
         let entry = registry.get("SwiftCLI-fake")
         XCTAssertEqual(entry?.name, "SwiftCLI-fake")
@@ -62,7 +63,6 @@ class RegistryTests: XCTestCase {
     }
     
     func testRemove() throws {
-        let registry = Registry(registryPath: registryPath)
         try """
         {
           "entries": [
@@ -73,12 +73,14 @@ class RegistryTests: XCTestCase {
           ]
         }
         """.write(to: localPath)
+        let registry = Registry(registryPath: registryPath)
         
         try registry.remove("SwiftCLI-fake")
         
-        XCTAssertEqual(try String.read(from: localPath), """
-        {"entries":[]}
-        """)
+        let json = try JSONSerialization.jsonObject(with: try Data.read(from: localPath), options: []) as! [String: Any]
+        let entries = json["entries"] as! [[String: Any]]
+        XCTAssertEqual(entries.count, 0)
+        XCTAssertNotNil(json["lastRefreshed"])
         
         let entry = registry.get("SwiftCLI-fake")
         XCTAssertNil(entry)

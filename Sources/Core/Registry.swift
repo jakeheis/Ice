@@ -17,35 +17,44 @@ public class Registry {
     private lazy var sharedRepo = directory + "shared"
     private lazy var sharedPath = sharedRepo + "Registry"
     
-    private lazy var localRegistry = RegistryFile.load(from: localPath)
+    private lazy var localRegistry = RegistryFile.load(from: localPath) ?? RegistryFile(entries: [], lastRefreshed: nil)
     
     init(registryPath: Path) {
         self.directory = registryPath
+        
+        if let lastRefreshed = localRegistry.lastRefreshed {
+            // If current date is more than 7 days after last refresh
+            if Date() > lastRefreshed.addingTimeInterval(60 * 60 * 24 * 7) {
+                do {
+                    try refresh(silent: true)
+                } catch {}
+            }
+        } else {
+            do {
+                try refresh(silent: true)
+            } catch {}
+        }
     }
     
     public func refresh(silent: Bool = false) throws {
+        let timeout = silent ? 4 : nil
         if sharedRepo.exists {
-            try Git.pull(path: sharedRepo.rawValue, silent: silent)
+            try Git.pull(path: sharedRepo.rawValue, silent: silent, timeout: timeout)
         } else {
-            try Git.clone(url: Registry.url, to: sharedRepo.rawValue, version: nil, silent: silent)
+            try Git.clone(url: Registry.url, to: sharedRepo.rawValue, version: nil, silent: silent, timeout: timeout)
         }
+        
+        localRegistry.lastRefreshed = Date()
+        try JSONEncoder().encode(localRegistry).write(to: localPath)
     }
     
     public func add(name: String, url: String) throws {
-        var newRegistry: RegistryFile
-        if let localRegistry = localRegistry {
-            newRegistry = localRegistry
-        } else {
-            newRegistry = RegistryFile(entries: [])
-        }
-        newRegistry.entries.append(.init(name: name, url: url, description: nil))
-        
-        self.localRegistry = newRegistry
-        try JSONEncoder().encode(newRegistry).write(to: localPath)
+        localRegistry.entries.append(.init(name: name, url: url, description: nil))
+        try JSONEncoder().encode(localRegistry).write(to: localPath)
     }
     
     public func get(_ name: String) -> RegistryEntry? {
-        if let matching = localRegistry?.entries.first(where: { $0.name == name }) {
+        if let matching = localRegistry.entries.first(where: { $0.name == name }) {
             return matching
         }
         
@@ -59,15 +68,11 @@ public class Registry {
     }
     
     public func remove(_ name: String) throws {
-        guard var localRegistry = localRegistry else {
-            throw IceError(message: "no registry file found")
-        }
         guard let index = localRegistry.entries.index(where: { $0.name == name })  else {
             throw IceError(message: "shortcut does not exist")
         }
         localRegistry.entries.remove(at: index)
         
-        self.localRegistry = localRegistry
         try JSONEncoder().encode(localRegistry).write(to: localPath)
     }
     
@@ -80,7 +85,7 @@ public class Registry {
             return entries.filter { $0.name.lowercased().contains(query.lowercased()) && !all.contains($0.name) }
         }
         
-        var localEntries: [RegistryEntry] = filterOnName(entries: localRegistry?.entries ?? [])
+        var localEntries: [RegistryEntry] = filterOnName(entries: localRegistry.entries)
         all.formUnion(localEntries.map { $0.name })
         
         var entries: [RegistryEntry] = []
@@ -98,7 +103,7 @@ public class Registry {
             func filterOnDescription(entries: [RegistryEntry]) -> [RegistryEntry] {
                 return entries.filter { $0.description?.lowercased().contains(query.lowercased()) ?? false  && !all.contains($0.name)}
             }
-            localEntries += filterOnDescription(entries: localRegistry?.entries ?? [])
+            localEntries += filterOnDescription(entries: localRegistry.entries)
             all.formUnion(localEntries.map { $0.name })
             forEachShared { (file, _) in
                 let results = filterOnDescription(entries: file.entries)
@@ -129,6 +134,7 @@ public struct RegistryEntry: Codable {
 private struct RegistryFile: Codable {
     
     public var entries: [RegistryEntry]
+    public var lastRefreshed: Date?
     
     static func load(from path: Path) -> RegistryFile? {
         guard let data = try? Data.read(from: path),

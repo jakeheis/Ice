@@ -11,6 +11,8 @@ import Exec
 
 public class Ice {
     
+    public static let version = "1.0.0"
+    
     struct Paths {
         
         static let rootEnvKey = "ICE_GLOBAL_ROOT"
@@ -21,6 +23,7 @@ public class Ice {
             return Path.userHome + ".icebox"
         }()
         
+        static let versionFile = root + "version"
         static let globalConfigFile = root + "config.json"
         static let packagesDirectory = root + "Packages"
         static let registryDirectory = root + "Registry"
@@ -49,6 +52,7 @@ public class Ice {
         }
         do {
             try Paths.root.createDirectory(withIntermediateDirectories: true)
+            try version.write(to: Paths.versionFile)
             try Paths.packagesDirectory.createDirectory(withIntermediateDirectories: true)
             try Paths.registryDirectory.createDirectory(withIntermediateDirectories: true)
         } catch {
