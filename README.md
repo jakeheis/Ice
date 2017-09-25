@@ -39,9 +39,16 @@ Manage targets:
 
 ```shell
 ice target add Core
-ice target add --test CoreTests
-ice target depend CoreTests Core
+ice target add --test CoreTests --dependencies Core
 ice target remove CoreTests
+```
+
+Manage products:
+
+```shell
+ice product add CoreLib --static
+ice product add cli --exec --targets=CoreLib
+ice product remove CoreLib
 ```
 
 ## Centralized package registry
@@ -89,6 +96,9 @@ Link ./.build/x86_64-apple-macosx10.10/debug/ice
 ```
 
 ## Other commands
+
+#### ice update
+Update the current package's dependencies
 
 #### ice clean
 Clean the current project by removing build artifacts
