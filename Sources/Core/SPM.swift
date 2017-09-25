@@ -88,6 +88,10 @@ public class SPM {
     public func reset() throws {
         try exec(arguments: ["package", "reset"]).execute()
     }
+    
+    public func update() throws {
+        try exec(arguments: ["package", "update"]).execute(transform: Transformers.update)
+    }
 
     public func generateXcodeProject() throws {
         try exec(arguments: ["package", "generate-xcodeproj"]).execute()

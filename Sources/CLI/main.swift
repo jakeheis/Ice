@@ -24,6 +24,7 @@ ice.commands = [
     SearchCommand(),
     TargetGroup(),
     TestCommand(),
+    UpdateCommand(),
     UpgradeCommand(),
     XcCommand()
 ]
