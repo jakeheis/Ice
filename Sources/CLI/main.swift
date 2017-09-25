@@ -25,7 +25,6 @@ ice.commands = [
     TargetGroup(),
     TestCommand(),
     UpdateCommand(),
-    UpgradeCommand(),
     XcCommand()
 ]
 ice.goAndExit()
