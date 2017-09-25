@@ -63,30 +63,6 @@ class PackageTests: XCTestCase {
         """)
     }
     
-    func testProducts() throws {
-        XCTAssertEqual(try writePackage(path: "products.json"), """
-        // swift-tools-version:4.0
-        // Managed by ice
-
-        import PackageDescription
-
-        let package = Package(
-            name: "MyLibrary",
-            products: [
-                .executable(name: "MyLibraryExec", targets: ["MyLibrary"]),
-                .library(name: "MyLibrary", targets: ["MyLibrary"]),
-                .library(name: "MyLibraryDynamic", type: .dynamic, targets: ["MyLibrary"]),
-                .library(name: "MyLibraryStatic", type: .static, targets: ["MyLibrary"]),
-            ],
-            targets: [
-                .target(name: "MyLibrary", dependencies: []),
-                .testTarget(name: "MyLibraryTests", dependencies: ["MyLibrary"]),
-            ]
-        )
-
-        """)
-    }
-    
     func writePackage(path: String) throws -> String {
         let data = try Data(contentsOf: URL(fileURLWithPath: "Tests/Fixtures/\(path)"))
         let package = try Package.load(data: data)

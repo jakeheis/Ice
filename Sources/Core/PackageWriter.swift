@@ -28,9 +28,14 @@ class PackageWriter {
     func write(package: Package) {
         writeStart()
         writeName(package.name)
+        writePkgConfig(package.pkgConfig)
+        writeProviders(package.providers)
         writeProducts(package.products)
         writeDependencies(package.dependencies)
         writeTargets(package.targets)
+        writeSwiftLanguageVersion(package.swiftLanguageVersions)
+        writeCLangaugeStandard(package.cLanguageStandard)
+        writeCxxLangaugeStandard(package.cxxLanguageStandard)
         writeEnd()
     }
     
@@ -47,6 +52,24 @@ class PackageWriter {
     
     func writeName(_ name: String) {
         out <<< "    name: \(name.quoted),"
+    }
+    
+    func writePkgConfig(_ pkgConfig: String?) {
+        if let pkgConfig = pkgConfig {
+            out <<< "    pkgConfig: \(pkgConfig.quoted),"
+        }
+    }
+    
+    func writeProviders(_ providers: [Package.Provider]?) {
+        guard let providers = providers, !providers.isEmpty else {
+            return
+        }
+        out <<< "    providers: ["
+        for provider in providers {
+            let values = provider.values.map { $0.quoted }.joined(separator: ", ")
+            out <<< "        .\(provider.name)([\(values)]),"
+        }
+        out <<< "    ],"
     }
     
     func writeProducts(_ products: [Package.Product]) {
@@ -134,6 +157,29 @@ class PackageWriter {
                 out <<< line
             }
             out <<< "    ]"
+        }
+    }
+    
+    func writeSwiftLanguageVersion(_ versions: [Int]?) {
+        if let versions = versions {
+            let stringVersions = versions.map(String.init).joined(separator: ", ")
+            out <<< "    swiftLanguageVersions: [\(stringVersions)],"
+        }
+    }
+    
+    func writeCLangaugeStandard(_ standard: String?) {
+        if let standard = standard {
+            let converted = standard.replacingOccurrences(of: ":", with: "_")
+            out <<< "    cLanguageStandard: .\(converted),"
+        }
+    }
+    
+    func writeCxxLangaugeStandard(_ standard: String?) {
+        if let standard = standard {
+            let converted = standard
+                .replacingOccurrences(of: "c++", with: "cxx")
+                .replacingOccurrences(of: "gnu++", with: "gnucxx")
+            out <<< "    cxxLanguageStandard: .\(converted),"
         }
     }
     

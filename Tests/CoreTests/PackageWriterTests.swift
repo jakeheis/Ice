@@ -137,4 +137,56 @@ class PackageWriterTests: XCTestCase {
         """)
     }
     
+    func testProviders() {
+        let providers: [Package.Provider] = [
+            .init(name: "brew", values: ["libssh2"]),
+            .init(name: "apt", values: ["libssh2-1-dev", "libssh2-2-dev"])
+        ]
+        let capture = CaptureStream()
+        let writer = try! PackageWriter(stream: capture)
+        writer.writeProviders(providers)
+        XCTAssertEqual(capture.content, """
+            providers: [
+                .brew(["libssh2"]),
+                .apt(["libssh2-1-dev", "libssh2-2-dev"]),
+            ],
+
+        """)
+    }
+    
+    func testSwiftLanguageVersions() {
+        let versions = [2, 3]
+        let capture = CaptureStream()
+        let writer = try! PackageWriter(stream: capture)
+        writer.writeSwiftLanguageVersion(versions)
+        XCTAssertEqual(capture.content, """
+            swiftLanguageVersions: [2, 3],
+
+        """)
+    }
+    
+    func testCLanguageStandard() {
+        let capture = CaptureStream()
+        let writer = try! PackageWriter(stream: capture)
+        writer.writeCLangaugeStandard("c90")
+        writer.writeCLangaugeStandard("iso9899:199409")
+        XCTAssertEqual(capture.content, """
+            cLanguageStandard: .c90,
+            cLanguageStandard: .iso9899_199409,
+
+        """)
+    }
+    
+    func testCxxLanguageStandard() {
+        let capture = CaptureStream()
+        let writer = try! PackageWriter(stream: capture)
+        writer.writeCxxLangaugeStandard("c++03")
+        writer.writeCxxLangaugeStandard("gnu++1z")
+        XCTAssertEqual(capture.content, """
+            cxxLanguageStandard: .cxx03,
+            cxxLanguageStandard: .gnucxx1z,
+
+        """)
+    }
+    
 }

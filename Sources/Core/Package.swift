@@ -11,11 +11,16 @@ import FileKit
 
 public struct Package: Decodable {
     
+    public struct Provider: Decodable {
+        let name: String
+        let values: [String]
+    }
+    
     public struct Product: Decodable {
         public let name: String
         public let product_type: String
         public var targets: [String]
-        public let type: String? // If library, static or dynamic
+        public let type: String? // If library, static, dynamic, or nil; if executable, nil
         
         public var isExecutable: Bool {
             return product_type == "executable"
@@ -46,24 +51,17 @@ public struct Package: Decodable {
         public let exclude: [String]
         public let sources: [String]?
         public let publicHeadersPath: String?
-        
-        func strictVersion() -> Target {
-            return Target(
-                name: name,
-                isTest: isTest,
-                dependencies: dependencies.sorted { $0.name < $1.name },
-                path: path,
-                exclude: exclude,
-                sources: sources,
-                publicHeadersPath: publicHeadersPath
-            )
-        }
     }
     
     public let name: String
+    public let pkgConfig: String?
+    public let providers: [Provider]?
     public private(set) var products: [Product]
     public private(set) var dependencies: [Dependency]
     public private(set) var targets: [Target]
+    public let swiftLanguageVersions: [Int]?
+    public let cLanguageStandard: String?
+    public let cxxLanguageStandard: String?
     
     public static func load(directory: Path) throws -> Package {
         let data = try SPM(path: directory).dumpPackage()
@@ -184,29 +182,91 @@ public struct Package: Decodable {
     
     // MARK: -
     
-    public func strictVersion() -> Package {
+    public func write(to stream: OutputByteStream? = nil) throws {
+        let writePackage = Ice.config.get(\.strict) ? formatted() : self
+        let writer = try PackageWriter(stream: stream)
+        writer.write(package: writePackage)
+    }
+    
+}
+
+// MARK: - Formatted
+
+extension Package {
+    
+    func formatted() -> Package {
         return Package(
             name: name,
-            products: products.sorted {
-                if $0.isExecutable && !$1.isExecutable { return true }
-                if !$0.isExecutable && $1.isExecutable { return false }
-                return $0.name < $1.name
-            },
-            dependencies: dependencies.sorted {
-                RepositoryReference(url: $0.url).name < RepositoryReference(url: $1.url).name
-            },
-            targets: targets.sorted {
-                if $0.isTest && !$1.isTest { return false }
-                if !$0.isTest && $1.isTest { return true }
-                return $0.name < $1.name
-            }.map { $0.strictVersion() }
+            pkgConfig: pkgConfig,
+            providers: providers?.map(Provider.formatted),
+            products: products.map(Product.formatted).sorted(by: Product.packageSort),
+            dependencies: dependencies.sorted(by: Dependency.packageSort),
+            targets: targets.map(Target.formatted).sorted(by: Target.packageSort),
+            swiftLanguageVersions: swiftLanguageVersions?.sorted(),
+            cLanguageStandard: cLanguageStandard,
+            cxxLanguageStandard: cxxLanguageStandard
         )
     }
     
-    public func write(to stream: OutputByteStream? = nil) throws {
-        let writePackage = Ice.config.get(\.strict) ? strictVersion() : self
-        let writer = try PackageWriter(stream: stream)
-        writer.write(package: writePackage)
+}
+
+extension Package.Provider {
+    
+    static func formatted(product: Package.Provider) -> Package.Provider {
+        return Package.Provider(
+            name: product.name,
+            values: product.values.sorted()
+        )
+    }
+    
+}
+
+extension Package.Product {
+    
+    static func formatted(product: Package.Product) -> Package.Product {
+        return Package.Product(
+            name: product.name,
+            product_type: product.product_type,
+            targets: product.targets.sorted(),
+            type: product.type
+        )
+    
+    }
+    
+    static func packageSort(lhs: Package.Product, rhs: Package.Product) -> Bool {
+        if lhs.isExecutable && !rhs.isExecutable { return true }
+        if !lhs.isExecutable && rhs.isExecutable { return false }
+        return lhs.name < rhs.name
+    }
+    
+}
+
+extension Package.Dependency {
+    
+    static func packageSort(lhs: Package.Dependency, rhs: Package.Dependency) -> Bool {
+        return RepositoryReference(url: lhs.url).name < RepositoryReference(url: rhs.url).name
+    }
+    
+}
+
+extension Package.Target {
+    
+    static func formatted(target: Package.Target) -> Package.Target {
+        return Package.Target(
+            name: target.name,
+            isTest: target.isTest,
+            dependencies: target.dependencies.sorted { $0.name < $1.name },
+            path: target.path,
+            exclude: target.exclude.sorted(),
+            sources: target.sources?.sorted(),
+            publicHeadersPath: target.publicHeadersPath
+        )
+    }
+    
+    static func packageSort(lhs: Package.Target, rhs: Package.Target) -> Bool {
+        if lhs.isTest && !rhs.isTest { return false }
+        if !lhs.isTest && rhs.isTest { return true }
+        return lhs.name < rhs.name
     }
     
 }
