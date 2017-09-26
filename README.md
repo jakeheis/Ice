@@ -10,9 +10,9 @@ The official [Swift Package Manager](https://github.com/apple/swift-package-mana
 
 A few features Ice has that SPM lacks:
 - Beautiful, yet information dense output (particularly while building and testing)
-- Imperatively manage `Package.swift` (e.g. `ice add RxSwift`)
+- Ability to imperatively manage `Package.swift` (e.g. `ice add RxSwift`)
 - A centralized registry of packages
-- Automatic rebuilding / restarting an app upon source changes
+- Automatic rebuilding / restarting of an app upon source changes
 - Short command names for the most used commands
 
 ## Installation
