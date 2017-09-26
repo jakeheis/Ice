@@ -1,6 +1,6 @@
 # Ice
 
-![build status](https://travis-ci.org/jakeheis/Ice.svg?branch=master)
+[![Build Status](https://travis-ci.org/jakeheis/Ice.svg?branch=master)](https://travis-ci.org/jakeheis/Ice)
 
 ❄️ A developer friendly package manager for Swift; 100% compatible with Swift Package Manager
 
