@@ -15,7 +15,20 @@ A few features Ice has that SPM lacks:
 - Automatic rebuilding / restarting an app upon source changes
 - Short command names for the most used commands
 
-## Prettified output
+## Installation
+### Homebrew
+```bash
+brew install jakeheis/repo/ice
+```
+### Manual
+```bash
+git clone https://github.com/jakeheis/Ice
+cd Ice
+swift build -c release
+ln -s .build/release/ice /usr/bin/local/ice
+```
+
+## Beautified output
 
 ### Init
 ![new](https://github.com/jakeheis/Ice/raw/gifs/new.gif)
