@@ -9,6 +9,10 @@ import XCTest
 
 class DumpTests: XCTestCase {
     
+    static var allTests = [
+        ("testDump", testDump),
+    ]
+    
     func testDump() {
         let result = Runner.execute(args: ["dump"], sandbox: .exec)
         XCTAssertEqual(result.exitStatus, 0)

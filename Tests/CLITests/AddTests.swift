@@ -8,6 +8,12 @@
 import XCTest
 
 class AddTests: XCTestCase {
+
+    static var allTests = [
+        ("testBasicAdd", testBasicAdd),
+        ("testTargetAdd", testTargetAdd),
+        ("testVersionedAdd", testVersionedAdd),
+    ]
     
     func testBasicAdd() {
         let result = Runner.execute(args: ["add", "jakeheis/Spawn"], sandbox: .lib)

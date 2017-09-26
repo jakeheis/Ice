@@ -9,6 +9,11 @@ import XCTest
 
 class NewTests: XCTestCase {
     
+    static var allTests = [
+        ("testLib", testLib),
+        ("testExec", testExec),
+    ]
+    
     func testLib() {
         let result = Runner.execute(args: ["new", "MyNewLib", "--lib"])
         XCTAssertEqual(result.exitStatus, 0)

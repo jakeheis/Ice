@@ -10,6 +10,14 @@ import Core
 
 class VersionTests: XCTestCase {
     
+    static var allTests = [
+        ("testBasicParse", testBasicParse),
+        ("testVParse", testVParse),
+        ("testIllegalVersion", testIllegalVersion),
+        ("testEquality", testEquality),
+        ("testComparison", testComparison),
+    ]
+    
     func testBasicParse() {
         let version = Version("1.4.3")
         XCTAssertEqual(version?.major, 1)

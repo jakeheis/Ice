@@ -10,6 +10,11 @@ import Transformers
 
 class InitTests: XCTestCase {
     
+    static var allTests = [
+        ("testCreatePackage", testCreatePackage),
+        ("testCreateFiles", testCreateFiles),
+    ]
+    
     func testCreatePackage() {
         let build = TransformTest(Transformers.initPackage)
         build.send(.out, """

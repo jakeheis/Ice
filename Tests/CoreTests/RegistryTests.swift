@@ -12,6 +12,13 @@ import Regex
 
 class RegistryTests: XCTestCase {
     
+    static var allTests = [
+        ("testAutoRefresh", testAutoRefresh),
+        ("testAdd", testAdd),
+        ("testGet", testGet),
+        ("testRemove", testRemove),
+    ]
+    
     lazy var registryPath = Path("Registry")
     lazy var sharedPath = registryPath + "shared/Registry"
     lazy var localPath = registryPath + "local.json"

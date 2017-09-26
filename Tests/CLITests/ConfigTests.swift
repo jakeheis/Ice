@@ -9,6 +9,13 @@ import XCTest
 
 class ConfigTests: XCTestCase {
     
+    static var allTests = [
+        ("testGet", testGet),
+        ("testSet", testSet),
+        ("testSetInvalid", testSetInvalid),
+        ("testList", testList),
+    ]
+    
     func testGet() {
         let binResult = Runner.execute(args: ["config", "get", "bin"])
         XCTAssertEqual(binResult.exitStatus, 0)

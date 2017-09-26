@@ -11,6 +11,17 @@ import Exec
 
 class BuildTests: XCTestCase {
     
+    static var allTests = [
+        ("testCompile", testCompile),
+        ("testCompileC", testCompileC),
+        ("testLink", testLink),
+        ("testError", testError),
+        ("testWarningWithSingleNote", testWarningWithSingleNote),
+        ("testNoteNoCode", testNoteNoCode),
+        ("testSuggestion", testSuggestion),
+        ("testRepeated", testRepeated),
+    ]
+    
     override func setUp() {
         ErrorTracker.past = []
     }

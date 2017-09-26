@@ -9,6 +9,12 @@ import XCTest
 
 class TargetTests: XCTestCase {
     
+    static var allTests = [
+        ("testBasicAdd", testBasicAdd),
+        ("testDependAdd", testDependAdd),
+        ("testTargetRemove", testTargetRemove),
+    ]
+    
     func testBasicAdd() {
         let result = Runner.execute(args: ["target", "add", "Core"], sandbox: .lib)
         XCTAssertEqual(result.exitStatus, 0)

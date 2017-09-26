@@ -11,6 +11,12 @@ import FileKit
 
 class ConfigTests: XCTestCase {
     
+    static var allTests = [
+        ("testGet", testGet),
+        ("testSet", testSet),
+        ("testLayer", testLayer),
+    ]
+    
     let configPath = Path("config.json")
     
     override func tearDown() {

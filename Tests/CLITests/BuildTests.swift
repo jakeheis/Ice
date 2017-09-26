@@ -9,6 +9,14 @@ import XCTest
 
 class BuildTests: XCTestCase {
     
+    static var allTests = [
+        ("testSimpleBuild", testSimpleBuild),
+        ("testCleanBuild", testCleanBuild),
+        ("testReleaseBuild", testReleaseBuild),
+        ("testWatchBuild", testWatchBuild),
+        ("testBuildErrors", testBuildErrors),
+    ]
+    
     func testSimpleBuild() {
         let result = Runner.execute(args: ["build"], sandbox: .exec)
         XCTAssertEqual(result.exitStatus, 0)

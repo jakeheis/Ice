@@ -9,6 +9,10 @@ import XCTest
 
 class RemoveTests: XCTestCase {
     
+    static var allTests = [
+        ("testBasicRemove", testBasicRemove),
+    ]
+    
     func testBasicRemove() {
         let result = Runner.execute(args: ["remove", "SwiftCLI"], sandbox: .exec)
         XCTAssertEqual(result.exitStatus, 0)

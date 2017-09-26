@@ -10,6 +10,10 @@ import Transformers
 
 class ResolveTests: XCTestCase {
     
+    static var allTests = [
+        ("testFetch", testFetch),
+    ]
+    
     func testFetch() {
         let fetch = TransformTest(Transformers.resolve)
         fetch.send(.out, """

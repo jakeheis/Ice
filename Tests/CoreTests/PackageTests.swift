@@ -12,6 +12,11 @@ import SwiftCLI
 
 class PackageTests: XCTestCase {
     
+    static var allTests = [
+        ("testBasic", testBasic),
+        ("testComplex", testComplex),
+    ]
+    
     func testBasic() throws {
         XCTAssertEqual(try writePackage(path: "SwiftCLI.json"), """
         // swift-tools-version:4.0

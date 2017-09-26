@@ -8,6 +8,12 @@ import Core
 
 class RepositoryReferenceTests: XCTestCase {
     
+    static var allTests = [
+        ("testGithub", testGithub),
+        ("testGitlab", testGitlab),
+        ("testMostRecentVersion", testMostRecentVersion),
+    ]
+    
     func testGithub() {
         let short = RepositoryReference("jakeheis/SwiftCLI")
         XCTAssertEqual(short?.url, "https://github.com/jakeheis/SwiftCLI")

@@ -11,6 +11,10 @@ import Regex
 
 class LineTests: XCTestCase {
     
+    static var allTests = [
+        ("testAssertionFailureLine", testAssertionFailureLine),
+    ]
+    
     func testAssertionFailureLine() {
         let match = AssertionFailureLine.findMatch(in: "/Ice/Tests/CoreTests/ConfigTests.swift:52: error: -[CoreTests.ConfigTests testSet] : XCTAssertEqual failed: (\"value with a : is bad\") is not equal to (\"hello\") - ")
         XCTAssertEqual(match?.file, "/Ice/Tests/CoreTests/ConfigTests.swift")

@@ -10,6 +10,31 @@ import XCTest
 
 class TestTests: XCTestCase {
     
+    static var allTests = [
+        ("testPackageTestsBegun", testPackageTestsBegun),
+        ("testSuitePass", testSuitePass),
+        ("testXCTFail", testXCTFail),
+        ("testXCTEquals", testXCTEquals),
+        ("testXCTEqualWithAccuracy", testXCTEqualWithAccuracy),
+        ("testXCTNotEquals", testXCTNotEquals),
+        ("testXCTNotEqualWithAccuracy", testXCTNotEqualWithAccuracy),
+        ("testXCTNil", testXCTNil),
+        ("testXCTNotNil", testXCTNotNil),
+        ("testXCTThrow", testXCTThrow),
+        ("testXCTNoThrow", testXCTNoThrow),
+        ("testXCTAssert", testXCTAssert),
+        ("testXCTTrue", testXCTTrue),
+        ("testXCTFalse", testXCTFalse),
+        ("testXCTGreaterThan", testXCTGreaterThan),
+        ("testXCTGreaterThanOrEqual", testXCTGreaterThanOrEqual),
+        ("testXCTLessThan", testXCTLessThan),
+        ("testXCTLessThanOrEqual", testXCTLessThanOrEqual),
+        ("testMultilineEquality", testMultilineEquality),
+        ("testAllTests", testAllTests),
+        ("testSelectedTests", testSelectedTests),
+        ("testInterleavedOutput", testInterleavedOutput),
+    ]
+    
     override func setUp() {
         AllTestsStartResponse.mode = .all
         PackageTestsStartResponse.hasPrinted = false
@@ -186,8 +211,7 @@ class TestTests: XCTestCase {
         """)
     }
     
-    func 
-        testXCTNil() {
+    func testXCTNil() {
         let test = TransformTest(Transformers.test)
         test.send(.err, """
         Test Suite 'AddTests' started at 2017-09-18 10:18:14.163

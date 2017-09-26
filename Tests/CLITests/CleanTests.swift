@@ -9,6 +9,10 @@ import XCTest
 
 class CleanTests: XCTestCase {
     
+    static var allTests = [
+        ("testClean", testClean),
+    ]
+    
     func testClean() {
         Runner.execute(args: ["build"], sandbox: .lib)
         

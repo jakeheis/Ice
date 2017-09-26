@@ -10,6 +10,13 @@ import XCTest
 
 class RegistryTests: XCTestCase {
     
+    static var allTests = [
+        ("testAdd", testAdd),
+        ("testSharedLookup", testSharedLookup),
+        ("testLocalLookup", testLocalLookup),
+        ("testRemove", testRemove),
+    ]
+    
     override func tearDown() {
         Runner.clean()
     }

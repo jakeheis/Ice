@@ -10,6 +10,11 @@ import Foundation
 
 class InitTests: XCTestCase {
     
+    static var allTests = [
+        ("testLib", testLib),
+        ("testExec", testExec),
+    ]
+    
     func testLib() {
         let result = Runner.execute(args: ["init", "--lib"], dir: "MyNewLib", sandboxSetup: {
             createSandboxDirectory(path: "MyNewLib")

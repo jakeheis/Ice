@@ -11,6 +11,16 @@ import SwiftCLI
 
 class PackageWriterTests: XCTestCase {
     
+    static var allTests = [
+        ("testProducts", testProducts),
+        ("testDependencies", testDependencies),
+        ("testTargets", testTargets),
+        ("testProviders", testProviders),
+        ("testSwiftLanguageVersions", testSwiftLanguageVersions),
+        ("testCLanguageStandard", testCLanguageStandard),
+        ("testCxxLanguageStandard", testCxxLanguageStandard),
+    ]
+    
     func testProducts() {
         let products: [Package.Product] = [
             .init(name: "exec", product_type: "executable", targets: ["MyLib"], type: nil),

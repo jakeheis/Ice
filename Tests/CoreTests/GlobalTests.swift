@@ -11,6 +11,10 @@ import FileKit
 
 class GlobalTests: XCTestCase {
     
+    static var allTests = [
+        ("testAddRemove", testAddRemove),
+    ]
+    
     let sandbox = Path("sandbox")
     lazy var packagesPath = sandbox + "Packages"
     lazy var configPath = sandbox + "config.json"

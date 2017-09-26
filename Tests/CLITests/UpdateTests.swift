@@ -9,6 +9,10 @@ import XCTest
 
 class UpdateTests: XCTestCase {
     
+    static var allTests = [
+        ("testUpdate", testUpdate),
+    ]
+    
     func testUpdate() {
         let buildResult = Runner.execute(args: ["build"], sandbox: .exec)
         XCTAssertEqual(buildResult.exitStatus, 0)

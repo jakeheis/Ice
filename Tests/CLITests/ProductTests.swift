@@ -9,6 +9,12 @@ import XCTest
 
 class ProductTests: XCTestCase {
     
+    static var allTests = [
+        ("testAddExec", testAddExec),
+        ("testAddLib", testAddLib),
+        ("testRemove", testRemove),
+    ]
+    
     func testAddExec() {
         let result = Runner.execute(args: ["product", "add", "gogo", "--exec"], sandbox: .lib)
         XCTAssertEqual(result.exitStatus, 0)

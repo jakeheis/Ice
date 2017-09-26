@@ -10,6 +10,11 @@ import XCTest
 
 class UpdateTests: XCTestCase {
     
+    static var allTests = [
+        ("testUpdate", testUpdate),
+        ("testResolve", testResolve),
+    ]
+    
     func testUpdate() {
         let build = TransformTest(Transformers.update)
         build.send(.out, """

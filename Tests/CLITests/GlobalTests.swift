@@ -10,6 +10,10 @@ import Foundation
 
 class GlobalTests: XCTestCase {
     
+    static var allTests = [
+        ("testAddRemove", testAddRemove),
+    ]
+    
     func testAddRemove() {
         let result = Runner.execute(args: ["global", "add", "jakeheis/IceGlobalTest"])
         XCTAssertEqual(result.exitStatus, 0)

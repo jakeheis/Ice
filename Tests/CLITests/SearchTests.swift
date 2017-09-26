@@ -9,6 +9,12 @@ import XCTest
 
 class SearchTests: XCTestCase {
     
+    static var allTests = [
+        ("testFullSearch", testFullSearch),
+        ("testNameSearch", testNameSearch),
+        ("testNoResults", testNoResults),
+    ]
+    
     func testFullSearch() {
         let result = Runner.execute(args: ["search", "RxSwift"])
         XCTAssertEqual(result.exitStatus, 0)

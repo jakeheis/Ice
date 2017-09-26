@@ -9,6 +9,11 @@ import XCTest
 
 class RunTests: XCTestCase {
     
+    static var allTests = [
+        ("testBasicRun", testBasicRun),
+        ("testWatchRun", testWatchRun),
+    ]
+    
     func testBasicRun() {
         Runner.execute(args: ["build"], sandbox: .exec)
 
