@@ -8,6 +8,7 @@
 import FileKit
 import Exec
 import Foundation
+import SwiftCLI
 
 public class GlobalPackage {
     
@@ -40,7 +41,7 @@ public class GlobalPackage {
     func clone(url: String, version: Version?) throws {
         do {
             try Git.clone(url: url, to: path.rawValue, version: version)
-        } catch let error as Exec.Error {
+        } catch let error as ProcessError {
             throw IceError(message: "clone failed", exitStatus: error.exitStatus)
         }
     }

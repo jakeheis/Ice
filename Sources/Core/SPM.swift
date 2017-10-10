@@ -41,11 +41,7 @@ public class SPM {
         if release {
             args += ["-c", "release"]
         }
-        do {
-            try exec(arguments: args).execute(transform: Transformers.build)
-        } catch let error as Exec.Error {
-            throw IceError(exitStatus: error.exitStatus)
-        }
+        try exec(arguments: args).execute(transform: Transformers.build)
     }
     
     public func run(release: Bool = false) throws {
@@ -55,24 +51,17 @@ public class SPM {
         if release {
             args += ["-c", "release"]
         }
-        do {
-            try exec(arguments: args).execute(transform: Transformers.build)
-        } catch let error as Exec.Error {
-            throw IceError(exitStatus: error.exitStatus)
-        }
+        try exec(arguments: args).execute(transform: Transformers.build)
     }
     
     public func test(filter: String?) throws {
         try resolve()
-        do {
-            var args = ["test"]
-            if let filter = filter {
-                args += ["--filter", filter]
-            }
-            try exec(arguments: args).execute(transform: Transformers.test)
-        } catch let error as Exec.Error {
-            throw IceError(exitStatus: error.exitStatus)
+        
+        var args = ["test"]
+        if let filter = filter {
+            args += ["--filter", filter]
         }
+        try exec(arguments: args).execute(transform: Transformers.test)
     }
     
     public func resolve() throws {

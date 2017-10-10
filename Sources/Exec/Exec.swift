@@ -9,12 +9,32 @@ import Foundation
 import SwiftCLI
 import Rainbow
 import Dispatch
+import Regex
 
 public class Exec {
     
-    public struct Error: ProcessError {
+    public struct ExecuteError: ProcessError {
         public let exitStatus: Int32
         public let message: String? = nil
+    }
+    
+    public struct CaptureError: ProcessError {
+        public let stdout: Data
+        public let stderr: Data
+        public let exitStatus: Int32
+        
+        public var message: String? {
+            if let fullError = String(data: stderr, encoding: .utf8)?.trimmingCharacters(in: .whitespacesAndNewlines) {
+                let error: String
+                if let match = Regex("^[eE]rror: (.*)$").firstMatch(in: fullError), let rest = match.captures[0] {
+                    error = rest
+                } else {
+                    error = fullError
+                }
+                return "\nError: ".red.bold + error + "\n"
+            }
+            return nil
+        }
     }
     
     let process: Process
@@ -50,7 +70,7 @@ public class Exec {
         item?.cancel()
 
         guard process.terminationStatus == 0 else {
-            throw Error(exitStatus: process.terminationStatus)
+            throw ExecuteError(exitStatus: process.terminationStatus)
         }
     }
     
@@ -70,16 +90,22 @@ public class Exec {
         InterruptCatcher.end()
         item?.cancel()
         
+        let stdout = output.fileHandleForReading.availableData
+        let stderr = err.fileHandleForReading.availableData
+        
         guard process.terminationStatus == 0 else {
-            throw Error(exitStatus: process.terminationStatus)
+            throw CaptureError(
+                stdout: stdout,
+                stderr: stderr,
+                exitStatus: process.terminationStatus
+            )
         }
         
-        return (output.fileHandleForReading.availableData, err.fileHandleForReading.availableData)
+        return (stdout, stderr)
     }
     
     public func capture() throws -> (stdout: String, stderr: String) {
         let (stdout, stderr) = try captureData()
-        
         return (String(data: stdout, encoding: .utf8) ?? "", String(data: stderr, encoding: .utf8) ?? "")
     }
     

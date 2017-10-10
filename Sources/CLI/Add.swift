@@ -23,6 +23,8 @@ class AddCommand: Command {
             throw IceError(message: "not a valid package reference")
         }
         
+        verboseLog("Resolving url: \(ref.url)")
+        
         let dependencyVersion: Version
         if let versionValue = version.value {
             guard let specifiedVersion = Version(versionValue) else {
@@ -38,6 +40,8 @@ class AddCommand: Command {
             }
             dependencyVersion = latestVersion ?? manualVersion()
         }
+        
+        verboseLog("Resolving at version: \(dependencyVersion)")
         
         var package = try Package.load(directory: ".")
         package.addDependency(ref: ref, version: dependencyVersion)
