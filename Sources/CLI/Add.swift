@@ -48,6 +48,8 @@ class AddCommand: Command {
         if let targetString = targets.value {
             let targets = targetString.components(separatedBy: ",")
             try targets.forEach { try package.depend(target: $0, on: ref.name) }
+        } else if package.targets.count == 1 {
+            try package.depend(target: package.targets[0].name, on: ref.name)
         }
         try package.write()
     }

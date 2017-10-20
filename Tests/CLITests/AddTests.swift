@@ -108,4 +108,32 @@ class AddTests: XCTestCase {
         """)
     }
     
+    func testSingleTargetAdd() {
+        let result = Runner.execute(args: ["add", "jakeheis/Spawn"], sandbox: .exec)
+        XCTAssertEqual(result.exitStatus, 0)
+        XCTAssertEqual(result.stdout, "")
+        XCTAssertEqual(result.stderr, "")
+        
+        XCTAssertEqual(
+            sandboxedFileContents("Package.swift"),
+            """
+        // swift-tools-version:4.0
+        // Managed by ice
+
+        import PackageDescription
+
+        let package = Package(
+            name: "Exec",
+            dependencies: [
+                .package(url: "https://github.com/jakeheis/SwiftCLI", from: "3.0.3"),
+                .package(url: "https://github.com/jakeheis/Spawn", from: "0.0.6"),
+            ],
+            targets: [
+                .target(name: "Exec", dependencies: ["SwiftCLI", "Spawn"]),
+            ]
+        )
+
+        """)
+    }
+    
 }
