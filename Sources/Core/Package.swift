@@ -147,7 +147,7 @@ public struct Package: Decodable {
     
     public mutating func depend(target: String, on lib: String) throws {
         guard let targetIndex = targets.index(where:  { $0.name == target }) else {
-            throw IceError(message: "target \(target) not found")
+            throw IceError(message: "target '\(target)' not found")
         }
         if targets[targetIndex].dependencies.contains(where: { $0.name == lib }) {
             return

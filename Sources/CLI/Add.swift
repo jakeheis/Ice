@@ -7,6 +7,7 @@
 
 import SwiftCLI
 import Core
+import Foundation
 
 class AddCommand: Command {
     
@@ -17,6 +18,7 @@ class AddCommand: Command {
     let version = OptionalParameter()
     
     let targets = Key<String>("-t", "--targets", description: "List of targets which should depend on this dependency")
+    let noInteractive = Flag("-n", "--no-interactive", description: "Don't prompt for targets if none are supplied")
     
     func execute() throws {
         guard let ref = RepositoryReference(dependency.value) else {
@@ -50,6 +52,23 @@ class AddCommand: Command {
             try targets.forEach { try package.depend(target: $0, on: ref.name) }
         } else if package.targets.count == 1 {
             try package.depend(target: package.targets[0].name, on: ref.name)
+        } else if !noInteractive.value {
+            stdout <<< ""
+            stdout <<< "Which targets depend on this dependency?"
+            stdout <<< ""
+            let ids = "123456789abcdefghijklmnopqrstuvwxyz".prefix(package.targets.count)
+            for (index, target) in package.targets.enumerated() {
+                stdout <<< "  " + String(ids[ids.index(ids.startIndex, offsetBy: index)]) + "  " + target.name
+            }
+            stdout <<< ""
+            let targetString = Input.awaitInputWithValidation(message: "> ", validation: { (input) -> Bool in
+                let allowed = CharacterSet(charactersIn: ids + ", ")
+                return input.rangeOfCharacter(from: allowed.inverted) == nil
+            })
+            let targets = targetString
+                .flatMap({ ids.index(of: $0) })
+                .map({ package.targets[ids.distance(from: ids.startIndex, to: $0)] })
+            try targets.forEach { try package.depend(target: $0.name, on: ref.name) }
         }
         try package.write()
     }
