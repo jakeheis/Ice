@@ -54,7 +54,7 @@ public struct RepositoryReference {
             guard let index = line.index(of: "\t") else {
                 return nil
             }
-            return String(line[line.index(index, offsetBy: "refs/tags/".characters.count + 1)...])
+            return String(line[line.index(index, offsetBy: "refs/tags/".count + 1)...])
         }
         return tags.flatMap { Version($0) }.sorted().last
     }

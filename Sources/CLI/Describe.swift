@@ -46,7 +46,7 @@ class DescribeCommand: Command {
     }
     
     func printDetail(title: String, value: String) {
-        let padding = String(repeating: " ", count: 11 - title.characters.count)
+        let padding = String(repeating: " ", count: 11 - title.count)
         print("\(padding)\(title): ".blue + value)
     }
     
