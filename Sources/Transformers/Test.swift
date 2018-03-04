@@ -16,6 +16,7 @@ public extension Transformers {
     static func test(t: OutputTransformer) {
         build(t: t)
         t.after("^Test Suite") {
+            t.clearResponses()
             t.add(AllTestsStartResponse.self)
             t.add(PackageTestsStartResponse.self)
             t.add(TestEndResponse.self)

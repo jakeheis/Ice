@@ -71,6 +71,10 @@ public class OutputTransformer {
         changes.append(Change(regex: Regex(matcher), change: change))
     }
     
+    public func clearResponses() {
+        responses.removeAll()
+    }
+    
     // MARK: -
     
     func start(with process: Process?) {
