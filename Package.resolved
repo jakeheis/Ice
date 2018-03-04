@@ -6,8 +6,8 @@
         "repositoryURL": "https://github.com/jakeheis/FileKit",
         "state": {
           "branch": null,
-          "revision": "0a42439a8f2239ce869cbea5b2a4df3a90689f62",
-          "version": "4.1.0"
+          "revision": "9256677efa706ae9610f598b7979de22ec555c11",
+          "version": "4.1.1"
         }
       },
       {
@@ -15,8 +15,8 @@
         "repositoryURL": "https://github.com/onevcat/Rainbow",
         "state": {
           "branch": null,
-          "revision": "df197437d8acefb2ae01ab073be1d531fe7781ef",
-          "version": "2.1.0"
+          "revision": "f69961599ad524251d677fbec9e4bac57385d6fc",
+          "version": "3.1.1"
         }
       },
       {
@@ -33,8 +33,8 @@
         "repositoryURL": "https://github.com/jakeheis/SwiftCLI",
         "state": {
           "branch": null,
-          "revision": "a84dc5ace202e8f095f32909c9f45f678e5097e4",
-          "version": "4.0.2"
+          "revision": "afd7cd100aa18e1ad878279f506fbff71b59ed91",
+          "version": "4.0.3"
         }
       }
     ]
