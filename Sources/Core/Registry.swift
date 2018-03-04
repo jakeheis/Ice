@@ -23,8 +23,8 @@ public class Registry {
         self.directory = registryPath
         
         if let lastRefreshed = localRegistry.lastRefreshed {
-            // If current date is more than 7 days after last refresh
-            if Date() > lastRefreshed.addingTimeInterval(60 * 60 * 24 * 7) {
+            // If current date is more than 30 days after last refresh
+            if Date() > lastRefreshed.addingTimeInterval(60 * 60 * 24 * 30) {
                 do {
                     try refresh(silent: true)
                 } catch {}
@@ -77,7 +77,9 @@ public class Registry {
     }
     
     public func search(query: String, includeDescription: Bool) throws -> [RegistryEntry] {
-        try refresh(silent: true)
+        do {
+            try refresh(silent: true)
+        } catch {}
         
         var all = Set<String>()
 

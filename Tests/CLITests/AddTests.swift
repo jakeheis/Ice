@@ -16,7 +16,7 @@ class AddTests: XCTestCase {
     ]
     
     func testBasicAdd() {
-        let result = Runner.execute(args: ["add", "jakeheis/Spawn"], sandbox: .lib)
+        let result = Runner.execute(args: ["add", "jakeheis/Spawn", "-n"], sandbox: .lib)
         XCTAssertEqual(result.exitStatus, 0)
         XCTAssertEqual(result.stdout, "")
         XCTAssertEqual(result.stderr, "")
@@ -78,7 +78,7 @@ class AddTests: XCTestCase {
     }
     
     func testVersionedAdd() {
-        let result = Runner.execute(args: ["add", "jakeheis/Spawn", "0.0.5"], sandbox: .lib)
+        let result = Runner.execute(args: ["add", "jakeheis/Spawn", "0.0.5", "-n"], sandbox: .lib)
         XCTAssertEqual(result.exitStatus, 0)
         XCTAssertEqual(result.stdout, "")
         XCTAssertEqual(result.stderr, "")
@@ -125,7 +125,7 @@ class AddTests: XCTestCase {
         let package = Package(
             name: "Exec",
             dependencies: [
-                .package(url: "https://github.com/jakeheis/SwiftCLI", from: "3.0.3"),
+                .package(url: "https://github.com/jakeheis/SwiftCLI", from: "4.0.3"),
                 .package(url: "https://github.com/jakeheis/Spawn", from: "0.0.6"),
             ],
             targets: [

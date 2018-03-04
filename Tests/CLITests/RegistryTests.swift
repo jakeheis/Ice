@@ -34,7 +34,6 @@ class RegistryTests: XCTestCase {
         XCTAssertEqual(entries.count, 1)
         XCTAssertEqual(entries[0]["name"] as? String, "dne")
         XCTAssertEqual(entries[0]["url"] as? String, "https://github.com/jakeheis/dne")
-        XCTAssertNotNil(json["lastRefreshed"])
     }
     
     func testSharedLookup() {
@@ -77,7 +76,6 @@ class RegistryTests: XCTestCase {
         let json = try! JSONSerialization.jsonObject(with: sandboxedFileData("global/Registry/local.json")!, options: []) as! [String: Any]
         let entries = json["entries"] as! [[String: Any]]
         XCTAssertEqual(entries.count, 0)
-        XCTAssertNotNil(json["lastRefreshed"])
     }
     
 }

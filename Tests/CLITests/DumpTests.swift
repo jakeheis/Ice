@@ -24,9 +24,9 @@ class DumpTests: XCTestCase {
           "dependencies": [
             {
               "requirement": {
-                "lowerBound": "3.0.3",
+                "lowerBound": "4.0.3",
                 "type": "range",
-                "upperBound": "4.0.0"
+                "upperBound": "5.0.0"
               },
               "url": "https://github.com/jakeheis/SwiftCLI"
             }
