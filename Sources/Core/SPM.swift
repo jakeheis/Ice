@@ -34,7 +34,7 @@ public class SPM {
     
     // MARK: - Building
     
-    public func build(release: Bool = false) throws {
+    public func build(release: Bool) throws {
         try resolve()
         
         var args = ["build"]
@@ -44,14 +44,17 @@ public class SPM {
         try exec(arguments: args).execute(transform: Transformers.build)
     }
     
-    public func run(release: Bool = false) throws {
+    public func run(release: Bool, executable: [String]) throws {
         try resolve()
         
-        var args = ["run"]
+        try build(release: release)
+        
+        var args = ["run", "--skip-build"]
         if release {
             args += ["-c", "release"]
         }
-        try exec(arguments: args).execute(transform: Transformers.build)
+        args += executable
+        try exec(arguments: args).execute()
     }
     
     public func test(filter: String?) throws {

@@ -16,6 +16,8 @@ class RunCommand: Command {
     let name = "run"
     let shortDescription = "Runs the executable of the current package"
     
+    let executable = OptionalCollectedParameter()
+    
     let release = Flag("-r", "--release")
     let watch = Flag("-w", "--watch")
     
@@ -29,13 +31,13 @@ class RunCommand: Command {
                 InterruptCatcher.interrupt()
                 runQueue.async {
                     do {
-                        try spm.run(release: self.release.value)
+                        try spm.run(release: self.release.value, executable: self.executable.value ?? [])
                     } catch {}
                 }
             }
             try watcher.go()
         } else {
-            try spm.run(release: release.value)
+            try spm.run(release: release.value, executable: executable.value ?? [])
         }
     }
     
