@@ -30,7 +30,7 @@ class RunTests: XCTestCase {
         Runner.execute(args: ["build"], sandbox: .exec)
         
         DispatchQueue.global().asyncAfter(deadline: .now() + 4) {
-            writeToSandbox(path: "Sources/Exec/main.swift", contents: "\nprint(\"hey world\")\n")
+            writeToSandbox(path: "Sources/Exec/main.swift", contents: "import Foundation\nprint(\"hey world\")\nfflush(stdout)\n")
         }
         
         DispatchQueue.global().asyncAfter(deadline: .now() + 8) {
