@@ -27,7 +27,7 @@ class RunCommand: Command {
         if watch.value {
             let runQueue = DispatchQueue(label: "com.jakeheis.Ice.RunCommand")
             let watcher = try SourceWatcher() {
-                print("[ice] restarting due to changes...".green)
+                self.stdout <<< "[ice] restarting due to changes...".green
                 InterruptCatcher.interrupt()
                 runQueue.async {
                     do {
