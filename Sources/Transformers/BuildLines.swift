@@ -32,7 +32,7 @@ final class LinkLine: Line {
 }
 
 final class BuildErrorLine: Line, Equatable {
-    static let regex = Regex("^(/.*):([0-9]+):([0-9]+): (error|warning|note): (.*)$")
+    static let regex = Regex("^(.*):([0-9]+):([0-9]+): (error|warning|note): (.*)$")
     static let stream: StandardStream = .out
     
     enum ErrorType: String, Capturable {

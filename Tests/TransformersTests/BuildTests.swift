@@ -133,6 +133,34 @@ class BuildTests: XCTestCase {
         """, stderr: "")
     }
     
+    func testNoteOtherModule() {
+        let build = TransformTest(Transformers.build)
+        build.send(.out, """
+        /FlockCLI/Sources/FlockCLI/InitCommand.swift:93:23: error: 'CLIError' is unavailable: use CLI.Error instead
+                throw CLIError.error("Couldn't open .gitignore stream")
+                      ^~~~~~~~
+        SwiftCLI.CLIError:2:13: note: 'CLIError' has been explicitly marked unavailable here
+        public enum CLIError : Error {
+                    ^
+        """)
+        build.expect(stdout: """
+
+          ● Error: 'CLIError' is unavailable: use CLI.Error instead
+
+            throw CLIError.error("Couldn't open .gitignore stream")
+                  ^^^^^^^^
+            at /FlockCLI/Sources/FlockCLI/InitCommand.swift:93
+
+            Note: 'CLIError' has been explicitly marked unavailable here
+
+            public enum CLIError : Error {
+                        ^
+            at SwiftCLI.CLIError:2
+
+
+        """, stderr: "")
+    }
+    
     func testSuggestion() {
         let build = TransformTest(Transformers.build)
         build.send(.out, """

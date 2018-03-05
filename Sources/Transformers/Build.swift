@@ -163,7 +163,7 @@ final class ErrorResponse: MultiLineResponse {
     }
     
     func finish() {
-        let file = line.path.beautifyPath
+        let file = line.path.hasPrefix("/") ? line.path.beautifyPath : line.path
         stream <<< "    at \(file)" + ":\(line.lineNumber)\n"
     }
     
