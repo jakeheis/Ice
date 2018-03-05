@@ -11,7 +11,7 @@ import Exec
 
 public class Ice {
     
-    public static let version = "0.1.0"
+    public static let version = "0.3.0"
     
     struct Paths {
         
@@ -56,7 +56,7 @@ public class Ice {
             try Paths.packagesDirectory.createDirectory(withIntermediateDirectories: true)
             try Paths.registryDirectory.createDirectory(withIntermediateDirectories: true)
         } catch {
-            niceFatalError("Error: couldn't set up Ice at \(Paths.root)")
+            niceFatalError("Couldn't set up Ice at \(Paths.root)")
         }
     }
     

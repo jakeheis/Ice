@@ -28,7 +28,7 @@ swift build -c release
 ln -s .build/release/ice /usr/bin/local/ice
 ```
 
-## Beautified output
+## Beautiful output
 
 ### Init
 ![new](https://github.com/jakeheis/Ice/raw/gifs/new.gif)
@@ -139,7 +139,7 @@ Generate an Xcode project for the current project and open it
 #### ice config get/set
 Configure Ice behavior. Recognized keys:
 - bin: when Ice installs global packages, where should it symlink executables to?
-- strict: when writing `Package.swift`, should Ice reformat the file to be alphabetized
+- reformat: when writing `Package.swift`, should Ice reformat the file to be alphabetized
 
 ## FAQ
 
