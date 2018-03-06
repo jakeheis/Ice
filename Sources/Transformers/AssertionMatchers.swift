@@ -9,19 +9,12 @@ import Exec
 import Regex
 import SwiftCLI
 
-let xctMatches: [XCTMatch.Type] = [
-    XCTFailMatch.self, XCTEqualMatch.self, XCTNotEqualMatch.self, XCTEqualWithAccuracyMatch.self,
-    XCTNotEqualWithAccuracyMatch.self, XCTGreaterThanMatch.self, XCTGreaterThanOrEqualMatch.self,
-    XCTLessThanMatch.self, XCTLessThanOrEqualMatch.self, XCTNilMatch.self, XCTNotNilMatch.self,
-    XCTTrueMatch.self, XCTFalseMatch.self, XCTThrowMatch.self, XCTNoThrowMatch.self
-]
-
-protocol XCTMatch: Match {
+protocol XCTMatchable: Matchable {
     var message: String { get }
     func output()
 }
 
-extension XCTMatch {
+extension XCTMatchable {
 
     var stderr: OutputByteStream {
         return OutputTransformer.stderr
@@ -47,7 +40,20 @@ extension XCTMatch {
     
 }
 
-final class XCTFailMatch: XCTMatch {
+// MARK: -
+
+typealias XCTMatcher = Matcher & XCTMatchable
+
+let xctMatches: [XCTMatcher.Type] = [
+    XCTFailMatch.self, XCTEqualMatch.self, XCTNotEqualMatch.self, XCTEqualWithAccuracyMatch.self,
+    XCTNotEqualWithAccuracyMatch.self, XCTGreaterThanMatch.self, XCTGreaterThanOrEqualMatch.self,
+    XCTLessThanMatch.self, XCTLessThanOrEqualMatch.self, XCTNilMatch.self, XCTNotNilMatch.self,
+    XCTTrueMatch.self, XCTFalseMatch.self, XCTThrowMatch.self, XCTNoThrowMatch.self
+]
+
+// MARK: -
+
+final class XCTFailMatch: Matcher, XCTMatchable {
     static let regex = Regex("^failed - (.*)$")
     var message: String { return captures[0] }
     
@@ -56,7 +62,7 @@ final class XCTFailMatch: XCTMatch {
     }
 }
 
-final class XCTEqualMatch: XCTMatch {
+final class XCTEqualMatch: Matcher, XCTMatchable {
     static let regex = Regex("^XCTAssertEqual failed: \\(\"(.*)\"\\) is not equal to \\(\"(.*)\"\\) - (.*)$")
     var got: String { return captures[0] }
     var expected: String { return captures[1] }
@@ -67,7 +73,7 @@ final class XCTEqualMatch: XCTMatch {
     }
 }
 
-final class XCTNotEqualMatch: XCTMatch {
+final class XCTNotEqualMatch: Matcher, XCTMatchable {
     static let regex = Regex("^XCTAssertNotEqual failed: \\(\"(.*)\"\\) is equal to \\(\"(.*)\"\\) - (.*)$")
     var got: String { return captures[0] }
     var expected: String { return captures[1] }
@@ -78,7 +84,7 @@ final class XCTNotEqualMatch: XCTMatch {
     }
 }
 
-final class XCTEqualWithAccuracyMatch: XCTMatch {
+final class XCTEqualWithAccuracyMatch: Matcher, XCTMatchable {
     static let regex = Regex("^XCTAssertEqualWithAccuracy failed: \\(\"(.*)\"\\) is not equal to \\(\"(.*)\"\\) \\+\\/- \\(\"(.*)\"\\) - (.*)$")
     var got: String { return captures[0] }
     var expected: String { return captures[1] }
@@ -90,7 +96,7 @@ final class XCTEqualWithAccuracyMatch: XCTMatch {
     }
 }
 
-final class XCTNotEqualWithAccuracyMatch: XCTMatch {
+final class XCTNotEqualWithAccuracyMatch: Matcher, XCTMatchable {
     static let regex = Regex("^XCTAssertNotEqualWithAccuracy failed: \\(\"(.*)\"\\) is equal to \\(\"(.*)\"\\) \\+\\/- \\(\"(.*)\"\\) - (.*)$")
     var got: String { return captures[0] }
     var expected: String { return captures[1] }
@@ -102,7 +108,7 @@ final class XCTNotEqualWithAccuracyMatch: XCTMatch {
     }
 }
 
-final class XCTGreaterThanMatch: XCTMatch {
+final class XCTGreaterThanMatch: Matcher, XCTMatchable {
     static let regex = Regex("^XCTAssertGreaterThan failed: \\(\"(.*)\"\\) is not greater than \\(\"(.*)\"\\) - (.*)$")
     var got: String { return captures[0] }
     var expected: String { return captures[1] }
@@ -113,7 +119,7 @@ final class XCTGreaterThanMatch: XCTMatch {
     }
 }
 
-final class XCTGreaterThanOrEqualMatch: XCTMatch {
+final class XCTGreaterThanOrEqualMatch: Matcher, XCTMatchable {
     static let regex = Regex("^XCTAssertGreaterThanOrEqual failed: \\(\"(.*)\"\\) is less than \\(\"(.*)\"\\) - (.*)$")
     var got: String { return captures[0] }
     var expected: String { return captures[1] }
@@ -124,7 +130,7 @@ final class XCTGreaterThanOrEqualMatch: XCTMatch {
     }
 }
 
-final class XCTLessThanMatch: XCTMatch {
+final class XCTLessThanMatch: Matcher, XCTMatchable {
     static let regex = Regex("^XCTAssertLessThan failed: \\(\"(.*)\"\\) is not less than \\(\"(.*)\"\\) - (.*)$")
     var got: String { return captures[0] }
     var expected: String { return captures[1] }
@@ -135,7 +141,7 @@ final class XCTLessThanMatch: XCTMatch {
     }
 }
 
-final class XCTLessThanOrEqualMatch: XCTMatch {
+final class XCTLessThanOrEqualMatch: Matcher, XCTMatchable {
     static let regex = Regex("^XCTAssertLessThanOrEqual failed: \\(\"(.*)\"\\) is greater than \\(\"(.*)\"\\) - (.*)$")
     var got: String { return captures[0] }
     var expected: String { return captures[1] }
@@ -146,7 +152,7 @@ final class XCTLessThanOrEqualMatch: XCTMatch {
     }
 }
 
-final class XCTNilMatch: XCTMatch {
+final class XCTNilMatch: Matcher, XCTMatchable {
     static let regex = Regex("XCTAssertNil failed: \"(.*)\" - (.*)$")
     var value: String { return captures[0] }
     var message: String { return captures[1] }
@@ -156,7 +162,7 @@ final class XCTNilMatch: XCTMatch {
     }
 }
 
-final class XCTNotNilMatch: XCTMatch {
+final class XCTNotNilMatch: Matcher, XCTMatchable {
     static let regex = Regex("XCTAssertNotNil failed - (.*)$")
     var message: String { return captures[0] }
     
@@ -165,7 +171,7 @@ final class XCTNotNilMatch: XCTMatch {
     }
 }
 
-final class XCTTrueMatch: XCTMatch {
+final class XCTTrueMatch: Matcher, XCTMatchable {
     static let regex = Regex("^XCTAssert(True)? failed - (.*)$")
     var message: String { return captures[1] }
     
@@ -174,7 +180,7 @@ final class XCTTrueMatch: XCTMatch {
     }
 }
 
-final class XCTFalseMatch: XCTMatch {
+final class XCTFalseMatch: Matcher, XCTMatchable {
     static let regex = Regex("XCTAssertFalse failed - (.*)$")
     var message: String { return captures[0] }
     
@@ -183,7 +189,7 @@ final class XCTFalseMatch: XCTMatch {
     }
 }
 
-final class XCTThrowMatch: XCTMatch {
+final class XCTThrowMatch: Matcher, XCTMatchable {
     static let regex = Regex("XCTAssertThrowsError failed: did not throw an error - (.*)$")
     var message: String { return captures[0] }
     
@@ -192,7 +198,7 @@ final class XCTThrowMatch: XCTMatch {
     }
 }
 
-final class XCTNoThrowMatch: XCTMatch {
+final class XCTNoThrowMatch: Matcher, XCTMatchable {
     static let regex = Regex("XCTAssertNoThrow failed: threw error \"(.*)\" - (.*)$")
     var error: String { return captures[0] }
     var message: String { return captures[1] }

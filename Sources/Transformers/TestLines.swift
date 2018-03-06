@@ -8,7 +8,7 @@
 import Exec
 import Regex
 
-final class AllTestsStartLine: Line {
+final class AllTestsStartLine: Matcher, StreamMatchable {
     enum SuiteMode: String, Capturable {
         case all = "All tests"
         case selected = "Selected tests"
@@ -19,21 +19,21 @@ final class AllTestsStartLine: Line {
     var mode: SuiteMode { return captures[0] }
 }
 
-final class PackageTestsStartMatch: Line {
+final class PackageTestsStartMatch: Matcher, StreamMatchable {
     static let regex = Regex("^Test Suite '(.*)\\.xctest' started")
     static let stream: StandardStream = .err
     
     var packageName: String { return captures[0] }
 }
 
-final class TestSuiteLine: Line {
+final class TestSuiteLine: Matcher, StreamMatchable {
     static let regex = Regex("^Test Suite '(.*)'")
     static let stream: StandardStream = .err
     
     var suiteName: String { return captures[0] }
 }
 
-final class TestCaseLine: Line {
+final class TestCaseLine: Matcher, StreamMatchable {
     enum Status: String, Capturable {
         case started
         case passed
@@ -48,14 +48,14 @@ final class TestCaseLine: Line {
     var status: Status { return captures[3] }
 }
 
-final class FatalErrorLine: Line {
+final class FatalErrorLine: Matcher, StreamMatchable {
     static let regex = Regex("^fatal error: (.*)$")
     static let stream: StandardStream = .err
     
     var message: String { return captures[0] }
 }
 
-final class AssertionFailureLine: Line {
+final class AssertionFailureLine: Matcher, StreamMatchable {
     static let regex = Regex("^(.*):([0-9]+): error: -\\[\\w+\\.\\w+ \\w+\\] : (.*)$")
     static let stream: StandardStream = .err
     
@@ -64,14 +64,14 @@ final class AssertionFailureLine: Line {
     var assertion: String { return captures[2] }
 }
 
-final class AllTestsEndLine: Line {
+final class AllTestsEndLine: Matcher, StreamMatchable {
     static let regex = Regex("Test Suite '(All tests|Selected tests|.*\\.xctest)' (passed|failed)")
     static let stream: StandardStream = .err
     
     var suite: String { return captures[0] }
 }
 
-final class TestCountLine: Line {
+final class TestCountLine: Matcher, StreamMatchable {
     static let regex = Regex("Executed ([0-9]+) tests?, with [0-9]* failures? .* \\(([\\.0-9]+)\\) seconds$")
     static let stream: StandardStream = .err
     

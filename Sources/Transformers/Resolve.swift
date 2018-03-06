@@ -25,7 +25,7 @@ final class FetchResponse: SingleLineResponse {
 
 // MARK: - Lines
 
-final class FetchLine: Line {
+final class FetchLine: Matcher, StreamMatchable {
     static let regex = Regex("Fetching (.*)$")
     static let stream: StandardStream = .out
     

@@ -33,7 +33,7 @@ final class CreateFileResponse: SingleLineResponse {
 
 // MARK: - Lines
 
-final class CreatePackageLine: Line {
+final class CreatePackageLine: Matcher, StreamMatchable {
     static let regex = Regex("(Creating .* package): (.*)")
     static let stream: StandardStream = .out
     
@@ -41,7 +41,7 @@ final class CreatePackageLine: Line {
     var packageName: String { return captures[1] }
 }
 
-final class CreateFileLine: Line {
+final class CreateFileLine: Matcher, StreamMatchable {
     static let regex = Regex("Creating ([^:]+)$")
     static let stream: StandardStream = .out
     

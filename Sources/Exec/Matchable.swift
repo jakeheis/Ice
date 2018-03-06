@@ -7,101 +7,72 @@
 
 import Regex
 
-public protocol Matchable: class, CustomStringConvertible {
-    static var regex: Regex { get }
-    init()
-}
-
-public extension Matchable {
+open class Matcher: CustomStringConvertible {
     
-    static func findMatch(in line: String) -> Self? {
-        return MatcherManager.createMatcher(from: line)
-    }
+    public let captures: Captures
     
-    static func ==<U: Matchable>(lhs: Self, rhs: U) -> Bool {
-        return !zip(lhs.captures.captures, rhs.captures.captures).contains(where: { $0 != $1 })
-    }
-    
-    var captures: Captures {
-        return MatcherManager.captures(for: self)
-    }
-    
-    var description: String {
+    public var description: String {
         return captures.description
     }
     
+    public required init(captures: Captures) {
+        self.captures = captures
+    }
+    
 }
 
 // MARK: -
 
-public protocol Match: Matchable {}
+public protocol Matchable {
+    static var regex: Regex { get }
+}
 
-public extension Match {
-    static func matches(_ line: String) -> Bool {
-        return regex.matches(line)
+public extension Matchable where Self : Matcher {
+    static func findMatch(in line: String) -> Self? {
+        guard let match = regex.firstMatch(in: line) else {
+            return nil
+        }
+        let matcher = Self(captures: Captures(captures: match.captures))
+        return matcher
     }
 }
 
 // MARK: -
 
-public protocol Line: Matchable {
+public protocol StreamMatchable: Matchable {
     static var stream: StandardStream { get }
 }
 
-public extension Line {
+public extension StreamMatchable {
     static func matches(_ line: String, _ stream: StandardStream) -> Bool {
         return stream == self.stream && regex.matches(line)
     }
 }
 
-public final class AnyOutLine: Line {
-    public static let regex = Regex("^(.*)$")
-    public static let stream: StandardStream = .out
-    public var text: String { return captures[0] }
-    public init() {}
-}
-
-public final class WhitespaceOutLine: Line {
-    public static let regex = Regex("^\\s*$")
-    public static let stream: StandardStream = .out
-    public init() {}
-}
-
-public final class AnyErrLine: Line {
-    public static let regex = Regex("^(.*)$")
-    public static let stream: StandardStream = .err
-    public var text: String { return captures[0] }
-    public init() {}
-}
-
-public final class WhitespaceErrLine: Line {
-    public static let regex = Regex("^\\s*$")
-    public static let stream: StandardStream = .out
-    public init() {}
-}
+public typealias Line = Matcher & StreamMatchable
 
 // MARK: -
 
-private class MatcherManager {
+public final class AnyOutLine: Matcher, StreamMatchable {
+    public static let regex = Regex("^(.*)$")
+    public static let stream: StandardStream = .out
     
-    private static var map: [ObjectIdentifier: Captures] = [:]
+    public var text: String { return captures[0] }
+}
+
+public final class WhitespaceOutLine: Matcher, StreamMatchable {
+    public static let regex = Regex("^\\s*$")
+    public static let stream: StandardStream = .out
+}
+
+public final class AnyErrLine: Matcher, StreamMatchable {
+    public static let regex = Regex("^(.*)$")
+    public static let stream: StandardStream = .err
     
-    static func createMatcher<T: Matchable>(from line: String) -> T? {
-        guard let match = T.regex.firstMatch(in: line) else {
-            return nil
-        }
-        let matcher = T()
-        let id = ObjectIdentifier(matcher)
-        map[id] = Captures(captures: match.captures)
-        return matcher
-    }
-    
-    static func captures<T: Matchable>(for matcher: T) -> Captures {
-        let id = ObjectIdentifier(matcher)
-        guard let captures = map[id] else {
-            preconditionFailure("Cannot create a Matcher manually; must create through Matcher.findMatch()")
-        }
-        return captures
-    }
-    
+    public var text: String { return captures[0] }
+}
+
+public final class WhitespaceErrLine: Matcher, StreamMatchable {
+    public static let regex = Regex("^\\s*$")
+    public static let stream: StandardStream = .out
 }

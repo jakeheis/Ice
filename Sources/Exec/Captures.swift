@@ -39,6 +39,12 @@ extension Captures: CustomStringConvertible {
     }
 }
 
+extension Captures: Equatable {
+    public static func ==(lhs: Captures, rhs: Captures) -> Bool {
+        return !zip(lhs.captures, rhs.captures).contains(where: { $0 != $1 })
+    }
+}
+
 extension String: Capturable {
     public static func fromCapture(_ text: String) -> String? {
         return text

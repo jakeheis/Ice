@@ -32,14 +32,14 @@ final class ResolveResponse: SingleLineResponse {
 
 // MARK: - Lines
 
-final class UpdateLine: Line {
+final class UpdateLine: Matcher, StreamMatchable {
     static let regex = Regex("Updating (.*)$")
     static let stream: StandardStream = .out
     
     var url: String { return captures[0] }
 }
 
-final class ResolveLine: Line {
+final class ResolveLine: Matcher, StreamMatchable {
     static let regex = Regex("Resolving (.*) at (.*)$")
     static let stream: StandardStream = .out
     
