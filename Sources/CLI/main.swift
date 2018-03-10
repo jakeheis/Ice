@@ -29,6 +29,7 @@ ice.commands = [
     GlobalGroup(),
     InitCommand(),
     NewCommand(),
+    OutdatedCommand(),
     ProductGroup(),
     RemoveCommand(),
     RegistryGroup(),
