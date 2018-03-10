@@ -101,7 +101,7 @@ class PackageWriter {
         for dependency in dependencies {
             let versionPortion: String
             
-            if dependency.requirement.type == "range" {
+            if dependency.requirement.type == .range {
                 guard let lowerBoundString = dependency.requirement.lowerBound, let lowerBound = Version(lowerBoundString),
                     let upperBoundString = dependency.requirement.upperBound, let upperBound = Version(upperBoundString) else {
                         fatalError("Wrong")
@@ -119,10 +119,10 @@ class PackageWriter {
                 }
                 let function: String
                 switch dependency.requirement.type {
-                case "branch": function = "branchItem"
-                case "exact": function = "exact"
-                case "revision": function = "revision"
-                default: niceFatalError("Unsupported dependency requirement type: \(dependency.requirement.type)")
+                case .branch: function = "branchItem"
+                case .exact: function = "exact"
+                case .revision: function = "revision"
+                default: return
                 }
                 versionPortion = ".\(function)(\(identifier.quoted))"
             }

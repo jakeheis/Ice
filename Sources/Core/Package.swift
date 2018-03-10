@@ -29,14 +29,20 @@ public struct Package: Decodable {
     
     public struct Dependency: Decodable {
         public struct Requirement: Decodable {
-            let type: String
-            let lowerBound: String?
-            let upperBound: String?
-            let identifier: String?
+            public enum RequirementType: String, Decodable {
+                case range
+                case branch
+                case exact
+                case revision
+            }
+            public let type: RequirementType
+            public let lowerBound: String?
+            public let upperBound: String?
+            public let identifier: String?
         }
         
         public let url: String
-        public let requirement: Requirement
+        public var requirement: Requirement
     }
     
     public struct Target: Decodable {
@@ -111,13 +117,15 @@ public struct Package: Decodable {
     // MARK: - Dependencies
     
     public mutating func addDependency(ref: RepositoryReference, version: Version) {
-        let requirement = Dependency.Requirement(
-            type: "range",
-            lowerBound: version.raw,
-            upperBound: Version(version.major + 1, 0, 0).raw,
-            identifier: nil
+        dependencies.append(Dependency(
+            url: ref.url,
+            requirement: requirement(for: version))
         )
-        dependencies.append(Dependency(url: ref.url, requirement: requirement))
+    }
+    
+    public mutating func updateDependency(dependency: Dependency, to version: Version) {
+        let index = dependencies.index(where: { $0.url == dependency.url })!
+        dependencies[index].requirement = requirement(for: version)
     }
     
     public mutating func removeDependency(named name: String) throws {
@@ -127,6 +135,15 @@ public struct Package: Decodable {
         dependencies.remove(at: index)
         
         removeDependencyFromTargets(named: name)
+    }
+    
+    private func requirement(for version: Version) -> Dependency.Requirement {
+        return Dependency.Requirement(
+            type: .range,
+            lowerBound: version.raw,
+            upperBound: Version(version.major + 1, 0, 0).raw,
+            identifier: nil
+        )
     }
     
     // MARK: - Targets

@@ -48,7 +48,7 @@ class PackageWriterTests: XCTestCase {
             .init(
                 url: "https://github.com/jakeheis/SwiftCLI",
                 requirement: .init(
-                    type: "branch",
+                    type: .branch,
                     lowerBound: nil,
                     upperBound: nil,
                     identifier: "swift4"
@@ -57,7 +57,7 @@ class PackageWriterTests: XCTestCase {
             .init(
                 url: "https://github.com/jakeheis/Spawn",
                 requirement: .init(
-                    type: "exact",
+                    type: .exact,
                     lowerBound: nil,
                     upperBound: nil,
                     identifier: "0.0.4"
@@ -66,7 +66,7 @@ class PackageWriterTests: XCTestCase {
             .init(
                 url: "https://github.com/jakeheis/Flock",
                 requirement: .init(
-                    type: "revision",
+                    type: .revision,
                     lowerBound: nil,
                     upperBound: nil,
                     identifier: "c57454ce053821d2fef8ad25d8918ae83506810c"
@@ -75,7 +75,7 @@ class PackageWriterTests: XCTestCase {
             .init(
                 url: "https://github.com/jakeheis/FlockCLI",
                 requirement: .init(
-                    type: "range",
+                    type: .range,
                     lowerBound: "4.1.0",
                     upperBound: "5.0.0",
                     identifier: nil
@@ -84,7 +84,7 @@ class PackageWriterTests: XCTestCase {
             .init(
                 url: "https://github.com/jakeheis/FileKit",
                 requirement: .init(
-                    type: "range",
+                    type: .range,
                     lowerBound: "2.1.3",
                     upperBound: "2.2.0",
                     identifier: nil
@@ -93,7 +93,7 @@ class PackageWriterTests: XCTestCase {
             .init(
                 url: "https://github.com/jakeheis/Shout",
                 requirement: .init(
-                    type: "range",
+                    type: .range,
                     lowerBound: "0.6.4",
                     upperBound: "0.6.8",
                     identifier: nil

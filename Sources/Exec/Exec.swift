@@ -90,8 +90,8 @@ public class Exec {
         InterruptCatcher.end()
         item?.cancel()
         
-        let stdout = output.fileHandleForReading.availableData
-        let stderr = err.fileHandleForReading.availableData
+        let stdout = output.fileHandleForReading.readDataToEndOfFile()
+        let stderr = err.fileHandleForReading.readDataToEndOfFile()
         
         guard process.terminationStatus == 0 else {
             throw CaptureError(

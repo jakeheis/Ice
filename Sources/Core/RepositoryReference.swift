@@ -43,7 +43,7 @@ public struct RepositoryReference {
         self.url = url
     }
     
-    public func latestVersion() throws -> Version? {
+    public func retrieveVersions() throws -> [Version] {
         let tagOutput: String
         do {
             tagOutput = try Git.lsRemote(url: url)
@@ -56,7 +56,11 @@ public struct RepositoryReference {
             }
             return String(line[line.index(index, offsetBy: "refs/tags/".count + 1)...])
         }
-        return tags.flatMap { Version($0) }.sorted().last
+        return tags.flatMap { Version($0) }.sorted()
+    }
+    
+    public func latestVersion() throws -> Version? {
+        return try retrieveVersions().last
     }
     
 }

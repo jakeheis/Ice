@@ -18,7 +18,7 @@ class AddCommand: Command {
     let version = OptionalParameter()
     
     let targets = Key<String>("-t", "--targets", description: "List of targets which should depend on this dependency")
-    let noInteractive = Flag("-n", "--no-interactive", description: "Don't prompt for targets if none are supplied")
+    let noInteractive = Flag("-n", "--no-interactive", description: "Do not prompt for targets if none are supplied")
     
     func execute() throws {
         guard let ref = RepositoryReference(dependency.value) else {

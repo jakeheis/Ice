@@ -43,17 +43,23 @@ class VersionTests: XCTestCase {
     func testComparison() {
         let v1 = Version(0, 5, 3)
         let v2 = Version(0, 8, 1)
-        let v3 = Version(1, 0, 0)
-        let v4 = Version(1, 0, 1)
+        let v3 = Version(0, 12, 5)
+        let v4 = Version(1, 0, 0)
+        let v5 = Version(1, 0, 1)
         
         XCTAssertLessThan(v1, v2)
         XCTAssertLessThan(v1, v3)
         XCTAssertLessThan(v1, v4)
+        XCTAssertLessThan(v1, v5)
         
         XCTAssertLessThan(v2, v3)
         XCTAssertLessThan(v2, v4)
+        XCTAssertLessThan(v2, v5)
         
         XCTAssertLessThan(v3, v4)
+        XCTAssertLessThan(v3, v5)
+        
+        XCTAssertLessThan(v4, v5)
     }
     
 }
