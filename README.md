@@ -112,8 +112,32 @@ Link ./.build/x86_64-apple-macosx10.10/debug/ice
 
 ## Other commands
 
+#### ice outdated
+
+Check if any dependencies are outdated
+
+```shell
+> ice outdated
++-----------------+-----------------+----------+--------+
+| Name            | Wanted          | Resolved | Latest |
++-----------------+-----------------+----------+--------+
+| FileKit         | 4.1.0 ..< 5.0.0 | 4.1.1    | 4.1.1  |
+| Rainbow         | 3.1.1 ..< 4.0.0 | 3.1.1    | 3.1.1  |
+| Regex           | 1.1.0 ..< 2.0.0 | 1.1.0    | 1.1.0  |
+| SwiftCLI        | 4.0.0 ..< 5.0.0 | 4.0.3    | 4.0.4  |
+| SwiftyTextTable | 0.8.0 ..< 1.0.0 | 0.8.0    | 0.8.0  |
++-----------------+-----------------+----------+--------+
+```
+
 #### ice update
 Update the current package's dependencies
+
+```shell
+> ice update
+Update https://github.com/jakeheis/SwiftCLI
+Resolve https://github.com/jakeheis/SwiftCLI at 4.0.4
+> ice update SwiftCLI 5.0.0
+```
 
 #### ice clean
 Clean the current project by removing build artifacts
