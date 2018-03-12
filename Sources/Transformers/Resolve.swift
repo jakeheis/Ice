@@ -10,24 +10,37 @@ import Regex
 import Rainbow
 import SwiftCLI
 
-public extension Transformers {
-    static func resolve(t: OutputTransformer) {
-        t.add(FetchResponse.self)
-        t.ignore(AnyOutLine.self)
-    }
+public extension TransformerPair {
+    static var resolve: TransformerPair { return TransformerPair(out: Resolve(), err: nil) }
 }
 
-final class FetchResponse: SingleLineResponse {
-    static func respond(to line: FetchLine) {
-        stdout <<< "Fetch ".dim + line.url
+class Resolve: BaseTransformer {
+    func go(stream: PipeStream) {
+        if let action = stream.match(DependencyActionLine.self) {
+            stdout <<< String(describing: action.action).capitalized.dim + " " + action.url
+        } else if let resolve = stream.match(ResolveLine.self) {
+            stdout <<< "Resolve ".dim + "\(resolve.url) at \(resolve.version)"
+        } else {
+            stream.consume()
+        }
     }
 }
 
 // MARK: - Lines
 
-final class FetchLine: Matcher, StreamMatchable {
-    static let regex = Regex("Fetching (.*)$")
-    static let stream: StandardStream = .out
-    
+final class DependencyActionLine: Matcher, Matchable {
+    enum Action: String, Capturable {
+        case fetch = "Fetching"
+        case update = "Updating"
+        case clone = "Cloning"
+    }
+    static let regex = Regex("(Fetching|Updating|Cloning) ([^ ]+)$")
+    var action: Action { return captures[0] }
+    var url: String { return captures[1] }
+}
+
+final class ResolveLine: Matcher, Matchable {
+    static let regex = Regex("Resolving ([^ ]+) at (.*)$")
     var url: String { return captures[0] }
+    var version: String { return captures[1] }
 }

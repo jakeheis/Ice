@@ -50,25 +50,20 @@ public class Exec {
         self.timeout = timeout
     }
     
-    public func execute(transform: ((_ transformer: OutputTransformer) -> ())? = nil) throws {
-        var transformer: OutputTransformer?
-        if let transform = transform {
-            let newTransformer = OutputTransformer()
-            transform(newTransformer)
-            newTransformer.start(with: process)
-            transformer = newTransformer
-        }
+    public func execute(transform: TransformerPair? = nil) throws {
+        transform?.start(on: process)
         
         let item = createInterruptItem()
         InterruptCatcher.start(process: process)
         
         process.launch()
         process.waitUntilExit()
-        transformer?.finish()
-
+        
+        transform?.wait()
+        
         InterruptCatcher.end()
         item?.cancel()
-
+        
         guard process.terminationStatus == 0 else {
             throw ExecuteError(exitStatus: process.terminationStatus)
         }

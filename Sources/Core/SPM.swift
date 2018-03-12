@@ -29,24 +29,27 @@ public class SPM {
         if let type = type {
             args += ["--type", type.rawValue]
         }
-        try exec(arguments: args).execute(transform: Transformers.initPackage)
+        try exec(arguments: args).execute(transform: .initialize)
     }
     
     // MARK: - Building
     
-    public func build(release: Bool) throws {
+    public func build(release: Bool, includeTests: Bool = false) throws {
+        // Resolve verbosely first because for some reason, SPM does not flush pipe
+        // when printing package resolution info
         try resolve()
         
         var args = ["build"]
         if release {
             args += ["-c", "release"]
         }
-        try exec(arguments: args).execute(transform: Transformers.build)
+        if includeTests {
+            args.append("--build-tests")
+        }
+        try exec(arguments: args).execute(transform: .build)
     }
     
     public func run(release: Bool, executable: [String]) throws {
-        try resolve()
-        
         try build(release: release)
         
         var args = ["run", "--skip-build"]
@@ -58,17 +61,17 @@ public class SPM {
     }
     
     public func test(filter: String?) throws {
-        try resolve()
+        try build(release: false, includeTests: true)
         
         var args = ["test"]
         if let filter = filter {
             args += ["--filter", filter]
         }
-        try exec(arguments: args).execute(transform: Transformers.test)
+        try exec(arguments: args).execute(transform: .test)
     }
     
     public func resolve() throws {
-        try exec(arguments: ["package", "-v", "resolve"]).execute(transform: Transformers.resolve)
+        try exec(arguments: ["package", "-v", "resolve"]).execute(transform: .resolve)
     }
     
     // MARK: -
@@ -82,7 +85,7 @@ public class SPM {
     }
     
     public func update() throws {
-        try exec(arguments: ["package", "update"]).execute(transform: Transformers.update)
+        try exec(arguments: ["package", "update"]).execute(transform: .resolve)
     }
 
     public func generateXcodeProject() throws {

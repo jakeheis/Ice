@@ -37,42 +37,15 @@ public extension Matchable where Self : Matcher {
     }
 }
 
-// MARK: -
-
-public protocol StreamMatchable: Matchable {
-    static var stream: StandardStream { get }
-}
-
-public extension StreamMatchable {
-    static func matches(_ line: String, _ stream: StandardStream) -> Bool {
-        return stream == self.stream && regex.matches(line)
-    }
-}
-
-public typealias Line = Matcher & StreamMatchable
+public typealias Line = Matcher & Matchable
 
 // MARK: -
 
-public final class AnyOutLine: Matcher, StreamMatchable {
+public final class AnyLine: Matcher, Matchable {
     public static let regex = Regex("^(.*)$")
-    public static let stream: StandardStream = .out
-    
     public var text: String { return captures[0] }
 }
 
-public final class WhitespaceOutLine: Matcher, StreamMatchable {
+public final class WhitespaceLine: Matcher, Matchable {
     public static let regex = Regex("^\\s*$")
-    public static let stream: StandardStream = .out
-}
-
-public final class AnyErrLine: Matcher, StreamMatchable {
-    public static let regex = Regex("^(.*)$")
-    public static let stream: StandardStream = .err
-    
-    public var text: String { return captures[0] }
-}
-
-public final class WhitespaceErrLine: Matcher, StreamMatchable {
-    public static let regex = Regex("^\\s*$")
-    public static let stream: StandardStream = .out
 }

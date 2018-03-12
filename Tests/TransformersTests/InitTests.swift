@@ -6,7 +6,7 @@
 //
 
 import XCTest
-import Transformers
+@testable import Transformers
 
 class InitTests: XCTestCase {
     
@@ -16,21 +16,21 @@ class InitTests: XCTestCase {
     ]
     
     func testCreatePackage() {
-        let build = TransformTest(Transformers.initPackage)
-        build.send(.out, """
+        let build = createTest()
+        build.send("""
         Creating library package: Ice
         """)
-        build.expect(stdout: """
+        build.expect("""
         
         Creating library package: Ice
         
         
-        """, stderr: "")
+        """)
     }
     
     func testCreateFiles() {
-        let build = TransformTest(Transformers.initPackage)
-        build.send(.out, """
+        let build = createTest()
+        build.send("""
         Creating Package.swift
         Creating README.md
         Creating .gitignore
@@ -41,7 +41,7 @@ class InitTests: XCTestCase {
         Creating Tests/MyNewLibTests/
         Creating Tests/MyNewLibTests/MyNewLibTests.swift
         """)
-        build.expect(stdout: """
+        build.expect("""
             create Package.swift
             create README.md
             create .gitignore
@@ -52,7 +52,11 @@ class InitTests: XCTestCase {
             create Tests/MyNewLibTests/
             create Tests/MyNewLibTests/MyNewLibTests.swift
         
-        """, stderr: "")
+        """)
+    }
+    
+    private func createTest() -> TransformerTest {
+        return TransformerTest(transformer: InitOut(), isStdout: true)
     }
     
 }

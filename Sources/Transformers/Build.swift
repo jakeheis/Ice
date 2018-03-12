@@ -11,61 +11,129 @@ import Rainbow
 import Foundation
 import SwiftCLI
 
-public extension Transformers {
+public extension TransformerPair {
+    static var build: TransformerPair { return TransformerPair(out: BuildOut(), err: BuildErr()) }
+}
+
+class BuildOut: BaseTransformer {
     
-    static func build(t: OutputTransformer) {
-        t.add(CompileSwiftResponse.self)
-        t.add(CompileCResponse.self)
-        t.add(ErrorResponse.self)
-        t.ignore(InternalTerminatedErrorLine.self)
-        t.ignore(WarningsGeneratedLine.self)
-        t.ignore(TerminatedLine.self)
-        t.ignore(UnderscoreLine.self)
-        t.add(InternalErrorResponse.self)
-        t.add(LinkResponse.self)
+    private let errorTracker = ErrorTracker()
+    
+    public func go(stream: PipeStream) {
+        if let compileSwift = stream.match(CompileSwiftLine.self) {
+            stdout <<< "Compile ".dim + "\(compileSwift.module) \(compileSwift.sourceCount)"
+        } else if let compileC = stream.match(CompileCLine.self) {
+            stdout <<< "Compile ".dim + "\(compileC.module)"
+            
+            while stream.nextIs(CompileCLine.self, where: { $0.module == compileC.module }) {
+                stream.consume()
+            }
+        } else if let link = stream.match(LinkLine.self) {
+            stdout <<< "Link ".blue + link.product
+        } else if stream.nextIs(BuildErrorLine.self) {
+            Error(errorTracker: errorTracker).go(stream: stream)
+        }  else if stream.nextIs(in: [WarningsGeneratedLine.self, UnderscoreLine.self]) {
+            stream.consume()
+        }
     }
     
 }
 
-class InternalErrorResponse: SingleLineResponse {
-    static func respond(to line: InternalErrorLine) {
-        stderr <<< ""
-        stderr <<< "Error: ".bold.red + line.message
-        stderr <<< ""
+class BuildErr: BaseTransformer {
+    func go(stream: PipeStream) {
+        if stream.nextIs(in: [InternalTerminatedErrorLine.self, TerminatedLine.self]) {
+            stream.consume()
+        } else if let internalError = stream.match(InternalErrorLine.self) {
+            internalError.print(to: stderr)
+        }
     }
 }
 
-class CompileSwiftResponse: SingleLineResponse {
-    static func respond(to line: CompileSwiftLine) {
-        stdout <<< "Compile ".dim + "\(line.module) \(line.sourceCount)"
-    }
-}
-
-class LinkResponse: SingleLineResponse {
-    static func respond(to line: LinkLine) {
-        stdout <<< "Link ".blue + line.product
-    }
-}
-
-final class CompileCResponse: MultiLineResponse {
-    let module: String
-    init(line: CompileCLine) {
-        self.module = line.module
-        stdout <<< "Compile ".dim + "\(line.module)"
-    }
-    func consume(input: InputMatcher) {
-        input.continueIf(CompileCLine.self, where: { $0.module == self.module })
-        input.fallback(.stop)
-    }
-}
-
-class ErrorTracker {
+private class Error: Transformer {
     
-    static var past: [BuildErrorLine] = []
+    private let indentation = "    "
+    private let stopLines: [Line.Type] = [CompileSwiftLine.self, CompileCLine.self, BuildErrorLine.self, LinkLine.self, WarningsGeneratedLine.self]
     
-    static var skippingCurrent = false
+    let errorTracker: ErrorTracker
     
-    static func shouldSkip(_ line: BuildErrorLine) -> Bool {
+    init(errorTracker: ErrorTracker) {
+        self.errorTracker = errorTracker
+    }
+    
+    func go(stream: PipeStream) {
+        let metadataLine = stream.require(BuildErrorLine.self)
+        let color = textColor(for: metadataLine)
+        
+        var out: OutputByteStream
+        if errorTracker.shouldSkip(metadataLine) {
+            out = NullStream()
+        } else {
+            out = stdout
+            errorTracker.record(metadataLine)
+        }
+        
+        printMessage(metadataLine, stream: out)
+        defer {
+            let file = metadataLine.path.hasPrefix("/") ? metadataLine.path.beautifyPath : metadataLine.path
+            out <<< "    at \(file)" + ":\(metadataLine.lineNumber)\n"
+        }
+        
+        if metadataLine.type == .note && (stream.nextIs(in: stopLines) || !stream.isOpen()) {
+            return
+        }
+        
+        let codeLine = stream.require(CodeLine.self)
+        let startIndex = codeLine.text.index(where: { $0 != " " }) ?? codeLine.text.startIndex
+        out <<< indentation + String(codeLine.text[startIndex...]).lightBlack
+        
+        while !stream.nextIs(HighlightsLine.self) {
+            let otherCode = stream.require(CodeLine.self)
+            out <<< indentation + String(otherCode.text[startIndex...]).lightBlack
+        }
+        
+        let highlights = stream.require(HighlightsLine.self)
+        out <<< indentation + String(highlights.highlights[startIndex...]).replacingAll(matching: "~", with: "^").applyingColor(color)
+        
+        while !stream.nextIs(in: stopLines) && stream.isOpen() {
+            if stream.match(WhitespaceLine.self) != nil { continue }
+            let suggestion = stream.require(SuggestionLine.self)
+            out <<< indentation + String(suggestion.text[startIndex...]).applyingColor(color) + "\n"
+        }
+    }
+    
+    private func printMessage(_ line: BuildErrorLine, stream: OutputByteStream) {
+        let prefix: String
+        switch line.type {
+        case .error:
+            prefix = "\n  ● Error:".red.bold
+        case .warning:
+            prefix = "\n  ● Warning:".yellow.bold
+        case .note:
+            prefix = "    Note:".blue
+        }
+        stream <<< "\(prefix) \(line.message)"
+        stream <<< ""
+    }
+    
+    private func textColor(for line: BuildErrorLine) -> Color {
+        switch line.type {
+        case .error:
+            return .red
+        case .warning:
+            return .yellow
+        case .note:
+            return .yellow
+        }
+    }
+    
+}
+
+private class ErrorTracker {
+    
+    private var past: [BuildErrorLine] = []
+    private var skippingCurrent = false
+    
+    func shouldSkip(_ line: BuildErrorLine) -> Bool {
         if line.type == .note {
             return skippingCurrent
         } else {
@@ -74,98 +142,7 @@ class ErrorTracker {
         }
     }
     
-    static func record(_ line: BuildErrorLine) {
+    func record(_ line: BuildErrorLine) {
         past.append(line)
     }
-    
-}
-
-final class ErrorResponse: MultiLineResponse {
-    
-    enum AwaitingLine {
-        case code
-        case highlightsOrCode(startIndex: String.Index)
-        case suggestionOrDone(startIndex: String.Index)
-    }
-    
-    let line: BuildErrorLine
-    let color: Color
-    let stream: OutputByteStream
-    
-    var awaitingLine: AwaitingLine = .code
-    
-    init(line: BuildErrorLine) {
-        self.line = line
-        
-        if ErrorTracker.shouldSkip(line) {
-            self.stream = NullStream()
-        } else {
-            self.stream = OutputTransformer.stdout
-            ErrorTracker.record(line)
-        }
-        
-        let prefix: String
-        switch line.type {
-        case .error:
-            self.color = .red
-            prefix = "\n  ● Error:".red.bold
-        case .warning:
-            self.color = .yellow
-            prefix = "\n  ● Warning:".yellow.bold
-        case .note:
-            self.color = .yellow
-            prefix = "    Note:".blue
-        }
-        
-        stream <<< "\(prefix) \(line.message)"
-        stream <<< ""
-    }
-    
-    func consume(input: InputMatcher) {
-        let indentation = "    "
-        switch awaitingLine {
-        case .code:
-            if self.line.type == .note  {
-                input.stopIf(CompileSwiftLine.self)
-                input.stopIf(CompileCLine.self)
-                input.stopIf(BuildErrorLine.self)
-                input.stopIf(LinkLine.self)
-                input.stopIf(WarningsGeneratedLine.self)
-            }
-            input.expect(CodeLine.self) { (line) in
-                let text = line.text
-                let lineStartIndex = text.index(where: { $0 != " " }) ?? text.startIndex
-                stream <<< indentation + String(text[lineStartIndex...]).lightBlack
-                awaitingLine = .highlightsOrCode(startIndex: lineStartIndex)
-            }
-        case let .highlightsOrCode(startIndex):
-            input.expect(HighlightsLine.self) { (line) in
-                stream <<< indentation + String(line.highlights[startIndex...]).replacingAll(matching: "~", with: "^").applyingColor(color)
-                awaitingLine = .suggestionOrDone(startIndex: startIndex)
-            }
-            input.expect(CodeLine.self) { (line) in
-                stream <<< indentation + String(line.text[startIndex...]).lightBlack
-            }
-        case let .suggestionOrDone(startIndex):
-            input.stopIf(CompileSwiftLine.self)
-            input.stopIf(CompileCLine.self)
-            input.stopIf(BuildErrorLine.self)
-            input.stopIf(LinkLine.self)
-            input.stopIf(WarningsGeneratedLine.self)
-            
-            input.continueIf(WhitespaceErrLine.self)
-            input.expect(SuggestionLine.self) { (line) in
-                stream <<< indentation + String(line.text[startIndex...]).applyingColor(color) + "\n"
-            }
-        }
-
-        input.fallback(.fatalError)
-    }
-    
-    func finish() {
-        let file = line.path.hasPrefix("/") ? line.path.beautifyPath : line.path
-        stream <<< "    at \(file)" + ":\(line.lineNumber)\n"
-    }
-    
-    
 }

@@ -8,37 +8,25 @@
 import Exec
 import Regex
 import Rainbow
+import SwiftCLI
 
-final class CompileSwiftLine: Matcher, StreamMatchable {
+final class CompileSwiftLine: Matcher, Matchable {
     static let regex = Regex("^Compile Swift Module '(.*)' (.*)$")
-    static let stream: StandardStream = .out
-    
     var module: String { return captures[0] }
     var sourceCount: String { return captures[1] }
 }
 
-final class CompileCLine: Matcher, StreamMatchable {
+final class CompileCLine: Matcher, Matchable {
     static let regex = Regex("Compile ([^ ]*) .*\\.(c|m|cpp|mm)$")
-    static let stream: StandardStream = .out
-
     var module: String { return captures[0] }
 }
 
-final class LinkLine: Matcher, StreamMatchable {
+final class LinkLine: Matcher, Matchable {
     static let regex = Regex("^Linking (.*)")
-    static let stream: StandardStream = .out
-
     var product: String { return captures[0] }
 }
 
-final class BuildErrorLine: Matcher, StreamMatchable, Equatable {
-    
-    static func ==(lhs: BuildErrorLine, rhs: BuildErrorLine) -> Bool {
-        return lhs.captures == rhs.captures
-    }
-    
-    static let regex = Regex("^(.*):([0-9]+):([0-9]+): (error|warning|note): (.*)$")
-    static let stream: StandardStream = .out
+final class BuildErrorLine: Matcher, Matchable, Equatable {
     
     enum ErrorType: String, Capturable {
         case error
@@ -46,6 +34,11 @@ final class BuildErrorLine: Matcher, StreamMatchable, Equatable {
         case note
     }
     
+    static func ==(lhs: BuildErrorLine, rhs: BuildErrorLine) -> Bool {
+        return lhs.captures == rhs.captures
+    }
+    
+    static let regex = Regex("^(.*):([0-9]+):([0-9]+): (error|warning|note): (.*)$")
     var path: String { return captures[0] }
     var lineNumber: Int { return captures[1] }
     var columnNumber: Int { return captures[2] }
@@ -53,37 +46,26 @@ final class BuildErrorLine: Matcher, StreamMatchable, Equatable {
     var message: String { return captures[4] }
 }
 
-final class HighlightsLine: Matcher, StreamMatchable {
+final class HighlightsLine: Matcher, Matchable {
     static let regex = Regex("^([~^ ]+)$")
-    static let stream: StandardStream = .out
     var highlights: String { return captures[0] }
 }
 
-final class InternalTerminatedErrorLine: Matcher, StreamMatchable {
+final class InternalTerminatedErrorLine: Matcher, Matchable {
     static let regex = Regex("^error: terminated\\(1\\): (.*)$")
-    static let stream: StandardStream = .err
 }
 
-final class InternalErrorLine: Matcher, StreamMatchable {
-    static let regex = Regex("^error: (.*)$")
-    static let stream: StandardStream = .err
-    var message: String { return captures[0] }
-}
-
-final class UnderscoreLine: Matcher, StreamMatchable {
+final class UnderscoreLine: Matcher, Matchable {
     static let regex = Regex("^\\s*_\\s*$")
-    static let stream: StandardStream = .out
 }
 
-final class TerminatedLine: Matcher, StreamMatchable {
+final class TerminatedLine: Matcher, Matchable {
     static let regex = Regex("^terminated\\(1\\)")
-    static let stream: StandardStream = .err
 }
 
-final class WarningsGeneratedLine: Matcher, StreamMatchable {
+final class WarningsGeneratedLine: Matcher, Matchable {
     static let regex = Regex("^[0-9]+ warnings? generated\\.$")
-    static let stream: StandardStream = .out
 }
 
-typealias CodeLine = AnyErrLine
-typealias SuggestionLine = AnyErrLine
+typealias CodeLine = AnyLine
+typealias SuggestionLine = AnyLine

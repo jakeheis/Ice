@@ -24,6 +24,8 @@ class BuildTests: XCTestCase {
         
         result.stdout.assert { (v) in
             v.equals("Fetch https://github.com/jakeheis/SwiftCLI")
+            v.equals("Clone https://github.com/jakeheis/SwiftCLI")
+            v.equals("Resolve https://github.com/jakeheis/SwiftCLI at 4.0.3")
             v.equals("Compile SwiftCLI (25 sources)")
             v.equals("Compile Exec (1 sources)")
             v.matches("^Link ./.build/.*0/debug/Exec$")
@@ -114,6 +116,8 @@ class BuildTests: XCTestCase {
         XCTAssertEqual(result.stderr, "")
         XCTAssertEqual(result.stdout, """
         Fetch https://github.com/jakeheis/SwiftCLI
+        Clone https://github.com/jakeheis/SwiftCLI
+        Resolve https://github.com/jakeheis/SwiftCLI at 4.0.3
         Compile SwiftCLI (25 sources)
         Compile Exec (1 sources)
 

@@ -11,207 +11,203 @@ import Regex
 import Rainbow
 import SwiftCLI
 
-public extension Transformers {
+public extension TransformerPair {
+    static var test: TransformerPair { return TransformerPair(out: TestOut(), err: TestErr()) }
+}
+
+class TestOut: BaseTransformer {
     
-    static func test(t: OutputTransformer) {
-        build(t: t)
-        t.after("^Test Suite") {
-            t.clearResponses()
-            t.add(AllTestsStartResponse.self)
-            t.add(PackageTestsStartResponse.self)
-            t.add(TestEndResponse.self)
-            t.add(TestSuiteResponse.self)
-            t.ignore(TestCountLine.self)
-            t.add(OutResponse.self)
-        }
+    static var onLine: ((String) -> ())? = nil
+    
+    func go(stream: PipeStream) {
+        let text = stream.require(AnyLine.self).text + "\n"
+        TestOut.onLine?(text)
     }
     
 }
 
-final class OutResponse: SingleLineResponse {
-    static var accumulated = ""
-    static func respond(to line: AnyOutLine) {
-        accumulated += (accumulated.isEmpty ? "" : "\n") + line.text
-    }
-}
-
-final class AllTestsStartResponse: SingleLineResponse {
-    static var mode: AllTestsStartLine.SuiteMode = .all
-    static func respond(to line: AllTestsStartLine) {
-        mode = line.mode
-    }
-}
-
-final class PackageTestsStartResponse: SingleLineResponse {
-    static var hasPrinted = false
-    static func respond(to line: PackageTestsStartMatch) {
-        if !hasPrinted {
-            stderr <<< "\n\(line.packageName):\n".bold
-            hasPrinted = true
-        }
-        TestCaseResponse.failureCount = 0
-    }
-}
-
-final class TestSuiteResponse: MultiLineResponse {
+class TestErr: BaseTransformer {
     
-    var name: String
+    var firstPass = true
     
-    private var failed = false
-    private var done = false
-    
-    private var currentTestCase: TestCaseResponse?
-    
-    init(line: TestSuiteLine) {
-        name = line.suiteName
-    }
-    
-    func consume(input: InputMatcher) {
-        if done {
-            input.stop()
+    func go(stream: PipeStream) {
+        if matchPotentialError(stream: stream) {
             return
         }
         
-        if input.yield(to: &currentTestCase) {
-            return
+        let mode = stream.require(AllTestsStartLine.self).mode
+        
+        let packageTests = stream.require(PackageTestsStartLine.self)
+        if firstPass {
+            stderr <<< "\n\(packageTests.packageName):\n".bold
+            firstPass = false
         }
         
-        input.expect(TestCaseLine.self) { (line) in
-            let response = TestCaseResponse(line: line)
-            response.testSuite = self
-            currentTestCase = response
-            
-            if !name.contains(".") {
-                name = "\(response.line.targetName)." + name
-                if AllTestsStartResponse.mode == .selected {
-                    name += "/\(response.line.caseName)"
-                }
-                stderr.output(badge(text: "RUNS", color: .blue), terminator: "")
-                fflush(Foundation.stderr)
+        var failureCount = 0
+        while stream.nextIs(TestSuiteLine.self, where: { $0.status == .started }) {
+            let suite = TestSuite(mode: mode)
+            suite.go(stream: stream)
+            failureCount += suite.failureCount
+        }
+        
+        _ = stream.require(AllTestsEndLine.self) // .xctest done
+        _ = stream.require(TestCountLine.self) // .xctest timing
+        
+        _ = stream.require(AllTestsEndLine.self) // all tests done
+        let count = stream.require(TestCountLine.self)
+        
+        printInfo(fails: failureCount, total: count.totalCount, duration: count.duration)
+    }
+    
+    private func matchPotentialError(stream: PipeStream) -> Bool {
+        if let internalError = stream.match(InternalErrorLine.self) {
+            internalError.print(to: stderr)
+            return true
+        } else if let internalNote = stream.match(InternalNoteLine.self) {
+            stderr <<< ""
+            let message = internalNote.message.contains("--filter") ? "filter predicate did not match any test case" : internalNote.message
+            stderr <<< "Error: ".bold.red + message
+            stderr <<< ""
+            return true
+        }
+        return false
+    }
+    
+    private func printInfo(fails: Int, total: Int, duration: String) {
+        var parts: [String] = []
+        if fails > 0 {
+            parts.append("\(fails) failed".bold.red)
+        }
+        if fails < total {
+            parts.append("\(total - fails) passed".bold.green)
+        }
+        parts.append("\(total) total")
+        
+        stderr <<< ""
+        stderr <<< "Tests:\t".bold.white + parts.joined(separator: ", ")
+        stderr <<< "Time:\t".bold.white + duration + "s"
+        stderr <<< ""
+    }
+    
+}
+
+class TestSuite: Transformer {
+    
+    let mode: AllTestsStartLine.SuiteMode
+    var failureCount = 0
+    var name = ""
+    
+    init(mode: AllTestsStartLine.SuiteMode) {
+        self.mode = mode
+    }
+    
+    func go(stream: PipeStream) {
+        let start = stream.require(TestSuiteLine.self)
+        
+        if let firstTestCase = stream.peek(TestCaseLine.self) {
+            name = "\(firstTestCase.targetName)." + start.suiteName
+            if mode == .selected {
+                name += "/\(firstTestCase.caseName)"
             }
+            stderr.output(badge(text: "RUNS", color: .blue), terminator: "")
+            fflush(Foundation.stderr)
+        }
+        while stream.nextIs(TestCaseLine.self) {
+            TestCase(suite: self).go(stream: stream)
         }
         
-        input.continueIf(TestSuiteLine.self) // Second to last line
-        input.expect(TestCountLine.self) { (line) in
-            done = true
-        }
+        _ = stream.require(TestSuiteLine.self)
+        _ = stream.require(TestCountLine.self)
         
-        input.fallback(.ignore)
-    }
-    
-    func finish() {
-        if !failed {
-            stderr <<< OutputTransformer.rewindCharacter + badge(text: "PASS", color: .green)
+        if failureCount == 0 {
+            stderr <<< rewindCharacter + badge(text: "PASS", color: .green)
         }
     }
     
     func markFailed() {
-        if !failed {
-            stderr <<< OutputTransformer.rewindCharacter + badge(text: "FAIL", color: .red)
+        failureCount += 1
+        if failureCount == 1 {
+            stderr <<< rewindCharacter + badge(text: "FAIL", color: .red)
             stderr <<< ""
-            failed = true
         }
     }
     
-    func badge(text: String, color: BackgroundColor) -> String {
+    private func badge(text: String, color: BackgroundColor) -> String {
         return " \(text) ".applyingBackgroundColor(color).black.bold + " " + name.bold
     }
     
 }
 
-final class TestCaseResponse: MultiLineResponse {
+class TestCase: Transformer {
     
-    static var failureCount = 0
+    private weak var suite: TestSuite?
+    private var failed = false
     
-    let line: TestCaseLine
-    var status: TestCaseLine.Status = .started
-    weak var testSuite: TestSuiteResponse?
-    var currentAssertionFailure: AssertionFailureResponse?
-    var markedAsFailure = false
-    
-    init(line: TestCaseLine) {
-        self.line = line
-        OutResponse.accumulated = ""
+    init(suite: TestSuite) {
+        self.suite = suite
     }
     
-    func consume(input: InputMatcher) {
-        guard status == .started else {
-            input.stop()
-            return
+    func go(stream: PipeStream) {
+        var otherOutput = ""
+        TestOut.onLine = { (line) in
+            otherOutput += line
         }
         
-        if input.yield(to: &currentAssertionFailure) {
-            return
-        }
+        let testCase = stream.require(TestCaseLine.self)
         
-        input.expect(AssertionFailureLine.self) { (line) in
-            currentAssertionFailure = AssertionFailureResponse(line: line)
-            if !markedAsFailure {
-                testSuite?.markFailed()
-                stderr <<< " ● \(self.line.caseName)".red.bold
-                markedAsFailure = true
-                TestCaseResponse.failureCount += 1
+        while !stream.nextIs(TestCaseLine.self) {
+            if stream.nextIs(AssertionFailureLine.self) {
+                printFailed(testCase: testCase.caseName)
+                AssertionFailure().go(stream: stream)
+            } else {
+                otherOutput += stream.require(AnyLine.self).text + "\n"
             }
         }
-        input.expect(TestCaseLine.self) { (line) in
-            status = line.status
-        }
-        input.expect(FatalErrorLine.self) { (line) in
-            testSuite?.markFailed()
-            stderr <<< "Fatal error: ".red.bold + line.message
-        }
         
-        input.fallback(.ignore)
-    }
-    
-    func stop() {
-        if status == .failed {
-            if !OutResponse.accumulated.isEmpty {
-                stderr <<< ""
+        TestOut.onLine = nil
+        
+        if failed {
+            if !otherOutput.isEmpty {
                 stderr <<< "\tOutput:"
-                stderr <<< OutResponse.accumulated.components(separatedBy: "\n").map({ "\t\($0)" }).joined(separator: "\n").dim
-                stderr <<< ""
+                stderr <<< otherOutput.components(separatedBy: "\n").map({ "\t\($0)" }).joined(separator: "\n").dim
             }
+        }
+        
+        _ = stream.require(TestCaseLine.self)
+    }
+    
+    private func printFailed(testCase: String) {
+        if !failed {
+            failed = true
+            suite?.markFailed()
+            stderr <<< " ● \(testCase)".red.bold
         }
     }
     
 }
 
-final class AssertionFailureResponse: MultiLineResponse {
+class AssertionFailure: Transformer {
     
     static let newlineReplacement = "______$$$$$$$$"
     
-    let file: String
-    let lineNumber: Int
-    var assertion: String
-    
-    init(line: AssertionFailureLine) {
-        self.file = line.file
-        self.lineNumber = line.lineNumber
-        self.assertion = line.assertion
-    }
-    
-    func consume(input: InputMatcher) {
-        input.stopIf(AssertionFailureLine.self)
-        input.stopIf(FatalErrorLine.self)
-        input.stopIf(TestCaseLine.self)
+    func go(stream: PipeStream) {
+        let failure = stream.require(AssertionFailureLine.self)
         
-        input.expect(AnyErrLine.self) { (line) in
-            assertion += AssertionFailureResponse.newlineReplacement + line.text
+        var assertion = failure.assertion
+        while !stream.nextIs(in: [AssertionFailureLine.self, FatalErrorLine.self, TestCaseLine.self]) && stream.isOpen() {
+            assertion += AssertionFailure.newlineReplacement + stream.require(AnyLine.self).text
         }
-    }
-    
-    func finish() {
-        stderr <<< ""
         
+        stderr <<< ""
         var foundMatch = false
+        
         for matchType in xctMatches {
             if let match = matchType.findMatch(in: assertion) {
-                match.output()
+                match.print(to: stderr)
                 
                 if !match.message.isEmpty {
                     stderr <<< ""
-                    let lines = match.message.components(separatedBy: AssertionFailureResponse.newlineReplacement)
+                    let lines = match.message.components(separatedBy: AssertionFailure.newlineReplacement)
                     var message = lines[0]
                     if lines.count > 1 {
                         message += "\n" + lines.dropFirst().map({ "\t\($0)" }).joined(separator: "\n")
@@ -228,44 +224,10 @@ final class AssertionFailureResponse: MultiLineResponse {
             stderr <<< "\tError: ".red + assertion
         }
         
-        let fileLocation = file.beautifyPath
+        let fileLocation = failure.file.beautifyPath
         stderr <<< ""
-        stderr <<< "\tat \(fileLocation):\(lineNumber)".dim
+        stderr <<< "\tat \(fileLocation):\(failure.lineNumber)".dim
         stderr <<< ""
-    }
-    
-}
-
-final class TestEndResponse: MultiLineResponse {
-    
-    let stream: OutputByteStream
-    
-    init(line: AllTestsEndLine) {
-        if line.suite == "All tests" || line.suite == "Selected tests" {
-            stream = OutputTransformer.stderr
-        } else {
-            stream = NullStream()
-        }
-        
-        stream <<< ""
-    }
-    
-    func consume(input: InputMatcher) {
-        input.expect(TestCountLine.self) { (line) in
-            var parts: [String] = []
-            if TestCaseResponse.failureCount > 0 {
-                parts.append("\(TestCaseResponse.failureCount) failed".bold.red)
-            }
-            if TestCaseResponse.failureCount < line.totalCount {
-                parts.append("\(line.totalCount - TestCaseResponse.failureCount) passed".bold.green)
-            }
-            parts.append("\(line.totalCount) total")
-            
-            stream <<< "Tests:\t".bold.white + parts.joined(separator: ", ")
-            stream <<< "Time:\t".bold.white + line.duration + "s"
-            stream <<< ""
-        }
-        input.fallback(.stop)
     }
     
 }

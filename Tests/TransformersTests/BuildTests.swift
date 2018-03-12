@@ -22,53 +22,49 @@ class BuildTests: XCTestCase {
         ("testRepeated", testRepeated),
     ]
     
-    override func setUp() {
-        ErrorTracker.past = []
-    }
-    
     func testCompile() {
-        let build = TransformTest(Transformers.build)
-        build.send(.out, """
+        let build = createTest()
+        build.send("""
         Compile Swift Module 'Sup' (1 sources)
         """)
-        build.expect(stdout: """
+        build.expect("""
         Compile Sup (1 sources)
 
-        """, stderr: "")
+        """)
     }
     
     func testCompileC() {
-        let build = TransformTest(Transformers.build)
-        build.send(.out, """
+        let build = createTest()
+        build.send("""
         Compile RxCocoaRuntime _RXDelegateProxy.m
         Compile RxCocoaRuntime _RXKVOObserver.m
         Compile RxCocoaRuntime _RXObjCRuntime.m
         """)
-        build.expect(stdout: """
+        build.expect("""
         Compile RxCocoaRuntime
 
-        """, stderr: "")
+        """)
     }
     
     func testLink() {
-        let build = TransformTest(Transformers.build)
-        build.send(.out, """
+        let build = createTest()
+        build.send("""
         Linking ./.build/x86_64-apple-macosx10.10/debug/ice
         """)
-        build.expect(stdout: """
+        build.expect("""
         Link ./.build/x86_64-apple-macosx10.10/debug/ice
 
-        """, stderr: "")
+        """)
     }
     
     func testError() {
-        let build = TransformTest(Transformers.build)
-        build.send(.out, """
+        let build = createTest()
+        build.send("""
         /Ice/Sources/Exec/Exec.swift:19:24: error: cannot convert value of type 'String' to specified type 'Int'
                 let arg: Int = ""
                                ^~
         """)
-        build.expect(stdout: """
+        build.expect("""
         
           ● Error: cannot convert value of type 'String' to specified type 'Int'
 
@@ -77,12 +73,12 @@ class BuildTests: XCTestCase {
             at /Ice/Sources/Exec/Exec.swift:19
 
         
-        """, stderr: "")
+        """)
     }
     
     func testWarningWithSingleNote() {
-        let build = TransformTest(Transformers.build)
-        build.send(.out, """
+        let build = createTest()
+        build.send("""
         /Moya/.build/checkouts/ReactiveSwift.git/Sources/UnidirectionalBinding.swift:23:17: warning: redeclaration of associated type 'Value' from protocol 'SignalProducerConvertible' is better expressed as a 'where' clause on the protocol
         associatedtype Value
         ~~~~~~~~~~~~~~~^~~~~
@@ -91,7 +87,7 @@ class BuildTests: XCTestCase {
         associatedtype Value
         ^
         """)
-        build.expect(stdout: """
+        build.expect("""
         
           ● Warning: redeclaration of associated type 'Value' from protocol 'SignalProducerConvertible' is better expressed as a 'where' clause on the protocol
         
@@ -106,18 +102,18 @@ class BuildTests: XCTestCase {
             at /Moya/.build/checkouts/ReactiveSwift.git/Sources/SignalProducer.swift:307
 
 
-        """, stderr: "")
+        """)
     }
     
     func testNoteNoCode() {
-        let build = TransformTest(Transformers.build)
-        build.send(.out, """
+        let build = createTest()
+        build.send("""
         /Moya/.build/checkouts/RxSwift.git/Sources/RxCocoaRuntime/_RXObjCRuntime.m:314:61: warning: block captures an autoreleasing out-parameter, which may result in use-after-free bugs [-Wblock-capture-autoreleasing]
                                                               error:error];
                                                                     ^
         /Moya/.build/checkouts/RxSwift.git/Sources/RxCocoaRuntime/_RXObjCRuntime.m:297:102: note: declare the parameter __strong or capture a __block __strong variable to keep values alive across autorelease pools
         """)
-        build.expect(stdout: """
+        build.expect("""
         
           ● Warning: block captures an autoreleasing out-parameter, which may result in use-after-free bugs [-Wblock-capture-autoreleasing]
 
@@ -130,12 +126,12 @@ class BuildTests: XCTestCase {
             at /Moya/.build/checkouts/RxSwift.git/Sources/RxCocoaRuntime/_RXObjCRuntime.m:297
 
 
-        """, stderr: "")
+        """)
     }
     
     func testNoteOtherModule() {
-        let build = TransformTest(Transformers.build)
-        build.send(.out, """
+        let build = createTest()
+        build.send("""
         /FlockCLI/Sources/FlockCLI/InitCommand.swift:93:23: error: 'CLIError' is unavailable: use CLI.Error instead
                 throw CLIError.error("Couldn't open .gitignore stream")
                       ^~~~~~~~
@@ -143,7 +139,7 @@ class BuildTests: XCTestCase {
         public enum CLIError : Error {
                     ^
         """)
-        build.expect(stdout: """
+        build.expect("""
 
           ● Error: 'CLIError' is unavailable: use CLI.Error instead
 
@@ -158,12 +154,12 @@ class BuildTests: XCTestCase {
             at SwiftCLI.CLIError:2
 
 
-        """, stderr: "")
+        """)
     }
     
     func testSuggestion() {
-        let build = TransformTest(Transformers.build)
-        build.send(.out, """
+        let build = createTest()
+        build.send("""
         /Moya/.build/checkouts/RxSwift.git/Sources/RxCocoaRuntime/_RXObjCRuntime.m:314:61: warning: block captures an autoreleasing out-parameter, which may result in use-after-free bugs [-Wblock-capture-autoreleasing]
                                                               error:error];
                                                                     ^
@@ -173,7 +169,7 @@ class BuildTests: XCTestCase {
                                                                                                   __autoreleasing
         """)
         
-        build.expect(stdout: """
+        build.expect("""
         
           ● Warning: block captures an autoreleasing out-parameter, which may result in use-after-free bugs [-Wblock-capture-autoreleasing]
 
@@ -190,12 +186,12 @@ class BuildTests: XCTestCase {
             at /Moya/.build/checkouts/RxSwift.git/Sources/RxCocoaRuntime/_RXObjCRuntime.m:297
 
 
-        """, stderr: "")
+        """)
     }
     
     func testRepeated() {
-        let build = TransformTest(Transformers.build)
-        build.send(.out, """
+        let build = createTest()
+        build.send("""
         /Ice/Sources/Exec/Exec.swift:19:24: error: cannot convert value of type 'String' to specified type 'Int'
                 let arg: Int = ""
                                ^~
@@ -203,7 +199,7 @@ class BuildTests: XCTestCase {
                 let arg: Int = ""
                                ^~
         """)
-        build.expect(stdout: """
+        build.expect("""
         
           ● Error: cannot convert value of type 'String' to specified type 'Int'
 
@@ -212,7 +208,11 @@ class BuildTests: XCTestCase {
             at /Ice/Sources/Exec/Exec.swift:19
 
         
-        """, stderr: "")
+        """)
+    }
+    
+    private func createTest() -> TransformerTest {
+        return TransformerTest(transformer: BuildOut(), isStdout: true)
     }
     
 }

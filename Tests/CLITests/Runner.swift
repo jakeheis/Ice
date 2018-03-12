@@ -173,8 +173,8 @@ class Runner {
                 
         return ExecutionResult(
             exitStatus: process.terminationStatus,
-            stdout: String(data: output.fileHandleForReading.availableData, encoding: .utf8) ?? "",
-            stderr: String(data: error.fileHandleForReading.availableData, encoding: .utf8) ?? ""
+            stdout: String(data: output.fileHandleForReading.readDataToEndOfFile(), encoding: .utf8) ?? "",
+            stderr: String(data: error.fileHandleForReading.readDataToEndOfFile(), encoding: .utf8) ?? ""
         )
     }
     

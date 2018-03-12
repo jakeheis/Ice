@@ -10,40 +10,31 @@ import Regex
 import Rainbow
 import SwiftCLI
 
-public extension Transformers {
-    static func initPackage(t: OutputTransformer) {
-        t.add(CreatePackageResponse.self)
-        t.add(CreateFileResponse.self)
-    }
+public extension TransformerPair {
+    static var initialize: TransformerPair { return TransformerPair(out: InitOut(), err: nil) }
 }
 
-final class CreatePackageResponse: SingleLineResponse {
-    static func respond(to line: CreatePackageLine) {
-        stdout <<< ""
-        stdout <<< line.packageType + ": " + line.packageName.blue.bold
-        stdout <<< ""
-    }
-}
-
-final class CreateFileResponse: SingleLineResponse {
-    static func respond(to line: CreateFileLine) {
-        stdout <<< "    create ".blue + line.filePath
+class InitOut: BaseTransformer {
+    func go(stream: PipeStream) {
+        if let package = stream.match(CreatePackageLine.self) {
+            stdout <<< ""
+            stdout <<< package.packageType + ": " + package.packageName.blue.bold
+            stdout <<< ""
+        } else if let file = stream.match(CreateFileLine.self) {
+            stdout <<< "    create ".blue + file.filePath
+        }
     }
 }
 
 // MARK: - Lines
 
-final class CreatePackageLine: Matcher, StreamMatchable {
+final class CreatePackageLine: Matcher, Matchable {
     static let regex = Regex("(Creating .* package): (.*)")
-    static let stream: StandardStream = .out
-    
     var packageType: String { return captures[0] }
     var packageName: String { return captures[1] }
 }
 
-final class CreateFileLine: Matcher, StreamMatchable {
+final class CreateFileLine: Matcher, Matchable {
     static let regex = Regex("Creating ([^:]+)$")
-    static let stream: StandardStream = .out
-    
     var filePath: String { return captures[0] }
 }
