@@ -49,11 +49,15 @@ class GetConfigCommand: Command {
     let key = Parameter()
     
     func execute() throws {
+        guard let key = ConfigFile.Keys(rawValue: key.value) else {
+            throw unrecognizedKeyError
+        }
         let value: Any
-        switch key.value {
-        case "bin": value = Ice.config.get(\.bin)
-        case "reformat": value = Ice.config.get(\.reformat)
-        default: throw unrecognizedKeyError
+        switch key {
+        case .bin:
+            value = Ice.config.get(\.bin)
+        case .reformat:
+            value = Ice.config.get(\.reformat)
         }
         stdout <<< String(describing: value)
     }
@@ -67,10 +71,23 @@ class SetConfigCommand: Command {
     let value = Parameter()
     
     func execute() throws {
-        switch key.value {
-        case "bin": try Ice.config.set(\.bin, value: value.value)
-        case "reformat": try Ice.config.set(\.reformat, value: (value.value.lowercased() == "true" || value.value.lowercased() == "yes"))
-        default: throw unrecognizedKeyError
+        guard let key = ConfigFile.Keys(rawValue: key.value) else {
+            throw unrecognizedKeyError
+        }
+        switch key {
+        case .bin:
+            try Ice.config.set(\.bin, value: value.value)
+        case .reformat:
+            let val: Bool
+            switch value.value.lowercased() {
+            case "true", "t", "yes", "y":
+                val = true
+            case "false", "f", "no", "n":
+                val = false
+            default:
+                throw IceError(message: "invalid value (must be true/false)")
+            }
+            try Ice.config.set(\.reformat, value: val)
         }
     }
 }

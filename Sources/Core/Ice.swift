@@ -11,10 +11,9 @@ import Exec
 
 public class Ice {
     
-    public static let version = "0.3.0"
+    public static let version = "0.4.0"
     
     struct Paths {
-        
         static let rootEnvKey = "ICE_GLOBAL_ROOT"
         static let root: Path = {
             if let root = ProcessInfo.processInfo.environment[rootEnvKey] {

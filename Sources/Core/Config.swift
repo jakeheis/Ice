@@ -56,15 +56,17 @@ public struct ConfigFile: Codable {
         encoder.outputFormatting = .prettyPrinted
         return encoder
     }()
-    public static let decoder: JSONDecoder = {
-        return JSONDecoder()
-    }()
+    public static let decoder = JSONDecoder()
     
-    public static let defaultBin = Ice.Paths.root + "bin"
     public static let defaultConfig = ConfigFile(
-        bin: defaultBin.rawValue,
+        bin: (Ice.Paths.root + "bin").rawValue,
         reformat: false
     )
+    
+    public enum Keys: String {
+        case bin
+        case reformat
+    }
     
     public var bin: String?
     public var reformat: Bool?
