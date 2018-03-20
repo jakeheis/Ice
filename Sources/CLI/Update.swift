@@ -37,7 +37,7 @@ class UpdateCommand: Command {
             depVersion = try inputVersion(for: dep)
         }
         
-        package.updateDependency(dependency: dep, to: depVersion)
+        try package.updateDependency(dependency: dep, to: depVersion)
         
         try package.write()
     }

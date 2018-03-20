@@ -123,8 +123,10 @@ public struct Package: Decodable {
         )
     }
     
-    public mutating func updateDependency(dependency: Dependency, to version: Version) {
-        let index = dependencies.index(where: { $0.url == dependency.url })!
+    public mutating func updateDependency(dependency: Dependency, to version: Version) throws {
+        guard let index = dependencies.index(where: { $0.url == dependency.url }) else {
+            throw IceError(message: "can't update dependency \(dependency.url)")
+        }
         dependencies[index].requirement = requirement(for: version)
     }
     

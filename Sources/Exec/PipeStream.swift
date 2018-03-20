@@ -93,7 +93,7 @@ public class PipeStream {
                 kind: .required,
                 sourceFile: String(describing: file),
                 sourceLineNumber: fileLine,
-                line: PipeStreamRecord.actions.removeLast().line,
+                line: PipeStreamRecord.popLast().line,
                 type: String(describing: type(of: match))
             ))
         }
@@ -107,7 +107,7 @@ public class PipeStream {
                     kind: .matched,
                     sourceFile: String(describing: file),
                     sourceLineNumber: fileLine,
-                    line: nextLine!,
+                    line: nextLine ?? "(nil)",
                     type: String(describing: type(of: match))
                 ))
             }
@@ -142,10 +142,19 @@ class PipeStreamRecord {
         let type: String?
     }
     
-    static var actions: [Action] = []
+    private static var actions: [Action] = []
+    private static var actionLock = NSLock()
     
     static func record(action: Action) {
+        actionLock.lock()
         actions.append(action)
+        actionLock.unlock()
+    }
+    
+    static func popLast() -> Action {
+        actionLock.lock()
+        defer { actionLock.unlock() }
+        return actions.removeLast()
     }
     
     static func dump() {

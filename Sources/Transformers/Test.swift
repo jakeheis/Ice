@@ -5,10 +5,10 @@
 //  Created by Jake Heiser on 9/12/17.
 //
 
-import Foundation
 import Exec
-import Regex
+import Foundation
 import Rainbow
+import Regex
 import SwiftCLI
 
 public extension TransformerPair {
@@ -17,11 +17,13 @@ public extension TransformerPair {
 
 class TestOut: BaseTransformer {
     
-    static var onLine: ((String) -> ())? = nil
-    
+    static var accumulated = ""
+    static var accumulatedLock = NSLock()
+
     func go(stream: PipeStream) {
-        let text = stream.require(AnyLine.self).text + "\n"
-        TestOut.onLine?(text)
+        TestOut.accumulatedLock.lock()
+        TestOut.accumulated += stream.require(AnyLine.self).text + "\n"
+        TestOut.accumulatedLock.unlock()
     }
     
 }
@@ -148,29 +150,26 @@ class TestCase: Transformer {
     }
     
     func go(stream: PipeStream) {
-        var otherOutput = ""
-        TestOut.onLine = { (line) in
-            otherOutput += line
-        }
-        
         let testCase = stream.require(TestCaseLine.self)
         
+        var errDuringTest = ""
         while !stream.nextIs(TestCaseLine.self) {
             if stream.nextIs(AssertionFailureLine.self) {
                 printFailed(testCase: testCase.caseName)
                 AssertionFailure().go(stream: stream)
             } else {
-                otherOutput += stream.require(AnyLine.self).text + "\n"
+                errDuringTest += stream.require(AnyLine.self).text + "\n"
             }
         }
         
-        TestOut.onLine = nil
+        TestOut.accumulatedLock.lock()
+        let outDuringTest = TestOut.accumulated
+        TestOut.accumulated = ""
+        TestOut.accumulatedLock.unlock()
         
         if failed {
-            if !otherOutput.isEmpty {
-                stderr <<< "\tOutput:"
-                stderr <<< otherOutput.components(separatedBy: "\n").map({ "\t\($0)" }).joined(separator: "\n").dim
-            }
+            printMidTestOutput(title: "Stdout", output: outDuringTest)
+            printMidTestOutput(title: "Stderr", output: errDuringTest)
         }
         
         _ = stream.require(TestCaseLine.self)
@@ -181,6 +180,13 @@ class TestCase: Transformer {
             failed = true
             suite?.markFailed()
             stderr <<< " ● \(testCase)".red.bold
+        }
+    }
+    
+    private func printMidTestOutput(title: String, output: String) {
+        if !output.isEmpty {
+            stderr <<< "\t\(title):"
+            stderr <<< output.components(separatedBy: "\n").map({ "\t\($0)" }).joined(separator: "\n").dim
         }
     }
     

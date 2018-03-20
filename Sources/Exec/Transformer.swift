@@ -83,10 +83,10 @@ public class TransformerPair {
 
 // MARK: -
 
-public struct TransformerConfig {
-    public static var stdout: OutputByteStream = Term.stdout
-    public static var stderr: OutputByteStream = Term.stderr
-    public static var rewindCharacter = Term.isTTY ? "\r" : "\n"
+struct TransformerConfig {
+    static var stdout: OutputByteStream = Term.stdout
+    static var stderr: OutputByteStream = Term.stderr
+    static var rewindCharacter = Term.isTTY ? "\r" : "\n"
     
     private init() {}
 }
