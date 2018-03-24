@@ -37,9 +37,11 @@ private class TargetAddCommand: Command {
         
         var testTarget = isTest.value
         if !testTarget && targetName.value.contains("Test") {
-            testTarget = Input.awaitYesNoInput(
-                message: "Warning: Target name contains the word `Tests` but --test was not passed.\n\nIs this target a test target? "
-            )
+            stdout <<< ""
+            stdout <<< "Warning: ".yellow.bold + "Target name contains the word `Tests` but --test was not passed."
+            stdout <<< ""
+            stdout <<< "Is this target a test target? [y/N]"
+            testTarget = Input.readBool(prompt: "> ")
         }
         
         let intermediatePath = Path.current + (testTarget ? "Tests" : "Sources")

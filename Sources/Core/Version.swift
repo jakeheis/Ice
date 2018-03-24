@@ -5,6 +5,8 @@
 //  Created by Jake Heiser on 7/21/17.
 //
 
+import SwiftCLI
+
 public struct Version {
     
     public let major: Int
@@ -61,10 +63,14 @@ extension Version: Comparable {
 }
 
 extension Version: CustomStringConvertible {
-    
     public var description: String {
         return "\(major).\(minor).\(patch)"
     }
-    
+}
+
+extension Version: ConvertibleFromString {
+    public static func convert(from: String) -> Version? {
+        return Version(from)
+    }
 }
 

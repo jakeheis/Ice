@@ -36,8 +36,8 @@ class AddCommand: Command {
         } else {
             let latestVersion = try ref.latestVersion()
             func manualVersion() -> Version {
-                let major = Input.awaitInt(message: "Major version: ")
-                let minor = Input.awaitInt(message: "Minor version: ")
+                let major = Input.readInt(prompt: "Major version: ")
+                let minor = Input.readInt(prompt: "Minor version: ")
                 return Version(major, minor, 0)
             }
             dependencyVersion = latestVersion ?? manualVersion()
@@ -61,7 +61,7 @@ class AddCommand: Command {
                 stdout <<< "  " + String(ids[ids.index(ids.startIndex, offsetBy: index)]) + "  " + target.name
             }
             stdout <<< ""
-            let targetString = Input.awaitInputWithValidation(message: "> ", validation: { (input) -> Bool in
+            let targetString = Input.readLine(prompt: "> ", validation: { (input) -> Bool in
                 let allowed = CharacterSet(charactersIn: ids + ", ")
                 return input.rangeOfCharacter(from: allowed.inverted) == nil
             })

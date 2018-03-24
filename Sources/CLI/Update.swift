@@ -68,14 +68,7 @@ class UpdateCommand: Command {
         
         stdout <<< "Input new version:"
         stdout <<< ""
-        
-        let chosen = Input.awaitInputWithConversion(message: "> ", conversion: { (input) -> Version? in
-            guard let version = Version(input) else {
-                return nil
-            }
-            return version
-        })
-        
+        let chosen: Version = Input.readObject(prompt: "> ")
         stdout <<< ""
         
         return chosen
