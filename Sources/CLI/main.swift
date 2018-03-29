@@ -34,6 +34,7 @@ ice.commands = [
     RemoveCommand(),
     RegistryGroup(),
     ResetCommand(),
+    ResolveCommand(),
     RunCommand(),
     SearchCommand(),
     TargetGroup(),
