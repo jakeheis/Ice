@@ -59,6 +59,18 @@ public struct Package: Decodable {
         public let publicHeadersPath: String?
     }
     
+    private enum CodingKeys: String, CodingKey {
+        case name
+        case pkgConfig
+        case providers
+        case products
+        case dependencies
+        case targets
+        case swiftLanguageVersions
+        case cLanguageStandard
+        case cxxLanguageStandard
+    }
+    
     public let name: String
     public let pkgConfig: String?
     public let providers: [Provider]?
@@ -69,14 +81,18 @@ public struct Package: Decodable {
     public let cLanguageStandard: String?
     public let cxxLanguageStandard: String?
     
+    private var path: Path? = nil
+    
     public static func load(directory: Path) throws -> Package {
         let data = try SPM(path: directory).dumpPackage()
-        return try load(data: data)
+        return try load(data: data, directory: directory)
     }
     
-    public static func load(data: Data) throws -> Package {
+    public static func load(data: Data, directory: Path) throws -> Package {
         do {
-            return try JSONDecoder().decode(Package.self, from: data)
+            var package = try JSONDecoder().decode(Package.self, from: data)
+            package.path = directory + "Package.swift"
+            return package
         } catch {
             throw IceError(message: "couldn't parse Package.swift")
         }
@@ -201,9 +217,17 @@ public struct Package: Decodable {
     
     // MARK: -
     
-    public func write(to stream: OutputByteStream? = nil) throws {
+    public func write() throws {
+        guard let path = path else {
+            throw IceError()
+        }
+        try "".write(to: path) // Overwrite file
+        guard let fileStream = FileStream(path: path.rawValue) else  {
+            throw IceError(message: "Couldn't write to \(path)")
+        }
+        
         let writePackage = Ice.config.get(\.reformat) ? formatted() : self
-        let writer = try PackageWriter(stream: stream)
+        let writer = PackageWriter(stream: fileStream)
         writer.write(package: writePackage)
     }
     
@@ -223,7 +247,8 @@ extension Package {
             targets: targets.map(Target.formatted).sorted(by: Target.packageSort),
             swiftLanguageVersions: swiftLanguageVersions?.sorted(),
             cLanguageStandard: cLanguageStandard,
-            cxxLanguageStandard: cxxLanguageStandard
+            cxxLanguageStandard: cxxLanguageStandard,
+            path: path
         )
     }
     

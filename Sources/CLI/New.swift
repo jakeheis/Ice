@@ -41,6 +41,10 @@ class NewCommand: Command {
         }
         try SPM(path: path).initPackage(type: type)
         
+        // Reformat
+        let p = try Package.load(directory: path)
+        try p.write()
+        
         stdout <<< ""
         stdout <<< "Run: ".blue.bold + "cd \(projectName.value) && ice build"
         stdout <<< ""

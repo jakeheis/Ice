@@ -13,17 +13,8 @@ class PackageWriter {
     
     let out: OutputByteStream
     
-    init(stream: OutputByteStream?) throws {        
-        if let stream = stream {
-            self.out = stream
-        } else {
-            let file = "Package.swift"
-            try "".write(to: Path(file)) // Overwrite file
-            guard let fileStream = FileStream(path: file) else  {
-                throw IceError(message: "Couldn't write to \(file)")
-            }
-            self.out = fileStream
-        }
+    init(stream: OutputByteStream) {
+        self.out = stream
     }
     
     func write(package: Package) {
