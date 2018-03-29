@@ -217,17 +217,23 @@ public struct Package: Decodable {
     
     // MARK: -
     
-    public func write() throws {
-        guard let path = path else {
-            throw IceError()
-        }
-        try "".write(to: path) // Overwrite file
-        guard let fileStream = FileStream(path: path.rawValue) else  {
-            throw IceError(message: "Couldn't write to \(path)")
+    public func write(to stream: OutputByteStream? = nil) throws {
+        let writeStream: OutputByteStream
+        if let stream = stream {
+            writeStream = stream
+        } else {
+            guard let path = path else {
+                throw IceError()
+            }
+            try "".write(to: path) // Overwrite file
+            guard let fileStream = FileStream(path: path.rawValue) else  {
+                throw IceError(message: "Couldn't write to \(path)")
+            }
+            writeStream = fileStream
         }
         
         let writePackage = Ice.config.get(\.reformat) ? formatted() : self
-        let writer = PackageWriter(stream: fileStream)
+        let writer = PackageWriter(stream: writeStream)
         writer.write(package: writePackage)
     }
     

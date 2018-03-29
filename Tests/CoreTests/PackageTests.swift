@@ -9,6 +9,7 @@ import XCTest
 import Foundation
 import Core
 import SwiftCLI
+import FileKit
 
 class PackageTests: XCTestCase {
     
@@ -70,7 +71,7 @@ class PackageTests: XCTestCase {
     
     func writePackage(path: String) throws -> String {
         let data = try Data(contentsOf: URL(fileURLWithPath: "Tests/Fixtures/\(path)"))
-        let package = try Package.load(data: data)
+        let package = try Package.load(data: data, directory: Path("."))
         let captureStream = CaptureStream()
         try package.write(to: captureStream)
         return captureStream.content

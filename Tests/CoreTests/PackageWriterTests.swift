@@ -30,7 +30,7 @@ class PackageWriterTests: XCTestCase {
         ]
         
         let capture = CaptureStream()
-        let writer = try! PackageWriter(stream: capture)
+        let writer = PackageWriter(stream: capture)
         writer.writeProducts(products)
         XCTAssertEqual(capture.content, """
             products: [
@@ -102,7 +102,7 @@ class PackageWriterTests: XCTestCase {
         ]
         
         let capture = CaptureStream()
-        let writer = try! PackageWriter(stream: capture)
+        let writer = PackageWriter(stream: capture)
         writer.writeDependencies(dependencies)
         XCTAssertEqual(capture.content, """
             dependencies: [
@@ -134,7 +134,7 @@ class PackageWriterTests: XCTestCase {
             ], path: nil, exclude: [], sources: ["only.swift"], publicHeadersPath: "headers.h")
         ]
         let capture = CaptureStream()
-        let writer = try! PackageWriter(stream: capture)
+        let writer = PackageWriter(stream: capture)
         writer.writeTargets(targets)
         XCTAssertEqual(capture.content, """
             targets: [
@@ -153,7 +153,7 @@ class PackageWriterTests: XCTestCase {
             .init(name: "apt", values: ["libssh2-1-dev", "libssh2-2-dev"])
         ]
         let capture = CaptureStream()
-        let writer = try! PackageWriter(stream: capture)
+        let writer = PackageWriter(stream: capture)
         writer.writeProviders(providers)
         XCTAssertEqual(capture.content, """
             providers: [
@@ -167,7 +167,7 @@ class PackageWriterTests: XCTestCase {
     func testSwiftLanguageVersions() {
         let versions = [2, 3]
         let capture = CaptureStream()
-        let writer = try! PackageWriter(stream: capture)
+        let writer = PackageWriter(stream: capture)
         writer.writeSwiftLanguageVersion(versions)
         XCTAssertEqual(capture.content, """
             swiftLanguageVersions: [2, 3],
@@ -177,7 +177,7 @@ class PackageWriterTests: XCTestCase {
     
     func testCLanguageStandard() {
         let capture = CaptureStream()
-        let writer = try! PackageWriter(stream: capture)
+        let writer = PackageWriter(stream: capture)
         writer.writeCLangaugeStandard("c90")
         writer.writeCLangaugeStandard("iso9899:199409")
         XCTAssertEqual(capture.content, """
@@ -189,7 +189,7 @@ class PackageWriterTests: XCTestCase {
     
     func testCxxLanguageStandard() {
         let capture = CaptureStream()
-        let writer = try! PackageWriter(stream: capture)
+        let writer = PackageWriter(stream: capture)
         writer.writeCxxLangaugeStandard("c++03")
         writer.writeCxxLangaugeStandard("gnu++1z")
         XCTAssertEqual(capture.content, """
