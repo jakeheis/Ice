@@ -37,7 +37,7 @@ swift build -c release
 ln -s .build/release/ice /usr/bin/local/ice
 ```
 
-## Beautiful output
+## Better output
 
 ### Init
 ![new](https://github.com/jakeheis/Ice/raw/gifs/new.gif)
@@ -77,7 +77,7 @@ ice product remove CoreLib
 
 ## Centralized package registry
 
-The built in registry (https://github.com/jakeheis/IceRegistry) consists of the most-starred Swift repositories on Github. You get these for free, but you can also create your own personal entries to a local registry:
+The built in registry (https://github.com/jakeheis/IceRegistry) consists of the most-starred Swift repositories on Github. You get these for free, but you can also add your own personal entries to a local registry:
 
 ```shell
 > ice registry lookup Alamofire
@@ -171,7 +171,6 @@ Generate an Xcode project for the current project and open it
 
 #### ice config get/set
 Configure Ice behavior. Recognized keys:
-- bin: when Ice installs global packages, where should it symlink executables to?
 - reformat: when writing `Package.swift`, should Ice reformat the file to be alphabetized
 
 ## FAQ
