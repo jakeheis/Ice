@@ -16,6 +16,13 @@ class OutdatedCommand: Command {
     
     func execute() throws {
         let package = try Package.load(directory: ".")
+        guard !package.dependencies.isEmpty else {
+            return
+        }
+        guard Resolved.filePath.exists else {
+            stdout <<< "Package.resolved has not been created; run `ice resolve`"
+            return
+        }
         let resolved = try Resolved.load(from: ".")
         
         let nameCol = TextTableColumn(header: "Name")

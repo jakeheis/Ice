@@ -24,7 +24,7 @@ public struct Resolved: Decodable {
         public let pins: [Pin]
     }
     
-    private static let fileName = "Package.resolved"
+    public static let filePath = Path("Package.resolved")
     
     public let object: Object
     public var pins: [Object.Pin] {
@@ -32,8 +32,12 @@ public struct Resolved: Decodable {
     }
     
     public static func load(from directory: Path) throws -> Resolved {
-        let data = try Data.read(from: directory + fileName)
-        return try JSONDecoder().decode(Resolved.self, from: data)
+        do {
+            let data = try Data.read(from: directory + filePath)
+            return try JSONDecoder().decode(Resolved.self, from: data)
+        } catch {
+            throw IceError(message: "couldn't parse Package.resolved")
+        }
     }
     
     public func findPin(url: String) -> Object.Pin? {
