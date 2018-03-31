@@ -26,7 +26,6 @@ ice.commands = [
     DescribeCommand(),
     DumpCommand(),
     GenerateCompletionsCommand(cli: ice),
-    GlobalGroup(),
     InitCommand(),
     NewCommand(),
     OutdatedCommand(),
