@@ -20,6 +20,10 @@ A few features Ice has that SPM lacks:
 ```bash
 brew install jakeheis/repo/ice
 ```
+### [Mint](https://github.com/yonaskolb/mint)
+```sh
+$ mint run yonaskolb/xcodegen
+```
 ### Manual
 ```bash
 git clone https://github.com/jakeheis/Ice
