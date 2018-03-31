@@ -27,4 +27,10 @@ class OutdatedTests: XCTestCase {
         """)
     }
     
+    func testOutdatedNoDependencies() {
+        let result = Runner.execute(args: ["outdated"], sandbox: .lib)
+        XCTAssertEqual(result.exitStatus, 0)
+        XCTAssertEqual(result.stderr, "")
+    }
+
 }
