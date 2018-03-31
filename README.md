@@ -16,11 +16,20 @@ A few features Ice has that SPM lacks:
 - Short command names for the most used commands
 
 ## Installation
+### [Mint](https://github.com/yonaskolb/mint) (recommended)
+
+```bash
+mint install jakeheis/Ice
+```
+
 ### Homebrew
+
 ```bash
 brew install jakeheis/repo/ice
 ```
+
 ### Manual
+
 ```bash
 git clone https://github.com/jakeheis/Ice
 cd Ice
