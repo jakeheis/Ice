@@ -7,7 +7,7 @@
 
 import FileKit
 import Foundation
-
+/*
 public class Global {
     
     enum Error: Swift.Error {
@@ -37,9 +37,9 @@ public class Global {
             try globalPackage.clone(url: ref.url, version: cloneVersion)
         }
         
-        try globalPackage.build()
+//        try globalPackage.build()
         
-        let anyLinked = try globalPackage.symlinkExecutables()
+//        let anyLinked = try globalPackage.symlinkExecutables()
         
         if !anyLinked {
             print("Warning: no executables found")
@@ -98,4 +98,4 @@ public class Global {
     }
 
 
-}
+}*/

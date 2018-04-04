@@ -6,6 +6,7 @@
 //
 
 import XCTest
+import SwiftCLI
 
 class RunTests: XCTestCase {
     
@@ -29,11 +30,11 @@ class RunTests: XCTestCase {
     func testWatchRun() {
         Runner.execute(args: ["build"], sandbox: .exec)
         
-        DispatchQueue.global().asyncAfter(deadline: .now() + 4) {
+        DispatchQueue.global().asyncAfter(deadline: .now() + 5) {
             writeToSandbox(path: "Sources/Exec/main.swift", contents: "print(\"hey world\")\n")
         }
         
-        DispatchQueue.global().asyncAfter(deadline: .now() + 8) {
+        DispatchQueue.global().asyncAfter(deadline: .now() + 10) {
             Runner.interrupt()
         }
         

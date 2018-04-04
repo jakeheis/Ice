@@ -12,7 +12,7 @@ let package = Package(
         .package(url: "https://github.com/jakeheis/FileKit", from: "4.1.0"),
         .package(url: "https://github.com/onevcat/Rainbow", from: "3.1.1"),
         .package(url: "https://github.com/sharplet/Regex", from: "1.1.0"),
-        .package(url: "https://github.com/jakeheis/SwiftCLI", from: "4.1.0"),
+        .package(url: "https://github.com/jakeheis/SwiftCLI", .branchItem("task")),
         .package(url: "https://github.com/scottrhoyt/SwiftyTextTable", from: "0.8.0"),
     ],
     targets: [

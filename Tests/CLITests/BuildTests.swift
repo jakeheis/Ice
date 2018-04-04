@@ -25,8 +25,8 @@ class BuildTests: XCTestCase {
         result.stdout.assert { (v) in
             v.equals("Fetch https://github.com/jakeheis/SwiftCLI")
             v.equals("Clone https://github.com/jakeheis/SwiftCLI")
-            v.equals("Resolve https://github.com/jakeheis/SwiftCLI at 4.0.3")
-            v.equals("Compile SwiftCLI (25 sources)")
+            v.equals("Resolve https://github.com/jakeheis/SwiftCLI at 4.1.2")
+            v.equals("Compile SwiftCLI (23 sources)")
             v.equals("Compile Exec (1 sources)")
             v.matches("^Link ./.build/.*0/debug/Exec$")
             v.empty()
@@ -72,7 +72,7 @@ class BuildTests: XCTestCase {
     }
     
     func testWatchBuild() {
-        DispatchQueue.global().asyncAfter(deadline: .now() + 3) {
+        DispatchQueue.global().asyncAfter(deadline: .now() + 4) {
             writeToSandbox(path: "Sources/Lib/Lib.swift", contents: "\nprint(\"hey world\")\n")
         }
 
@@ -117,8 +117,8 @@ class BuildTests: XCTestCase {
         XCTAssertEqual(result.stdout, """
         Fetch https://github.com/jakeheis/SwiftCLI
         Clone https://github.com/jakeheis/SwiftCLI
-        Resolve https://github.com/jakeheis/SwiftCLI at 4.0.3
-        Compile SwiftCLI (25 sources)
+        Resolve https://github.com/jakeheis/SwiftCLI at 4.1.2
+        Compile SwiftCLI (23 sources)
         Compile Exec (1 sources)
 
           ● Warning: expression implicitly coerced from 'String?' to Any

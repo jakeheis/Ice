@@ -11,12 +11,12 @@ import SwiftCLI
 
 protocol XCTMatchable: Matchable {
     var message: String { get }
-    func print(to out: OutputByteStream)
+    func print(to out: WriteStream)
 }
 
 extension XCTMatchable {
     
-    func print(firstHeader: String, firstValue: String, secondValue: String, out: OutputByteStream) {
+    func print(firstHeader: String, firstValue: String, secondValue: String, out: WriteStream) {
         func prepVal(_ val: String) -> String {
             let lines = val.components(separatedBy: AssertionFailure.newlineReplacement)
             return lines.map{ "\t\($0)" }.joined(separator: "\n")
@@ -30,7 +30,7 @@ extension XCTMatchable {
         }
     }
     
-    func printWrongValue(expected: String, received: String, out: OutputByteStream)  {
+    func printWrongValue(expected: String, received: String, out: WriteStream)  {
         print(firstHeader: "Expected", firstValue: expected, secondValue: received, out: out)
     }
     
@@ -53,7 +53,7 @@ final class XCTFailMatch: Matcher, XCTMatchable {
     static let regex = Regex("^failed - (.*)$")
     var message: String { return captures[0] }
     
-    func print(to out: OutputByteStream) {
+    func print(to out: WriteStream) {
         out <<< "\tXCTFail".red
     }
 }
@@ -64,7 +64,7 @@ final class XCTEqualMatch: Matcher, XCTMatchable {
     var expected: String { return captures[1] }
     var message: String { return captures[2] }
     
-    func print(to out: OutputByteStream) {
+    func print(to out: WriteStream) {
         printWrongValue(expected: expected, received: got, out: out)
     }
 }
@@ -75,7 +75,7 @@ final class XCTNotEqualMatch: Matcher, XCTMatchable {
     var expected: String { return captures[1] }
     var message: String { return captures[2] }
     
-    func print(to out: OutputByteStream) {
+    func print(to out: WriteStream) {
         print(firstHeader: "Expected anything but", firstValue: expected, secondValue: got, out: out)
     }
 }
@@ -87,7 +87,7 @@ final class XCTEqualWithAccuracyMatch: Matcher, XCTMatchable {
     var accuracy: String { return captures[2] }
     var message: String { return captures[3] }
     
-    func print(to out: OutputByteStream) {
+    func print(to out: WriteStream) {
         print(firstHeader: "Expected", firstValue: expected + " (+/- \(accuracy))", secondValue: got, out: out)
     }
 }
@@ -99,7 +99,7 @@ final class XCTNotEqualWithAccuracyMatch: Matcher, XCTMatchable {
     var accuracy: String { return captures[2] }
     var message: String { return captures[3] }
     
-    func print(to out: OutputByteStream) {
+    func print(to out: WriteStream) {
         print(firstHeader: "Expected anything but", firstValue: expected + " (+/- \(accuracy))", secondValue: got, out: out)
     }
 }
@@ -110,7 +110,7 @@ final class XCTGreaterThanMatch: Matcher, XCTMatchable {
     var expected: String { return captures[1] }
     var message: String { return captures[2] }
     
-    func print(to out: OutputByteStream) {
+    func print(to out: WriteStream) {
         print(firstHeader: "Expected value greater than", firstValue: expected, secondValue: got, out: out)
     }
 }
@@ -121,7 +121,7 @@ final class XCTGreaterThanOrEqualMatch: Matcher, XCTMatchable {
     var expected: String { return captures[1] }
     var message: String { return captures[2] }
     
-    func print(to out: OutputByteStream) {
+    func print(to out: WriteStream) {
         print(firstHeader: "Expected value greater than or equal to", firstValue: expected, secondValue: got, out: out)
     }
 }
@@ -132,7 +132,7 @@ final class XCTLessThanMatch: Matcher, XCTMatchable {
     var expected: String { return captures[1] }
     var message: String { return captures[2] }
     
-    func print(to out: OutputByteStream) {
+    func print(to out: WriteStream) {
         print(firstHeader: "Expected value less than", firstValue: expected, secondValue: got, out: out)
     }
 }
@@ -143,7 +143,7 @@ final class XCTLessThanOrEqualMatch: Matcher, XCTMatchable {
     var expected: String { return captures[1] }
     var message: String { return captures[2] }
     
-    func print(to out: OutputByteStream) {
+    func print(to out: WriteStream) {
         print(firstHeader: "Expected value less than or equal to", firstValue: expected, secondValue: got, out: out)
     }
 }
@@ -153,7 +153,7 @@ final class XCTNilMatch: Matcher, XCTMatchable {
     var value: String { return captures[0] }
     var message: String { return captures[1] }
     
-    func print(to out: OutputByteStream) {
+    func print(to out: WriteStream) {
         printWrongValue(expected: "nil", received: value, out: out)
     }
 }
@@ -162,7 +162,7 @@ final class XCTNotNilMatch: Matcher, XCTMatchable {
     static let regex = Regex("XCTAssertNotNil failed - (.*)$")
     var message: String { return captures[0] }
     
-    func print(to out: OutputByteStream) {
+    func print(to out: WriteStream) {
         printWrongValue(expected: "non-nil", received: "nil", out: out)
     }
 }
@@ -171,7 +171,7 @@ final class XCTTrueMatch: Matcher, XCTMatchable {
     static let regex = Regex("^XCTAssert(True)? failed - (.*)$")
     var message: String { return captures[1] }
     
-    func print(to out: OutputByteStream) {
+    func print(to out: WriteStream) {
         printWrongValue(expected: "true", received: "false", out: out)
     }
 }
@@ -180,7 +180,7 @@ final class XCTFalseMatch: Matcher, XCTMatchable {
     static let regex = Regex("XCTAssertFalse failed - (.*)$")
     var message: String { return captures[0] }
     
-    func print(to out: OutputByteStream) {
+    func print(to out: WriteStream) {
         printWrongValue(expected: "false", received: "true", out: out)
     }
 }
@@ -189,7 +189,7 @@ final class XCTThrowMatch: Matcher, XCTMatchable {
     static let regex = Regex("XCTAssertThrowsError failed: did not throw an error - (.*)$")
     var message: String { return captures[0] }
     
-    func print(to out: OutputByteStream) {
+    func print(to out: WriteStream) {
         printWrongValue(expected: "error thrown", received: "no error", out: out)
     }
 }
@@ -199,7 +199,7 @@ final class XCTNoThrowMatch: Matcher, XCTMatchable {
     var error: String { return captures[0] }
     var message: String { return captures[1] }
     
-    func print(to out: OutputByteStream) {
+    func print(to out: WriteStream) {
         printWrongValue(expected: "no error", received: error, out: out)
     }
 }

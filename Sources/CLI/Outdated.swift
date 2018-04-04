@@ -15,7 +15,7 @@ class OutdatedCommand: Command {
     let shortDescription = "List the dependencies which have newer versions"
     
     func execute() throws {
-        let package = try Package.load(directory: ".")
+        let package = try Package.load()
         guard !package.dependencies.isEmpty else {
             return
         }

@@ -32,7 +32,7 @@ class BuildOut: BaseTransformer {
             stdout <<< "Link ".blue + link.product
         } else if stream.nextIs(BuildErrorLine.self) {
             Error(errorTracker: errorTracker).go(stream: stream)
-        }  else if stream.nextIs(in: [WarningsGeneratedLine.self, UnderscoreLine.self]) {
+        } else if stream.nextIs(in: [WarningsGeneratedLine.self, UnderscoreLine.self]) {
             stream.consume()
         }
     }
@@ -41,7 +41,7 @@ class BuildOut: BaseTransformer {
 
 class BuildErr: BaseTransformer {
     func go(stream: PipeStream) {
-        if stream.nextIs(in: [InternalTerminatedErrorLine.self, TerminatedLine.self]) {
+        if stream.nextIs(in: [InternalTerminatedErrorLine.self, TerminatedLine.self, WhitespaceLine.self]) {
             stream.consume()
         } else if let internalError = stream.match(InternalErrorLine.self) {
             internalError.print(to: stderr)
@@ -64,9 +64,9 @@ private class Error: Transformer {
         let metadataLine = stream.require(BuildErrorLine.self)
         let color = textColor(for: metadataLine)
         
-        var out: OutputByteStream
+        var out: WriteStream
         if errorTracker.shouldSkip(metadataLine) {
-            out = NullStream()
+            out = .null
         } else {
             out = stdout
             errorTracker.record(metadataLine)
@@ -101,7 +101,7 @@ private class Error: Transformer {
         }
     }
     
-    private func printMessage(_ line: BuildErrorLine, stream: OutputByteStream) {
+    private func printMessage(_ line: BuildErrorLine, stream: WriteStream) {
         let prefix: String
         switch line.type {
         case .error:

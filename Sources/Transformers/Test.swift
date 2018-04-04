@@ -111,7 +111,7 @@ class TestSuite: Transformer {
             if mode == .selected {
                 name += "/\(firstTestCase.caseName)"
             }
-            stderr.output(badge(text: "RUNS", color: .blue), terminator: "")
+            stderr.write(badge(text: "RUNS", color: .blue))
             fflush(Foundation.stderr)
         }
         while stream.nextIs(TestCaseLine.self) {

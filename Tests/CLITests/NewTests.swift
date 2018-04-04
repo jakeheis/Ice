@@ -31,6 +31,7 @@ class NewTests: XCTestCase {
             create Tests/LinuxMain.swift
             create Tests/MyNewLibTests/
             create Tests/MyNewLibTests/MyNewLibTests.swift
+            create Tests/MyNewLibTests/XCTestManifests.swift
 
         Run: cd MyNewLib && ice build
         

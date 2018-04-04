@@ -9,19 +9,16 @@ import Foundation
 import FileKit
 import Regex
 import Exec
+import SwiftCLI
 import Transformers
 
 public class SPM {
     
+    public init() {}
+    
     public enum InitType: String {
         case executable
         case library
-    }
-
-    let path: Path
-    
-    public init(path: Path = Path.current) {
-        self.path = path
     }
     
     public func initPackage(type: InitType?) throws {
@@ -29,7 +26,7 @@ public class SPM {
         if let type = type {
             args += ["--type", type.rawValue]
         }
-        try exec(arguments: args).execute(transform: .initialize)
+        try exec(args, transformer: .initialize)
     }
     
     // MARK: - Building
@@ -46,10 +43,10 @@ public class SPM {
         if includeTests {
             args.append("--build-tests")
         }
-        try exec(arguments: args).execute(transform: .build)
+        try exec(args, transformer: .build)
     }
     
-    public func run(release: Bool, executable: [String]) throws {
+    public func run(release: Bool, executable: [String]) throws -> Task {
         try build(release: release)
         
         var args = ["run", "--skip-build"]
@@ -57,7 +54,10 @@ public class SPM {
             args += ["-c", "release"]
         }
         args += executable
-        try exec(arguments: args).execute()
+        
+        let task = Task(executable: "swift", args: args)
+        task.runAsync()
+        return task
     }
     
     public func test(filter: String?) throws {
@@ -67,29 +67,29 @@ public class SPM {
         if let filter = filter {
             args += ["--filter", filter]
         }
-        try exec(arguments: args).execute(transform: .test)
+        try exec(args, transformer: .test)
     }
     
     public func resolve() throws {
-        try exec(arguments: ["package", "-v", "resolve"]).execute(transform: .resolve)
+        try exec(["package", "-v", "resolve"], transformer: .resolve)
     }
     
     // MARK: -
     
     public func clean() throws {
-        try exec(arguments: ["package", "clean"]).execute()
+        try exec(["package", "clean"])
     }
     
     public func reset() throws {
-        try exec(arguments: ["package", "reset"]).execute()
+        try exec(["package", "reset"])
     }
     
     public func update() throws {
-        try exec(arguments: ["package", "update"]).execute(transform: .resolve)
+        try exec(["package", "generate-xcodeproj"], transformer: .resolve)
     }
 
     public func generateXcodeProject() throws {
-        try exec(arguments: ["package", "generate-xcodeproj"]).execute()
+        try exec(["package", "generate-xcodeproj"])
     }
     
     public func showBinPath(release: Bool = false) throws -> String {
@@ -97,7 +97,7 @@ public class SPM {
         if release {
             args += ["-c", "release"]
         }
-        let path = try exec(arguments: args).capture().stdout
+        let path = try cap(args).stdout
         guard !path.isEmpty else {
             throw IceError(message: "couldn't retrieve executable path")
         }
@@ -105,17 +105,47 @@ public class SPM {
     }
 
     public func dumpPackage() throws -> Data {
-        let data = try exec(arguments: ["package", "dump-package"]).captureData().stdout
-        guard let jsonStart = data.index(of: UInt8("{".cString(using: .ascii)![0])) else {
+        let content = try cap(["package", "dump-package"]).stdout
+        guard let jsonStart = content.index(of: "{"), let data = content[jsonStart...].data(using: .utf8) else {
             throw IceError(message: "couldn't parse package")
         }
-        return data[jsonStart...]
+        return data
     }
 
     // MARK: -
     
-    func exec(arguments: [String]) -> Exec {
-        return Exec(command: "swift", args: arguments, in: path.rawValue)
+    func exec(_ args: [String], transformer: TransformerPair? = nil) throws {
+        let stdout: WriteStream = transformer?.createStdout() ?? .stdout
+        let stderr: WriteStream = transformer?.createStderr() ?? .stderr
+        
+        let task = Task(executable: "swift", args: args, stdout: stdout, stderr: stderr)
+        let result = task.runSync()
+        transformer?.wait()
+        
+        guard result == 0 else {
+            throw IceError(exitStatus: result)
+        }
+    }
+    
+    func cap(_ args: [String]) throws -> CaptureResult {
+        do {
+            return try capture("swift", args)
+        } catch let error as CaptureError {
+            let message: String?
+            if error.captured.stderr.isEmpty {
+                message = nil
+            } else {
+                let errorText: String
+                if let match = Regex("^[eE]rror: (.*)$").firstMatch(in: error.captured.stderr), let rest = match.captures[0] {
+                    errorText = rest
+                } else {
+                    errorText = error.captured.stderr
+                }
+                message = "\nError: ".red.bold + errorText + "\n"
+            }
+            
+            throw IceError(message: message, exitStatus: error.exitStatus)
+        }
     }
     
 }

@@ -50,13 +50,13 @@ public struct RepositoryReference {
         } catch let error as IceError {
             throw IceError(message: "not a valid package reference", exitStatus: error.exitStatus)
         }
-        let tags = tagOutput.components(separatedBy: "\n").flatMap { (line) in
+        let tags = tagOutput.components(separatedBy: "\n").compactMap { (line) -> String? in
             guard let index = line.index(of: "\t") else {
                 return nil
             }
             return String(line[line.index(index, offsetBy: "refs/tags/".count + 1)...])
         }
-        return tags.flatMap { Version($0) }.sorted()
+        return tags.compactMap { Version($0) }.sorted()
     }
     
     public func latestVersion() throws -> Version? {

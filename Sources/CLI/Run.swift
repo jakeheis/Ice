@@ -21,23 +21,21 @@ class RunCommand: Command {
     let release = Flag("-r", "--release")
     let watch = Flag("-w", "--watch")
     
+    var task: Task? = nil
+    
     func execute() throws {
         let spm = SPM()
         
         if watch.value {
-            let runQueue = DispatchQueue(label: "com.jakeheis.Ice.RunCommand")
             let watcher = try SourceWatcher() {
                 self.stdout <<< "[ice] restarting due to changes...".green
-                InterruptCatcher.interrupt()
-                runQueue.async {
-                    do {
-                        try spm.run(release: self.release.value, executable: self.executable.value ?? [])
-                    } catch {}
-                }
+                self.task?.interrupt()
+                self.task = try? spm.run(release: self.release.value, executable: self.executable.value ?? [])
             }
             try watcher.go()
         } else {
-            try spm.run(release: release.value, executable: executable.value ?? [])
+            let task = try spm.run(release: release.value, executable: executable.value ?? [])
+            task.finish()
         }
     }
     

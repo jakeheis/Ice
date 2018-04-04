@@ -37,7 +37,7 @@ final class InternalErrorLine: Matcher, Matchable {
     static let regex = Regex("^error: (.*)$")
     var message: String { return captures[0] }
     
-    func print(to out: OutputByteStream) {
+    func print(to out: WriteStream) {
         out <<< ""
         out <<< "Error: ".bold.red + message
         out <<< ""

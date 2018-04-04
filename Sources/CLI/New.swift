@@ -33,16 +33,17 @@ class NewCommand: Command {
         }
         try path.createDirectory()
         
+        Path.current = path
         var type: SPM.InitType?
         if library.value {
             type = .library
         } else if executable.value {
             type = .executable
         }
-        try SPM(path: path).initPackage(type: type)
+        try SPM().initPackage(type: type)
         
         // Reformat
-        let p = try Package.load(directory: path)
+        let p = try Package.load()
         try p.write()
         
         stdout <<< ""

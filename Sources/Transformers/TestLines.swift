@@ -7,9 +7,10 @@
 
 import Exec
 import Regex
+import SwiftCLI
 
 final class AllTestsStartLine: Matcher, Matchable {
-    enum SuiteMode: String, Capturable {
+    enum SuiteMode: String, ConvertibleFromString {
         case all = "All tests"
         case selected = "Selected tests"
     }
@@ -23,7 +24,7 @@ final class PackageTestsStartLine: Matcher, Matchable {
 }
 
 final class TestSuiteLine: Matcher, Matchable {
-    enum Status: String, Capturable {
+    enum Status: String, ConvertibleFromString {
         case started
         case passed
         case failed
@@ -34,7 +35,7 @@ final class TestSuiteLine: Matcher, Matchable {
 }
 
 final class TestCaseLine: Matcher, Matchable {
-    enum Status: String, Capturable {
+    enum Status: String, ConvertibleFromString {
         case started
         case passed
         case failed

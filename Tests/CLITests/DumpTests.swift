@@ -54,8 +54,6 @@ class DumpTests: XCTestCase {
             }
           ]
         }
-        
-        
         """)
     }
     

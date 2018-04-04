@@ -10,7 +10,7 @@ import SwiftCLI
 import Rainbow
 import Dispatch
 import Regex
-
+/*
 public class Exec {
     
     public struct ExecuteError: ProcessError {
@@ -117,6 +117,7 @@ public class Exec {
     }
     
 }
+*/
 
 public func niceFatalError(_ message: String, file: StaticString = #file, line: UInt = #line) -> Never {
     printError("\n\nFatal error:".bold.red + " \(message)\n")

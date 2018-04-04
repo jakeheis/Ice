@@ -32,7 +32,9 @@ class PackageWriterTests: XCTestCase {
         let capture = CaptureStream()
         let writer = PackageWriter(stream: capture)
         writer.writeProducts(products)
-        XCTAssertEqual(capture.content, """
+        capture.close()
+        
+        XCTAssertEqual(capture.awaitContent(), """
             products: [
                 .executable(name: "exec", targets: ["MyLib"]),
                 .library(name: "Lib", targets: ["Core"]),
@@ -104,7 +106,9 @@ class PackageWriterTests: XCTestCase {
         let capture = CaptureStream()
         let writer = PackageWriter(stream: capture)
         writer.writeDependencies(dependencies)
-        XCTAssertEqual(capture.content, """
+        capture.close()
+        
+        XCTAssertEqual(capture.awaitContent(), """
             dependencies: [
                 .package(url: "https://github.com/jakeheis/SwiftCLI", .branchItem("swift4")),
                 .package(url: "https://github.com/jakeheis/Spawn", .exact("0.0.4")),
@@ -136,7 +140,9 @@ class PackageWriterTests: XCTestCase {
         let capture = CaptureStream()
         let writer = PackageWriter(stream: capture)
         writer.writeTargets(targets)
-        XCTAssertEqual(capture.content, """
+        capture.close()
+        
+        XCTAssertEqual(capture.awaitContent(), """
             targets: [
                 .target(name: "CLI", dependencies: ["Core"]),
                 .testTarget(name: "CLITests", dependencies: ["CLI", "Core"]),
@@ -155,7 +161,9 @@ class PackageWriterTests: XCTestCase {
         let capture = CaptureStream()
         let writer = PackageWriter(stream: capture)
         writer.writeProviders(providers)
-        XCTAssertEqual(capture.content, """
+        capture.close()
+        
+        XCTAssertEqual(capture.awaitContent(), """
             providers: [
                 .brew(["libssh2"]),
                 .apt(["libssh2-1-dev", "libssh2-2-dev"]),
@@ -169,7 +177,9 @@ class PackageWriterTests: XCTestCase {
         let capture = CaptureStream()
         let writer = PackageWriter(stream: capture)
         writer.writeSwiftLanguageVersion(versions)
-        XCTAssertEqual(capture.content, """
+        capture.close()
+        
+        XCTAssertEqual(capture.awaitContent(), """
             swiftLanguageVersions: [2, 3],
 
         """)
@@ -180,7 +190,9 @@ class PackageWriterTests: XCTestCase {
         let writer = PackageWriter(stream: capture)
         writer.writeCLangaugeStandard("c90")
         writer.writeCLangaugeStandard("iso9899:199409")
-        XCTAssertEqual(capture.content, """
+        capture.close()
+        
+        XCTAssertEqual(capture.awaitContent(), """
             cLanguageStandard: .c90,
             cLanguageStandard: .iso9899_199409,
 
@@ -192,7 +204,9 @@ class PackageWriterTests: XCTestCase {
         let writer = PackageWriter(stream: capture)
         writer.writeCxxLangaugeStandard("c++03")
         writer.writeCxxLangaugeStandard("gnu++1z")
-        XCTAssertEqual(capture.content, """
+        capture.close()
+        
+        XCTAssertEqual(capture.awaitContent(), """
             cxxLanguageStandard: .cxx03,
             cxxLanguageStandard: .gnucxx1z,
 

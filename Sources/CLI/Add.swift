@@ -45,7 +45,7 @@ class AddCommand: Command {
         
         verboseLog("Resolving at version: \(dependencyVersion)")
         
-        var package = try Package.load(directory: ".")
+        var package = try Package.load()
         package.addDependency(ref: ref, version: dependencyVersion)
         if let targetString = targets.value {
             let targets = targetString.components(separatedBy: ",")
@@ -66,7 +66,7 @@ class AddCommand: Command {
                 return input.rangeOfCharacter(from: allowed.inverted) == nil
             })
             let targets = targetString
-                .flatMap({ ids.index(of: $0) })
+                .compactMap({ ids.index(of: $0) })
                 .map({ package.targets[ids.distance(from: ids.startIndex, to: $0)] })
             try targets.forEach { try package.depend(target: $0.name, on: ref.name) }
         }

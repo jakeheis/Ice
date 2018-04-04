@@ -5,9 +5,7 @@
 //  Created by Jake Heiser on 9/17/17.
 //
 
-public protocol Capturable {
-    static func fromCapture(_ text: String) -> Self?
-}
+import SwiftCLI
 
 public class Captures {
     
@@ -17,14 +15,14 @@ public class Captures {
         self.captures = captures
     }
     
-    public subscript<T: Capturable>(index: Int) -> T? {
+    public subscript<T: ConvertibleFromString>(index: Int) -> T? {
         guard index < captures.count, let capture = captures[index] else {
             return nil
         }
-        return T.fromCapture(capture)
+        return T.convert(from: capture)
     }
     
-    public subscript<T: Capturable>(index: Int) -> T {
+    public subscript<T: ConvertibleFromString>(index: Int) -> T {
         guard let result: T = self[index] else {
             preconditionFailure("\(type(of: self)) error: didn't have required \(index) group")
         }
@@ -42,25 +40,5 @@ extension Captures: CustomStringConvertible {
 extension Captures: Equatable {
     public static func ==(lhs: Captures, rhs: Captures) -> Bool {
         return !zip(lhs.captures, rhs.captures).contains(where: { $0 != $1 })
-    }
-}
-
-extension String: Capturable {
-    public static func fromCapture(_ text: String) -> String? {
-        return text
-    }
-}
-extension Int: Capturable {
-    public static func fromCapture(_ text: String) -> Int? {
-        return Int(text)
-    }
-}
-
-extension RawRepresentable where RawValue: Capturable {
-    public static func fromCapture(_ text: String) -> Self? {
-        guard let value = RawValue.fromCapture(text) else {
-            return nil
-        }
-        return Self.init(rawValue: value)
     }
 }

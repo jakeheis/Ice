@@ -34,6 +34,7 @@ class InitTests: XCTestCase {
             create Tests/LinuxMain.swift
             create Tests/MyNewLibTests/
             create Tests/MyNewLibTests/MyNewLibTests.swift
+            create Tests/MyNewLibTests/XCTestManifests.swift
 
         Run: ice build
         

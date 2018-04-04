@@ -32,9 +32,9 @@
         "package": "SwiftCLI",
         "repositoryURL": "https://github.com/jakeheis/SwiftCLI",
         "state": {
-          "branch": null,
-          "revision": "26350118b2393473e4cfeaa2faf659893a991255",
-          "version": "4.1.1"
+          "branch": "task",
+          "revision": "03b861952946b547dcb1890d6e9d83fbc2723df8",
+          "version": null
         }
       },
       {

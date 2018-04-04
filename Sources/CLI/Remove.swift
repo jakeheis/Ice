@@ -16,7 +16,7 @@ class RemoveCommand: Command {
     let package = Parameter()
 
     func execute() throws {
-        var project = try Package.load(directory: ".")
+        var project = try Package.load()
         try project.removeDependency(named: package.value)
         try project.write()
     }

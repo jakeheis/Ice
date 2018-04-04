@@ -29,7 +29,7 @@ class Resolve: BaseTransformer {
 // MARK: - Lines
 
 final class DependencyActionLine: Matcher, Matchable {
-    enum Action: String, Capturable {
+    enum Action: String, ConvertibleFromString {
         case fetch = "Fetching"
         case update = "Updating"
         case clone = "Cloning"

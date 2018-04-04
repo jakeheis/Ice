@@ -13,13 +13,13 @@ import Rainbow
 class TransformerTest {
     
     let transformer: Transformer
-    let pipe: Pipe
+    let pipe: (read: ReadStream, write: WriteStream)
     let primaryCapture: CaptureStream
     let secondaryCapture: CaptureStream
     
     init(transformer: Transformer, isStdout: Bool) {
         self.transformer = transformer
-        self.pipe = Pipe()
+        self.pipe = Task.createPipe()
         self.primaryCapture = CaptureStream()
         self.secondaryCapture = CaptureStream()
         
@@ -35,19 +35,22 @@ class TransformerTest {
     }
     
     func send(_ contents: String) {
-        pipe.fileHandleForWriting.write((contents + "\n").data(using: .utf8)!)
+        pipe.write <<< contents
     }
     
     func expect(_ content: String, file: StaticString = #file, line: UInt = #line) {
-        pipe.fileHandleForWriting.closeFile()
+        pipe.write.close()
         
-        let stream = PipeStream(pipe: pipe)
+        let stream = PipeStream(stream: pipe.read)
         while stream.isOpen() {
             transformer.go(stream: stream)
         }
         
-        XCTAssertEqual(self.primaryCapture.content, content, file: file, line: line)
-        XCTAssertEqual(self.secondaryCapture.content, "", file: file, line: line)
+        primaryCapture.close()
+        secondaryCapture.close()
+        
+        XCTAssertEqual(primaryCapture.awaitContent(), content, file: file, line: line)
+        XCTAssertEqual(secondaryCapture.awaitContent(), "", file: file, line: line)
     }
     
 }

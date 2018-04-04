@@ -28,7 +28,7 @@ final class LinkLine: Matcher, Matchable {
 
 final class BuildErrorLine: Matcher, Matchable, Equatable {
     
-    enum ErrorType: String, Capturable {
+    enum ErrorType: String, ConvertibleFromString {
         case error
         case warning
         case note
