@@ -44,15 +44,13 @@ public class TransformerPair {
         self.semaphore = DispatchSemaphore(value: 0)
     }
     
-    public func createStdout() -> WritableStream? {
-        guard let out = out else { return nil }
-        
+    private func createStream(transformer: BaseTransformer) -> WritableStream {
         let pipe = PipeStream()
         
         DispatchQueue.global().async { [weak self] in
             let stream = TransformStream(stream: pipe.readStream)
             while stream.isOpen() {
-                out.go(stream: stream)
+                transformer.go(stream: stream)
             }
             self?.semaphore.signal()
         }
@@ -62,22 +60,12 @@ public class TransformerPair {
         return pipe
     }
     
+    public func createStdout() -> WritableStream? {
+        return out.flatMap(createStream)
+    }
+    
     public func createStderr() -> WritableStream? {
-        guard let err = err else { return nil }
-        
-        let pipe = PipeStream()
-        
-        DispatchQueue.global().async { [weak self] in
-            let stream = TransformStream(stream: pipe.readStream)
-            while stream.isOpen() {
-                err.go(stream: stream)
-            }
-            self?.semaphore.signal()
-        }
-        
-        runningCount += 1
-        
-        return pipe
+        return err.flatMap(createStream)
     }
     
     public func wait() {

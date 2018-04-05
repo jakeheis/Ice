@@ -15,22 +15,22 @@ class Git {
         if let version = version {
             args += ["--branch", version.raw]
         }
-        try exec(args: args + [url, path], silent: silent, timeout: timeout)
+        try runGit(args: args + [url, path], silent: silent, timeout: timeout)
     }
     
     static func pull(path: String, silent: Bool, timeout: Int? = nil) throws {
-        try exec(args: ["-C", path, "pull"], silent: silent, timeout: timeout)
+        try runGit(args: ["-C", path, "pull"], silent: silent, timeout: timeout)
     }
     
     static func getRemoteUrl(of path: String) throws -> String {
-        return try cap("-C", path, "remote", "get-url", "origin").stdout
+        return try captureGit("-C", path, "remote", "get-url", "origin").stdout
     }
     
     static func lsRemote(url: String) throws -> String {
-        return try cap("ls-remote", "--tags", url).stdout
+        return try captureGit("ls-remote", "--tags", url).stdout
     }
     
-    private static func exec(args: [String], silent: Bool, timeout: Int? = nil) throws {
+    private static func runGit(args: [String], silent: Bool, timeout: Int? = nil) throws {
         let stdout: WriteStream = silent ? .null : .stdout
         let stderr: WriteStream = silent ? .null : .stderr
         let task = Task(executable: "git", args: args, stdout: stdout, stderr: stderr)
@@ -46,7 +46,7 @@ class Git {
         }
     }
     
-    private static func cap(_ args: String...) throws -> CaptureResult {
+    private static func captureGit(_ args: String...) throws -> CaptureResult {
         return try capture("git", args)
     }
     

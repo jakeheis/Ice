@@ -24,7 +24,7 @@ public class SPM {
         if let type = type {
             args += ["--type", type.rawValue]
         }
-        try exec(args, transformer: .initialize)
+        try runSwift(args: args, transformer: .initialize)
     }
     
     // MARK: - Building
@@ -41,7 +41,7 @@ public class SPM {
         if includeTests {
             args.append("--build-tests")
         }
-        try exec(args, transformer: .build)
+        try runSwift(args: args, transformer: .build)
     }
     
     public func run(release: Bool, executable: [String]) throws -> Task {
@@ -65,29 +65,29 @@ public class SPM {
         if let filter = filter {
             args += ["--filter", filter]
         }
-        try exec(args, transformer: .test)
+        try runSwift(args: args, transformer: .test)
     }
     
     public func resolve() throws {
-        try exec(["package", "-v", "resolve"], transformer: .resolve)
+        try runSwift(args: ["package", "-v", "resolve"], transformer: .resolve)
     }
     
     // MARK: -
     
     public func clean() throws {
-        try exec(["package", "clean"])
+        try runSwift(args: ["package", "clean"])
     }
     
     public func reset() throws {
-        try exec(["package", "reset"])
+        try runSwift(args: ["package", "reset"])
     }
     
     public func update() throws {
-        try exec(["package", "generate-xcodeproj"], transformer: .resolve)
+        try runSwift(args: ["package", "generate-xcodeproj"], transformer: .resolve)
     }
 
     public func generateXcodeProject() throws {
-        try exec(["package", "generate-xcodeproj"])
+        try runSwift(args: ["package", "generate-xcodeproj"])
     }
     
     public func showBinPath(release: Bool = false) throws -> String {
@@ -95,7 +95,7 @@ public class SPM {
         if release {
             args += ["-c", "release"]
         }
-        let path = try cap(args).stdout
+        let path = try captureSwift(args: args).stdout
         guard !path.isEmpty else {
             throw IceError(message: "couldn't retrieve executable path")
         }
@@ -103,7 +103,7 @@ public class SPM {
     }
 
     public func dumpPackage() throws -> Data {
-        let content = try cap(["package", "dump-package"]).stdout
+        let content = try captureSwift(args: ["package", "dump-package"]).stdout
         guard let jsonStart = content.index(of: "{"), let data = content[jsonStart...].data(using: .utf8) else {
             throw IceError(message: "couldn't parse package")
         }
@@ -112,7 +112,7 @@ public class SPM {
 
     // MARK: -
     
-    func exec(_ args: [String], transformer: TransformerPair? = nil) throws {
+    func runSwift(args: [String], transformer: TransformerPair? = nil) throws {
         let stdout: WritableStream = transformer?.createStdout() ?? WriteStream.stdout
         let stderr: WritableStream = transformer?.createStderr() ?? WriteStream.stderr
         
@@ -125,7 +125,7 @@ public class SPM {
         }
     }
     
-    func cap(_ args: [String]) throws -> CaptureResult {
+    func captureSwift(args: [String]) throws -> CaptureResult {
         do {
             return try capture("swift", args)
         } catch let error as CaptureError {
