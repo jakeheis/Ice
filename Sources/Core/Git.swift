@@ -6,7 +6,6 @@
 //
 
 import Dispatch
-import Exec
 import SwiftCLI
 
 class Git {

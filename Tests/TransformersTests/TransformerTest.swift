@@ -8,7 +8,7 @@
 import XCTest
 import SwiftCLI
 import Rainbow
-@testable import Exec
+@testable import Transformers
 
 class TransformerTest {
     

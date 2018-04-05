@@ -5,11 +5,9 @@
 //  Created by Jake Heiser on 7/22/17.
 //
 
-import SwiftCLI
 import Core
-import Exec
 import Rainbow
-import Dispatch
+import SwiftCLI
 
 class RunCommand: Command {
     

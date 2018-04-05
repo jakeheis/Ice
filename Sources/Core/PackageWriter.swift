@@ -7,7 +7,6 @@
 
 import FileKit
 import SwiftCLI
-import Exec
 
 class PackageWriter {
     

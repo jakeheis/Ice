@@ -5,9 +5,8 @@
 //  Created by Jake Heiser on 9/19/17.
 //
 
-import Exec
-import Regex
 import Rainbow
+import Regex
 import SwiftCLI
 
 final class CompileSwiftLine: Matcher, Matchable {

@@ -6,7 +6,6 @@
 //
 
 import FileKit
-import Exec
 import Foundation
 import SwiftCLI
 

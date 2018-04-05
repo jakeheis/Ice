@@ -5,9 +5,8 @@
 //  Created by Jake Heiser on 9/12/17.
 //
 
-import Exec
-import Regex
 import Rainbow
+import Regex
 import SwiftCLI
 
 public extension TransformerPair {

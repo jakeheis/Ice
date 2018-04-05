@@ -17,11 +17,10 @@ let package = Package(
     ],
     targets: [
         .target(name: "CLI", dependencies: ["Core", "FileKit", "SwiftCLI", "SwiftyTextTable"]),
-        .target(name: "Core", dependencies: ["Exec", "FileKit", "Rainbow", "Regex", "Transformers"]),
-        .target(name: "Exec", dependencies: ["Rainbow", "Regex", "SwiftCLI"]),
-        .target(name: "Transformers", dependencies: ["Exec", "Rainbow", "Regex", "SwiftCLI"]),
+        .target(name: "Core", dependencies: ["FileKit", "Rainbow", "Regex", "Transformers"]),
+        .target(name: "Transformers", dependencies: ["Rainbow", "Regex", "SwiftCLI"]),
         .testTarget(name: "CLITests", dependencies: ["Rainbow"]),
         .testTarget(name: "CoreTests", dependencies: ["Core"]),
-        .testTarget(name: "TransformersTests", dependencies: ["Exec", "Transformers"]),
+        .testTarget(name: "TransformersTests", dependencies: ["Transformers"]),
     ]
 )
