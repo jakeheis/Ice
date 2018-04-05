@@ -72,11 +72,11 @@ class PackageTests: XCTestCase {
     func writePackage(path: String) throws -> String {
         let data = try Data(contentsOf: URL(fileURLWithPath: "Tests/Fixtures/\(path)"))
         let package = try Package.load(data: data)
-        let captureStream = CaptureStream()
+        let captureStream = PipeStream()
         try package.write(to: captureStream)
-        captureStream.close()
+        captureStream.closeWrite()
         
-        return captureStream.awaitContent()
+        return captureStream.readAll()
     }
     
 }

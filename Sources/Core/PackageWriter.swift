@@ -11,9 +11,9 @@ import Exec
 
 class PackageWriter {
     
-    let out: WriteStream
+    let out: WritableStream
     
-    init(stream: WriteStream) {
+    init(stream: WritableStream) {
         self.out = stream
     }
     

@@ -6,15 +6,16 @@
 //
 
 import Foundation
+import Rainbow
 import SwiftCLI
 
-public class PipeStream {
+public class TransformStream {
     
-    let stream: ReadStream
+    let stream: ReadableStream
     
     var nextLine: String? = nil
     
-    init(stream: ReadStream) {
+    init(stream: ReadableStream) {
         self.stream = stream
     }
     
@@ -146,4 +147,12 @@ class PipeStreamRecord {
         print(String(data: data, encoding: .utf8)!)
     }
     
+}
+
+public func niceFatalError(_ message: String, file: StaticString = #file, line: UInt = #line) -> Never {
+    WriteStream.stderr <<< "\n\nFatal error:".bold.red + " \(message)\n"
+    if _isDebugAssertConfiguration() {
+        printError("\(file):\(line)\n")
+    }
+    exit(1)
 }

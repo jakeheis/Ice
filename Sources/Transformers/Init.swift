@@ -15,7 +15,7 @@ public extension TransformerPair {
 }
 
 class InitOut: BaseTransformer {
-    func go(stream: PipeStream) {
+    func go(stream: TransformStream) {
         if let package = stream.match(CreatePackageLine.self) {
             stdout <<< ""
             stdout <<< package.packageType + ": " + package.packageName.blue.bold

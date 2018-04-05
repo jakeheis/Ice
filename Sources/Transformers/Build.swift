@@ -19,7 +19,7 @@ class BuildOut: BaseTransformer {
     
     private let errorTracker = ErrorTracker()
     
-    public func go(stream: PipeStream) {
+    public func go(stream: TransformStream) {
         if let compileSwift = stream.match(CompileSwiftLine.self) {
             stdout <<< "Compile ".dim + "\(compileSwift.module) \(compileSwift.sourceCount)"
         } else if let compileC = stream.match(CompileCLine.self) {
@@ -40,7 +40,7 @@ class BuildOut: BaseTransformer {
 }
 
 class BuildErr: BaseTransformer {
-    func go(stream: PipeStream) {
+    func go(stream: TransformStream) {
         if stream.nextIs(in: [InternalTerminatedErrorLine.self, TerminatedLine.self, WhitespaceLine.self]) {
             stream.consume()
         } else if let internalError = stream.match(InternalErrorLine.self) {
@@ -60,13 +60,13 @@ private class Error: Transformer {
         self.errorTracker = errorTracker
     }
     
-    func go(stream: PipeStream) {
+    func go(stream: TransformStream) {
         let metadataLine = stream.require(BuildErrorLine.self)
         let color = textColor(for: metadataLine)
         
-        var out: WriteStream
+        var out: WritableStream
         if errorTracker.shouldSkip(metadataLine) {
-            out = .null
+            out = WriteStream.null
         } else {
             out = stdout
             errorTracker.record(metadataLine)
@@ -101,7 +101,7 @@ private class Error: Transformer {
         }
     }
     
-    private func printMessage(_ line: BuildErrorLine, stream: WriteStream) {
+    private func printMessage(_ line: BuildErrorLine, stream: WritableStream) {
         let prefix: String
         switch line.type {
         case .error:

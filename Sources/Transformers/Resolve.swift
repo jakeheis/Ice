@@ -15,7 +15,7 @@ public extension TransformerPair {
 }
 
 class Resolve: BaseTransformer {
-    func go(stream: PipeStream) {
+    func go(stream: TransformStream) {
         if let action = stream.match(DependencyActionLine.self) {
             stdout <<< String(describing: action.action).capitalized.dim + " " + action.url
         } else if let resolve = stream.match(ResolveLine.self) {

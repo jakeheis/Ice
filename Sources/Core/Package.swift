@@ -215,8 +215,8 @@ public struct Package: Decodable {
     
     // MARK: -
     
-    public func write(to stream: WriteStream? = nil) throws {
-        let writeStream: WriteStream
+    public func write(to stream: WritableStream? = nil) throws {
+        let writeStream: WritableStream
         if let stream = stream {
             writeStream = stream
         } else {

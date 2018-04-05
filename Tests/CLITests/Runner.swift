@@ -152,8 +152,8 @@ class Runner {
             processWorkingDirectory = sandboxedDirectory
         }
         
-        let out = CaptureStream()
-        let err = CaptureStream()
+        let out = PipeStream()
+        let err = PipeStream()
         let task = Task(executable: FileManager.default.currentDirectoryPath + "/.build/debug/ice", args: args, currentDirectory: processWorkingDirectory, stdout: out, stderr: err)
         task.env["ICE_GLOBAL_ROOT"] = "global"
         
@@ -170,8 +170,8 @@ class Runner {
         
         return ExecutionResult(
             exitStatus: exitCode,
-            stdout: out.awaitContent(),
-            stderr: err.awaitContent()
+            stdout: out.readAll(),
+            stderr: err.readAll()
         )
     }
     

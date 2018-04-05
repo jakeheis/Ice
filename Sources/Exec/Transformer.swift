@@ -12,14 +12,14 @@ import SwiftCLI
 // MARK: -
 
 public protocol Transformer {
-    func go(stream: PipeStream)
+    func go(stream: TransformStream)
 }
 
 public extension Transformer {
-    var stdout: WriteStream {
+    var stdout: WritableStream {
         return TransformerConfig.stdout
     }
-    var stderr: WriteStream {
+    var stderr: WritableStream {
         return TransformerConfig.stderr
     }
     var rewindCharacter: String {
@@ -44,13 +44,13 @@ public class TransformerPair {
         self.semaphore = DispatchSemaphore(value: 0)
     }
     
-    public func createStdout() -> WriteStream? {
+    public func createStdout() -> WritableStream? {
         guard let out = out else { return nil }
         
-        let (read, write) = Task.createPipe()
+        let pipe = PipeStream()
         
         DispatchQueue.global().async { [weak self] in
-            let stream = PipeStream(stream: read)
+            let stream = TransformStream(stream: pipe.readStream)
             while stream.isOpen() {
                 out.go(stream: stream)
             }
@@ -59,16 +59,16 @@ public class TransformerPair {
         
         runningCount += 1
         
-        return write
+        return pipe
     }
     
-    public func createStderr() -> WriteStream? {
+    public func createStderr() -> WritableStream? {
         guard let err = err else { return nil }
         
-        let (read, write) = Task.createPipe()
+        let pipe = PipeStream()
         
         DispatchQueue.global().async { [weak self] in
-            let stream = PipeStream(stream: read)
+            let stream = TransformStream(stream: pipe.readStream)
             while stream.isOpen() {
                 err.go(stream: stream)
             }
@@ -77,7 +77,7 @@ public class TransformerPair {
         
         runningCount += 1
         
-        return write
+        return pipe
     }
     
     public func wait() {
@@ -91,8 +91,8 @@ public class TransformerPair {
 // MARK: -
 
 struct TransformerConfig {
-    static var stdout: WriteStream = .stdout
-    static var stderr: WriteStream = .stderr
+    static var stdout: WritableStream = WriteStream.stdout
+    static var stderr: WritableStream = WriteStream.stderr
     static var rewindCharacter = Term.isTTY ? "\r" : "\n"
     
     private init() {}
