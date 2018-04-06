@@ -5,9 +5,8 @@
 //  Created by Jake Heiser on 9/12/17.
 //
 
-import Exec
-import Regex
 import Rainbow
+import Regex
 import SwiftCLI
 
 public extension TransformerPair {
@@ -15,7 +14,7 @@ public extension TransformerPair {
 }
 
 class Resolve: BaseTransformer {
-    func go(stream: PipeStream) {
+    func go(stream: TransformStream) {
         if let action = stream.match(DependencyActionLine.self) {
             stdout <<< String(describing: action.action).capitalized.dim + " " + action.url
         } else if let resolve = stream.match(ResolveLine.self) {
@@ -29,7 +28,7 @@ class Resolve: BaseTransformer {
 // MARK: - Lines
 
 final class DependencyActionLine: Matcher, Matchable {
-    enum Action: String, Capturable {
+    enum Action: String, ConvertibleFromString {
         case fetch = "Fetching"
         case update = "Updating"
         case clone = "Cloning"

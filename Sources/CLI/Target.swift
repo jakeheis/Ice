@@ -29,7 +29,7 @@ private class TargetAddCommand: Command {
     let dependencies = Key<String>("-d", "--dependencies", description: "Creates the new target with the given dependencies; comma-separated")
     
     func execute() throws {
-        var package = try Package.load(directory: ".")
+        var package = try Package.load()
         
         if package.targets.contains(where: { $0.name == targetName.value }) {
             throw IceError(message: "target \(targetName.value) already exists")
@@ -70,7 +70,7 @@ private class TargetRemoveCommand: Command {
     let target = Parameter()
     
     func execute() throws {
-        var project = try Package.load(directory: ".")
+        var project = try Package.load()
         try project.removeTarget(named: target.value)
         try project.write()
     }

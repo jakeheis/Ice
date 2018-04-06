@@ -8,20 +8,20 @@
 import XCTest
 import SwiftCLI
 import Rainbow
-@testable import Exec
+@testable import Transformers
 
 class TransformerTest {
     
     let transformer: Transformer
-    let pipe: Pipe
-    let primaryCapture: CaptureStream
-    let secondaryCapture: CaptureStream
+    let feeder: PipeStream
+    let primaryCapture: PipeStream
+    let secondaryCapture: PipeStream
     
     init(transformer: Transformer, isStdout: Bool) {
         self.transformer = transformer
-        self.pipe = Pipe()
-        self.primaryCapture = CaptureStream()
-        self.secondaryCapture = CaptureStream()
+        self.feeder = PipeStream()
+        self.primaryCapture = PipeStream()
+        self.secondaryCapture = PipeStream()
         
         TransformerConfig.rewindCharacter = "\n"
         Rainbow.enabled = false
@@ -35,19 +35,22 @@ class TransformerTest {
     }
     
     func send(_ contents: String) {
-        pipe.fileHandleForWriting.write((contents + "\n").data(using: .utf8)!)
+        feeder <<< contents
     }
     
     func expect(_ content: String, file: StaticString = #file, line: UInt = #line) {
-        pipe.fileHandleForWriting.closeFile()
+        feeder.closeWrite()
         
-        let stream = PipeStream(pipe: pipe)
+        let stream = TransformStream(stream: feeder)
         while stream.isOpen() {
             transformer.go(stream: stream)
         }
         
-        XCTAssertEqual(self.primaryCapture.content, content, file: file, line: line)
-        XCTAssertEqual(self.secondaryCapture.content, "", file: file, line: line)
+        primaryCapture.closeWrite()
+        secondaryCapture.closeWrite()
+        
+        XCTAssertEqual(primaryCapture.readAll(), content, file: file, line: line)
+        XCTAssertEqual(secondaryCapture.readAll(), "", file: file, line: line)
     }
     
 }

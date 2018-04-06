@@ -5,10 +5,9 @@
 //  Created by Jake Heiser on 7/22/17.
 //
 
-import SwiftCLI
 import Core
 import Rainbow
-import Exec
+import SwiftCLI
 
 class DescribeCommand: Command {
     
@@ -20,7 +19,7 @@ class DescribeCommand: Command {
     func execute() throws {
         if let entry = Ice.registry.get(package.value) {
             guard let ref = RepositoryReference(entry.url) else {
-                niceFatalError("Malformed registry entry: \(entry.url)")
+                throw IceError(message: "Malformed registry entry: \(entry.url)")
             }
             try printRef(ref, description: entry.description)
         } else if let ref = RepositoryReference(package.value) {

@@ -6,40 +6,23 @@
 //
 
 import Foundation
+import Rainbow
+import SwiftCLI
 
-public class PipeStream {
+public class TransformStream {
     
-    let pipe: Pipe
-    private var nextLine: String? = nil
-    private var unread = ""
+    let stream: ReadableStream
     
-    init(pipe: Pipe) {
-        self.pipe = pipe
+    var nextLine: String? = nil
+    
+    init(stream: ReadableStream) {
+        self.stream = stream
     }
     
     private func readNextLine() {
         guard nextLine == nil else { return }
         
-        var open = true
-        while unread.index(of: "\n") == nil {
-            let data = pipe.fileHandleForReading.availableData
-            if data.isEmpty {
-                open = false
-                break
-            }
-            guard let str = String(data: data, encoding: .utf8) else {
-                niceFatalError("output not utf8")
-            }
-            unread += str
-        }
-        
-        if let index = unread.index(of: "\n") {
-            nextLine = String(unread.prefix(upTo: index))
-            unread = String(unread.suffix(from: unread.index(after: index)))
-        } else if !open {
-            nextLine = unread.isEmpty ? nil : unread
-            unread = ""
-        }
+        nextLine = stream.readLine()
     }
     
     public func isOpen() -> Bool {
@@ -111,7 +94,7 @@ public class PipeStream {
                     type: String(describing: type(of: match))
                 ))
             }
-            self.nextLine = nil
+            nextLine = nil
             return match
         }
         return nil
@@ -164,4 +147,12 @@ class PipeStreamRecord {
         print(String(data: data, encoding: .utf8)!)
     }
     
+}
+
+public func niceFatalError(_ message: String, file: StaticString = #file, line: UInt = #line) -> Never {
+    WriteStream.stderr <<< "\n\nFatal error:".bold.red + " \(message)\n"
+    if _isDebugAssertConfiguration() {
+        printError("\(file):\(line)\n")
+    }
+    exit(1)
 }

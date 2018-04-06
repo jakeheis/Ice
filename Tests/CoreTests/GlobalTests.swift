@@ -8,7 +8,7 @@
 import XCTest
 import FileKit
 @testable import Core
-
+/*
 class GlobalTests: XCTestCase {
     
     static var allTests = [
@@ -46,4 +46,4 @@ class GlobalTests: XCTestCase {
         XCTAssertFalse((sandbox + "my/bin/igt").exists)
     }
     
-}
+}*/

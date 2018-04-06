@@ -22,7 +22,7 @@ class UpdateCommand: Command {
             return
         }
         
-        var package = try Package.load(directory: ".")
+        var package = try Package.load()
         guard let dep = package.dependencies.first(where: { RepositoryReference(url: $0.url).name == dependency }) else {
             throw IceError(message: "No dependency found with that name")
         }

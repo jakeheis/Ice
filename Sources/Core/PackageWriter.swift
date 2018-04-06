@@ -7,13 +7,12 @@
 
 import FileKit
 import SwiftCLI
-import Exec
 
 class PackageWriter {
     
-    let out: OutputByteStream
+    let out: WritableStream
     
-    init(stream: OutputByteStream) {
+    init(stream: WritableStream) {
         self.out = stream
     }
     

@@ -41,7 +41,7 @@ private class ProductAddCommand: Command {
     }
     
     func execute() throws {
-        var package = try Package.load(directory: ".")
+        var package = try Package.load()
         
         if package.products.contains(where: { $0.name == productName.value }) {
             throw IceError(message: "product \(productName.value) already exists")
@@ -75,7 +75,7 @@ private class ProductRemoveCommand: Command {
     let product = Parameter()
     
     func execute() throws {
-        var project = try Package.load(directory: ".")
+        var project = try Package.load()
         try project.removeProduct(name: product.value)
         try project.write()
     }

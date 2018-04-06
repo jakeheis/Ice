@@ -71,6 +71,8 @@ public struct Package: Decodable {
         case cxxLanguageStandard
     }
     
+    public static let path = Path("Package.swift")
+    
     public let name: String
     public let pkgConfig: String?
     public let providers: [Provider]?
@@ -81,18 +83,14 @@ public struct Package: Decodable {
     public let cLanguageStandard: String?
     public let cxxLanguageStandard: String?
     
-    private var path: Path? = nil
-    
-    public static func load(directory: Path) throws -> Package {
-        let data = try SPM(path: directory).dumpPackage()
-        return try load(data: data, directory: directory)
+    public static func load() throws -> Package {
+        let data = try SPM().dumpPackage()
+        return try load(data: data)
     }
     
-    public static func load(data: Data, directory: Path) throws -> Package {
+    public static func load(data: Data) throws -> Package {
         do {
-            var package = try JSONDecoder().decode(Package.self, from: data)
-            package.path = directory + "Package.swift"
-            return package
+            return try JSONDecoder().decode(Package.self, from: data)
         } catch {
             throw IceError(message: "couldn't parse Package.swift")
         }
@@ -217,17 +215,14 @@ public struct Package: Decodable {
     
     // MARK: -
     
-    public func write(to stream: OutputByteStream? = nil) throws {
-        let writeStream: OutputByteStream
+    public func write(to stream: WritableStream? = nil) throws {
+        let writeStream: WritableStream
         if let stream = stream {
             writeStream = stream
         } else {
-            guard let path = path else {
-                throw IceError()
-            }
-            try "".write(to: path) // Overwrite file
-            guard let fileStream = FileStream(path: path.rawValue) else  {
-                throw IceError(message: "Couldn't write to \(path)")
+            try "".write(to: Package.path) // Overwrite file
+            guard let fileStream = WriteStream(path: Package.path.rawValue) else  {
+                throw IceError(message: "Couldn't write to \(Package.path)")
             }
             writeStream = fileStream
         }
@@ -253,8 +248,7 @@ extension Package {
             targets: targets.map(Target.formatted).sorted(by: Target.packageSort),
             swiftLanguageVersions: swiftLanguageVersions?.sorted(),
             cLanguageStandard: cLanguageStandard,
-            cxxLanguageStandard: cxxLanguageStandard,
-            path: path
+            cxxLanguageStandard: cxxLanguageStandard
         )
     }
     

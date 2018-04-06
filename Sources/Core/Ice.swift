@@ -5,9 +5,9 @@
 //  Created by Jake Heiser on 9/22/17.
 //
 
-import Foundation
 import FileKit
-import Exec
+import Foundation
+import Transformers
 
 public class Ice {
     
@@ -40,10 +40,10 @@ public class Ice {
         return Registry(registryPath: Paths.registryDirectory)
     }()
     
-    public static let global: Global = {
-        setup()
-        return Global(packagesPath: Paths.packagesDirectory, config: config)
-    }()
+//    public static let global: Global = {
+//        setup()
+//        return Global(packagesPath: Paths.packagesDirectory, config: config)
+//    }()
     
     public static func setup() {
         if Paths.root.exists {

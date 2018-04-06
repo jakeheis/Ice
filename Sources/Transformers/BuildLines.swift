@@ -5,9 +5,8 @@
 //  Created by Jake Heiser on 9/19/17.
 //
 
-import Exec
-import Regex
 import Rainbow
+import Regex
 import SwiftCLI
 
 final class CompileSwiftLine: Matcher, Matchable {
@@ -28,7 +27,7 @@ final class LinkLine: Matcher, Matchable {
 
 final class BuildErrorLine: Matcher, Matchable, Equatable {
     
-    enum ErrorType: String, Capturable {
+    enum ErrorType: String, ConvertibleFromString {
         case error
         case warning
         case note

@@ -5,7 +5,6 @@
 //  Created by Jake Heiser on 9/12/17.
 //
 
-import Exec
 import Foundation
 import Rainbow
 import Regex
@@ -37,7 +36,7 @@ final class InternalErrorLine: Matcher, Matchable {
     static let regex = Regex("^error: (.*)$")
     var message: String { return captures[0] }
     
-    func print(to out: OutputByteStream) {
+    func print(to out: WritableStream) {
         out <<< ""
         out <<< "Error: ".bold.red + message
         out <<< ""

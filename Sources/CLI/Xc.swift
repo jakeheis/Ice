@@ -5,9 +5,8 @@
 //  Created by Jake Heiser on 7/22/17.
 //
 
-import SwiftCLI
 import Core
-import Exec
+import SwiftCLI
 
 class XcCommand: Command {
     
@@ -20,9 +19,9 @@ class XcCommand: Command {
         try SPM().generateXcodeProject()
         
         if !noOpen.value {
-            let package = try Package.load(directory: ".")
+            let package = try Package.load()
             do {
-                try Exec(command: "open", args: ["\(package.name).xcodeproj"]).execute()
+                try run("open", "\(package.name).xcodeproj")
             } catch {}
         }
     }

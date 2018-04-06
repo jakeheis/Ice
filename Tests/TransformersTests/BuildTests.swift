@@ -6,7 +6,6 @@
 //
 
 import XCTest
-import Exec
 @testable import Transformers
 
 class BuildTests: XCTestCase {

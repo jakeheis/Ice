@@ -9,6 +9,7 @@ import Foundation
 import XCTest
 import Regex
 import Rainbow
+import SwiftCLI
 
 // MARK: -
 
@@ -118,7 +119,7 @@ class Sandbox {
 
 class Runner {
     
-    private static var currentProcess: Process?
+    private static var currentTask: Task?
     
     static let sandboxedDirectory = FileManager.default.currentDirectoryPath + "/.sandbox"
     
@@ -129,7 +130,7 @@ class Runner {
     }
     
     @discardableResult
-    static func execute(args: [String], sandbox: Sandbox = .empty, dir: String? = nil, sandboxSetup: (() -> ())? = nil, clean: Bool = true) -> ExecutionResult {
+    static func execute(args: [String], sandbox: Sandbox = .empty, dir: String? = nil, sandboxSetup: (() -> ())? = nil, clean: Bool = true, timeout: Int = 30, file: StaticString = #file, line: UInt = #line) -> ExecutionResult {
         if clean {
             self.clean()
             
@@ -151,35 +152,31 @@ class Runner {
             processWorkingDirectory = sandboxedDirectory
         }
         
+        let out = PipeStream()
+        let err = PipeStream()
+        let task = Task(executable: FileManager.default.currentDirectoryPath + "/.build/debug/ice", args: args, currentDirectory: processWorkingDirectory, stdout: out, stderr: err)
+        task.env["ICE_GLOBAL_ROOT"] = "global"
         
-        let process = Process()
-        process.launchPath = FileManager.default.currentDirectoryPath + "/.build/debug/ice"
-        process.currentDirectoryPath = processWorkingDirectory
-        process.arguments = args
+        let interrruptItem = DispatchWorkItem {
+            XCTFail("Exceeded timeout (\(timeout) seconds), killing process", file: file, line: line)
+            task.interrupt()
+        }
+        DispatchQueue.global().asyncAfter(deadline: .now() + .seconds(timeout), execute: interrruptItem)
         
-        var env = ProcessInfo.processInfo.environment
-        env["ICE_GLOBAL_ROOT"] = "global"
-        process.environment = env
+        currentTask = task
+        let exitCode = task.runSync()
         
-        let output = Pipe()
-        let error = Pipe()
+        interrruptItem.cancel()
         
-        process.standardOutput = output
-        process.standardError = error
-        
-        currentProcess = process
-        process.launch()
-        process.waitUntilExit()
-                
         return ExecutionResult(
-            exitStatus: process.terminationStatus,
-            stdout: String(data: output.fileHandleForReading.readDataToEndOfFile(), encoding: .utf8) ?? "",
-            stderr: String(data: error.fileHandleForReading.readDataToEndOfFile(), encoding: .utf8) ?? ""
+            exitStatus: exitCode,
+            stdout: out.readAll(),
+            stderr: err.readAll()
         )
     }
     
     static func interrupt() {
-        currentProcess?.interrupt()
+        currentTask?.interrupt()
     }
     
 }

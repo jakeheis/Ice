@@ -5,7 +5,6 @@
 //  Created by Jake Heiser on 9/12/17.
 //
 
-import Exec
 import Foundation
 import Rainbow
 import Regex
@@ -20,7 +19,7 @@ class TestOut: BaseTransformer {
     static var accumulated = ""
     static var accumulatedLock = NSLock()
 
-    func go(stream: PipeStream) {
+    func go(stream: TransformStream) {
         TestOut.accumulatedLock.lock()
         TestOut.accumulated += stream.require(AnyLine.self).text + "\n"
         TestOut.accumulatedLock.unlock()
@@ -32,7 +31,7 @@ class TestErr: BaseTransformer {
     
     var firstPass = true
     
-    func go(stream: PipeStream) {
+    func go(stream: TransformStream) {
         if matchPotentialError(stream: stream) {
             return
         }
@@ -61,7 +60,7 @@ class TestErr: BaseTransformer {
         printInfo(fails: failureCount, total: count.totalCount, duration: count.duration)
     }
     
-    private func matchPotentialError(stream: PipeStream) -> Bool {
+    private func matchPotentialError(stream: TransformStream) -> Bool {
         if let internalError = stream.match(InternalErrorLine.self) {
             internalError.print(to: stderr)
             return true
@@ -103,7 +102,7 @@ class TestSuite: Transformer {
         self.mode = mode
     }
     
-    func go(stream: PipeStream) {
+    func go(stream: TransformStream) {
         let start = stream.require(TestSuiteLine.self)
         
         if let firstTestCase = stream.peek(TestCaseLine.self) {
@@ -111,7 +110,7 @@ class TestSuite: Transformer {
             if mode == .selected {
                 name += "/\(firstTestCase.caseName)"
             }
-            stderr.output(badge(text: "RUNS", color: .blue), terminator: "")
+            stderr.write(badge(text: "RUNS", color: .blue))
             fflush(Foundation.stderr)
         }
         while stream.nextIs(TestCaseLine.self) {
@@ -149,7 +148,7 @@ class TestCase: Transformer {
         self.suite = suite
     }
     
-    func go(stream: PipeStream) {
+    func go(stream: TransformStream) {
         let testCase = stream.require(TestCaseLine.self)
         
         var errDuringTest = ""
@@ -196,7 +195,7 @@ class AssertionFailure: Transformer {
     
     static let newlineReplacement = "______$$$$$$$$"
     
-    func go(stream: PipeStream) {
+    func go(stream: TransformStream) {
         let failure = stream.require(AssertionFailureLine.self)
         
         var assertion = failure.assertion

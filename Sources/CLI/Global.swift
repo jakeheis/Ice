@@ -7,7 +7,7 @@
 
 import SwiftCLI
 import Core
-
+/*
 class GlobalGroup: CommandGroup {
     let name = "global"
     let shortDescription = "The group of global commands"
@@ -75,4 +75,4 @@ class GlobalRemoveCommand: Command {
        try Ice.global.remove(name: package.value)
     }
     
-}
+}*/
