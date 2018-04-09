@@ -6,7 +6,7 @@
 
 ### Motivation
 
-The official [Swift Package Manager](https://github.com/apple/swift-package-manager) is great at actually managing packages (resolving package versions, compiling source, etc.), but it lacks in developer friendliness. Ice uses Swift Package Manger in its core, but provides a much more developer friendly layer on top of SPM.
+The official [Swift Package Manager](https://github.com/apple/swift-package-manager) is great at actually managing packages (resolving package versions, compiling source, etc.), but it lacks in developer friendliness. Ice uses Swift Package Manager in its core, but provides a much more developer friendly layer on top of SPM.
 
 A few features Ice has that SPM lacks:
 - Beautiful, yet information dense output (particularly while building and testing)
