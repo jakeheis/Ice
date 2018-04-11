@@ -53,7 +53,7 @@ public class SPM {
     
     public func execRun(release: Bool, executable: [String]) throws -> Never {
         let arguments = try runArguments(release: release, executable: executable)
-        try Task.execvp("/usr/bin/swift", arguments)
+        try Task.execvp("swift", arguments)
     }
     
     public func test(filter: String?) throws {
