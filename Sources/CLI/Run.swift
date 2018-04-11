@@ -23,7 +23,7 @@ class RunCommand: Command {
     
     func execute() throws {
         let spm = SPM()
-        
+
         if watch.value {
             let watcher = try SourceWatcher() {
                 self.stdout <<< "[ice] restarting due to changes...".green
@@ -32,8 +32,7 @@ class RunCommand: Command {
             }
             try watcher.go()
         } else {
-            let task = try spm.run(release: release.value, executable: executable.value ?? [])
-            task.finish()
+            try spm.execRun(release: release.value, executable: executable.value ?? [])
         }
     }
     

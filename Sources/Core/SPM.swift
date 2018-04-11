@@ -45,17 +45,15 @@ public class SPM {
     }
     
     public func run(release: Bool, executable: [String]) throws -> Task {
-        try build(release: release)
-        
-        var args = ["run", "--skip-build"]
-        if release {
-            args += ["-c", "release"]
-        }
-        args += executable
-        
-        let task = Task(executable: "swift", args: args)
+        let arguments = try runArguments(release: release, executable: executable)
+        let task = Task(executable: "swift", args: arguments)
         task.runAsync()
         return task
+    }
+    
+    public func execRun(release: Bool, executable: [String]) throws -> Never {
+        let arguments = try runArguments(release: release, executable: executable)
+        try Task.execvp("/usr/bin/swift", arguments)
     }
     
     public func test(filter: String?) throws {
@@ -110,9 +108,9 @@ public class SPM {
         return data
     }
 
-    // MARK: -
+    // MARK: - Helpers
     
-    func runSwift(args: [String], transformer: TransformerPair? = nil) throws {
+    private func runSwift(args: [String], transformer: TransformerPair? = nil) throws {
         let stdout: WritableStream = transformer?.createStdout() ?? WriteStream.stdout
         let stderr: WritableStream = transformer?.createStderr() ?? WriteStream.stderr
         
@@ -125,7 +123,7 @@ public class SPM {
         }
     }
     
-    func captureSwift(args: [String]) throws -> CaptureResult {
+    private func captureSwift(args: [String]) throws -> CaptureResult {
         do {
             return try capture("swift", args)
         } catch let error as CaptureError {
@@ -144,6 +142,18 @@ public class SPM {
             
             throw IceError(message: message, exitStatus: error.exitStatus)
         }
+    }
+    
+    private func runArguments(release: Bool, executable: [String]) throws -> [String] {
+        try build(release: release)
+
+        var args = ["run", "--skip-build"]
+        if release {
+            args += ["-c", "release"]
+        }
+        args += executable
+        
+        return args
     }
     
 }

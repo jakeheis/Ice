@@ -33,7 +33,7 @@ public extension String {
 // MARK: - Lines
 
 final class InternalErrorLine: Matcher, Matchable {
-    static let regex = Regex("^error: (.*)$")
+    static let regex = Regex("error: (.*)$")
     var message: String { return captures[0] }
     
     func print(to out: WritableStream) {

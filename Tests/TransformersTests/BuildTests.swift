@@ -19,6 +19,7 @@ class BuildTests: XCTestCase {
         ("testNoteNoCode", testNoteNoCode),
         ("testSuggestion", testSuggestion),
         ("testRepeated", testRepeated),
+        ("testPackageError", testPackageError)
     ]
     
     func testCompile() {
@@ -205,6 +206,17 @@ class BuildTests: XCTestCase {
             let arg: Int = ""
                            ^^
             at /Ice/Sources/Exec/Exec.swift:19
+
+        
+        """)
+    }
+    
+    func testPackageError() {
+        let build = TransformerTest(transformer: BuildErr(), isStdout: false)
+        build.send("'Project' /Dir: error: could not find target(s): Project; use the 'path' property in the Swift 4 manifest to set a custom target path")
+        build.expect("""
+        
+        Error: could not find target(s): Project; use the 'path' property in the Swift 4 manifest to set a custom target path
 
         
         """)
