@@ -222,6 +222,25 @@ class BuildTests: XCTestCase {
         """)
     }
     
+    func testPCHError() {
+        let build = createTest()
+        build.send("""
+        Compile Swift Module 'foo' (1 sources)
+        <unknown>:0: error: PCH was compiled with module cache path '/foo/.build/x86_64-apple-macosx10.10/debug/ModuleCache/F6Q938U2LW28', but the path is currently '/bar/.build/x86_64-apple-macosx10.10/debug/ModuleCache/F6Q938U2LW28'
+        <unknown>:0: error: missing required module 'SwiftShims'
+        """)
+        build.expect("""
+        Compile foo (1 sources)
+
+          ● Error: PCH was compiled with module cache path '/foo/.build/x86_64-apple-macosx10.10/debug/ModuleCache/F6Q938U2LW28', but the path is currently '/bar/.build/x86_64-apple-macosx10.10/debug/ModuleCache/F6Q938U2LW28'
+
+
+          ● Error: missing required module 'SwiftShims'
+
+        
+        """)
+    }
+    
     private func createTest() -> TransformerTest {
         return TransformerTest(transformer: BuildOut(), isStdout: true)
     }

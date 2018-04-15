@@ -45,6 +45,12 @@ final class BuildErrorLine: Matcher, Matchable, Equatable {
     var message: String { return captures[4] }
 }
 
+final class UnknownErrorLine: Matcher, Matchable {
+    static let regex = Regex("^<unknown>:0: (error|warning|note): (.*)$")
+    var type: BuildErrorLine.ErrorType { return captures[0] }
+    var message: String { return captures[1] }
+}
+
 final class HighlightsLine: Matcher, Matchable {
     static let regex = Regex("^([~^ ]+)$")
     var highlights: String { return captures[0] }

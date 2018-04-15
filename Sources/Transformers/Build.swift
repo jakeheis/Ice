@@ -33,6 +33,8 @@ class BuildOut: BaseTransformer {
             Error(errorTracker: errorTracker).go(stream: stream)
         } else if stream.nextIs(in: [WarningsGeneratedLine.self, UnderscoreLine.self]) {
             stream.consume()
+        } else if let line = stream.match(UnknownErrorLine.self) {
+            stdout.print(type: line.type, message: line.message)
         }
     }
     
@@ -71,10 +73,11 @@ private class Error: Transformer {
             errorTracker.record(metadataLine)
         }
         
-        printMessage(metadataLine, stream: out)
+        out.print(type: metadataLine.type, message: metadataLine.message)
         defer {
             let file = metadataLine.path.hasPrefix("/") ? metadataLine.path.beautifyPath : metadataLine.path
-            out <<< "    at \(file)" + ":\(metadataLine.lineNumber)\n"
+            out <<< "    at \(file)" + ":\(metadataLine.lineNumber)"
+            out <<< ""
         }
         
         if metadataLine.type == .note && (stream.nextIs(in: stopLines) || !stream.isOpen()) {
@@ -100,20 +103,6 @@ private class Error: Transformer {
         }
     }
     
-    private func printMessage(_ line: BuildErrorLine, stream: WritableStream) {
-        let prefix: String
-        switch line.type {
-        case .error:
-            prefix = "\n  ● Error:".red.bold
-        case .warning:
-            prefix = "\n  ● Warning:".yellow.bold
-        case .note:
-            prefix = "    Note:".blue
-        }
-        stream <<< "\(prefix) \(line.message)"
-        stream <<< ""
-    }
-    
     private func textColor(for line: BuildErrorLine) -> Color {
         switch line.type {
         case .error:
@@ -126,6 +115,9 @@ private class Error: Transformer {
     }
     
 }
+
+
+// MARK: -
 
 private class ErrorTracker {
     
@@ -144,4 +136,22 @@ private class ErrorTracker {
     func record(_ line: BuildErrorLine) {
         past.append(line)
     }
+}
+
+private extension WritableStream {
+    
+    func print(type: BuildErrorLine.ErrorType, message: String) {
+        let prefix: String
+        switch type {
+        case .error:
+            prefix = "\n  ● Error:".red.bold
+        case .warning:
+            prefix = "\n  ● Warning:".yellow.bold
+        case .note:
+            prefix = "    Note:".blue
+        }
+        self <<< "\(prefix) \(message)"
+        self <<< ""
+    }
+    
 }
