@@ -27,26 +27,23 @@ class AddCommand: Command {
         
         verboseLog("Resolving url: \(ref.url)")
         
-        let dependencyVersion: Version
+        let requirement: Package.Dependency.Requirement
         if let versionValue = version.value {
-            guard let specifiedVersion = Version(versionValue) else {
-                throw IceError(message: "invalid version")
+            guard Package.Dependency.Requirement.validate(versionValue) else {
+                throw IceError(message: "invalid requirement")
             }
-            dependencyVersion = specifiedVersion
+            requirement = .create(from: versionValue)
+        } else if let latestVersion = try ref.latestVersion() {
+            requirement = .init(version: latestVersion)
         } else {
-            let latestVersion = try ref.latestVersion()
-            func manualVersion() -> Version {
-                let major = Input.readInt(prompt: "Major version: ")
-                let minor = Input.readInt(prompt: "Minor version: ")
-                return Version(major, minor, 0)
-            }
-            dependencyVersion = latestVersion ?? manualVersion()
+            stdout <<< "Warning:".yellow.bold + " no tagged versions found"
+            requirement = .read()
         }
         
-        verboseLog("Resolving at version: \(dependencyVersion)")
+        verboseLog("Resolving at version: \(requirement)")
         
         var package = try Package.load()
-        package.addDependency(ref: ref, version: dependencyVersion)
+        package.addDependency(ref: ref, requirement: requirement)
         if let targetString = targets.value {
             let targets = targetString.components(separatedBy: ",")
             try targets.forEach { try package.depend(target: $0, on: ref.name) }

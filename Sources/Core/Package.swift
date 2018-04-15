@@ -39,6 +39,17 @@ public struct Package: Decodable {
             public let lowerBound: String?
             public let upperBound: String?
             public let identifier: String?
+            
+            public init(type: RequirementType, lowerBound: String?, upperBound: String?, identifier: String?) {
+                self.type = type
+                self.lowerBound = lowerBound
+                self.upperBound = upperBound
+                self.identifier = identifier
+            }
+            
+            public init(version: Version){
+                self.init(type: .range, lowerBound: version.raw, upperBound: Version(version.major + 1, 0, 0).raw, identifier: nil)
+            }
         }
         
         public let url: String
@@ -130,18 +141,18 @@ public struct Package: Decodable {
     
     // MARK: - Dependencies
     
-    public mutating func addDependency(ref: RepositoryReference, version: Version) {
+    public mutating func addDependency(ref: RepositoryReference, requirement: Dependency.Requirement) {
         dependencies.append(Dependency(
             url: ref.url,
-            requirement: requirement(for: version))
-        )
+            requirement: requirement
+        ))
     }
     
-    public mutating func updateDependency(dependency: Dependency, to version: Version) throws {
+    public mutating func updateDependency(dependency: Dependency, to requirement: Dependency.Requirement) throws {
         guard let index = dependencies.index(where: { $0.url == dependency.url }) else {
             throw IceError(message: "can't update dependency \(dependency.url)")
         }
-        dependencies[index].requirement = requirement(for: version)
+        dependencies[index].requirement = requirement
     }
     
     public mutating func removeDependency(named name: String) throws {

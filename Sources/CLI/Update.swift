@@ -27,22 +27,22 @@ class UpdateCommand: Command {
             throw IceError(message: "No dependency found with that name")
         }
         
-        let depVersion: Version
+        let requirement: Package.Dependency.Requirement
         if let argVersion = version.value {
-            guard let typedVersion = Version(argVersion) else {
-                throw IceError(message: "Invalid version format \"\(argVersion)\"")
+            guard Package.Dependency.Requirement.validate(argVersion) else {
+                throw IceError(message: "invalid requirement")
             }
-            depVersion = typedVersion
+            requirement = .create(from: argVersion)
         } else {
-            depVersion = try inputVersion(for: dep)
+            requirement = try inputVersion(for: dep)
         }
         
-        try package.updateDependency(dependency: dep, to: depVersion)
+        try package.updateDependency(dependency: dep, to: requirement)
         
         try package.write()
     }
     
-    private func inputVersion(for dep: Package.Dependency) throws -> Version {
+    private func inputVersion(for dep: Package.Dependency) throws -> Package.Dependency.Requirement {
         stdout <<< ""
         let current = currentVersion(of: dep)
         stdout <<< "Current version: ".dim + current
@@ -66,9 +66,7 @@ class UpdateCommand: Command {
             stdout <<< ""
         }
         
-        stdout <<< "Input new version:"
-        stdout <<< ""
-        let chosen: Version = Input.readObject(prompt: "> ")
+        let chosen = Package.Dependency.Requirement.read()
         stdout <<< ""
         
         return chosen

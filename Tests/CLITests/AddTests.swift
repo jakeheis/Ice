@@ -114,9 +114,7 @@ class AddTests: XCTestCase {
         XCTAssertEqual(result.stdout, "")
         XCTAssertEqual(result.stderr, "")
         
-        XCTAssertEqual(
-            sandboxedFileContents("Package.swift"),
-            """
+        XCTAssertEqual(sandboxedFileContents("Package.swift"), """
         // swift-tools-version:4.0
         // Managed by ice
 
@@ -130,6 +128,64 @@ class AddTests: XCTestCase {
             ],
             targets: [
                 .target(name: "Exec", dependencies: ["SwiftCLI", "Spawn"]),
+            ]
+        )
+
+        """)
+    }
+    
+    func testBranchAdd() {
+        let result = Runner.execute(args: ["add", "jakeheis/SwiftCLI", "master", "-n"], sandbox: .lib)
+        XCTAssertEqual(result.exitStatus, 0)
+        XCTAssertEqual(result.stdout, "")
+        XCTAssertEqual(result.stderr, "")
+        
+        XCTAssertEqual(sandboxedFileContents("Package.swift"), """
+        // swift-tools-version:4.0
+        // Managed by ice
+
+        import PackageDescription
+
+        let package = Package(
+            name: "Lib",
+            products: [
+                .library(name: "Lib", targets: ["Lib"]),
+            ],
+            dependencies: [
+                .package(url: "https://github.com/jakeheis/SwiftCLI", .branchItem("master")),
+            ],
+            targets: [
+                .target(name: "Lib", dependencies: []),
+                .testTarget(name: "LibTests", dependencies: ["Lib"]),
+            ]
+        )
+
+        """)
+    }
+    
+    func testSHAAdd() {
+        let result = Runner.execute(args: ["add", "jakeheis/SwiftCLI", "51ba542611878b2e64e82467b895fdf4240ec32e", "-n"], sandbox: .lib)
+        XCTAssertEqual(result.exitStatus, 0)
+        XCTAssertEqual(result.stdout, "")
+        XCTAssertEqual(result.stderr, "")
+        
+        XCTAssertEqual(sandboxedFileContents("Package.swift"), """
+        // swift-tools-version:4.0
+        // Managed by ice
+
+        import PackageDescription
+
+        let package = Package(
+            name: "Lib",
+            products: [
+                .library(name: "Lib", targets: ["Lib"]),
+            ],
+            dependencies: [
+                .package(url: "https://github.com/jakeheis/SwiftCLI", .revision("51ba542611878b2e64e82467b895fdf4240ec32e")),
+            ],
+            targets: [
+                .target(name: "Lib", dependencies: []),
+                .testTarget(name: "LibTests", dependencies: ["Lib"]),
             ]
         )
 

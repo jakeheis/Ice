@@ -9,12 +9,6 @@ import SwiftCLI
 import Core
 import FileKit
 
-struct InitializerOptions {
-    static let library = Flag("-l", "--lib", "--library")
-    static let executable = Flag("-e", "--exec", "--executable")
-    static let typeGroup =  OptionGroup(options: [library, executable], restriction: .atMostOne)
-}
-
 class NewCommand: Command {
 
     let name = "new"
