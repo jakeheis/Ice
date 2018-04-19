@@ -152,7 +152,7 @@ class PipeStreamRecord {
 public func niceFatalError(_ message: String, file: StaticString = #file, line: UInt = #line) -> Never {
     WriteStream.stderr <<< "\n\nFatal error:".bold.red + " \(message)\n"
     if _isDebugAssertConfiguration() {
-        printError("\(file):\(line)\n")
+        WriteStream.stderr <<< "\(file):\(line)\n"
     }
     exit(1)
 }

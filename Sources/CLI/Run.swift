@@ -14,7 +14,8 @@ class RunCommand: Command {
     let name = "run"
     let shortDescription = "Runs the executable of the current package"
     
-    let executable = OptionalCollectedParameter()
+    let executable = OptionalParameter()
+    let args = OptionalCollectedParameter()
     
     let release = Flag("-r", "--release")
     let watch = Flag("-w", "--watch")
@@ -28,12 +29,17 @@ class RunCommand: Command {
             let watcher = try SourceWatcher() {
                 self.stdout <<< "[ice] restarting due to changes...".green
                 self.task?.interrupt()
-                self.task = try? spm.run(release: self.release.value, executable: self.executable.value ?? [])
+                self.task = try? spm.run(release: self.release.value, executable: self.spmRunArguments())
             }
             try watcher.go()
         } else {
-            try spm.execRun(release: release.value, executable: executable.value ?? [])
+            try spm.execRun(release: release.value, executable: spmRunArguments())
         }
+    }
+    
+    private func spmRunArguments() -> [String] {
+        let name = executable.value.flatMap({ [$0] }) ?? []
+        return name + args.value
     }
     
 }
