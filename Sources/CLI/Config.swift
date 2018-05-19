@@ -24,7 +24,6 @@ unrecognized config key
 
 Valid keys:
 
-  bin           the directory to which Ice should symlink global executables; defaults to /usr/bin/local/bin
   reformat      whether Ice should organize your Package.swift (alphabetize, etc.); defaults to false
 """)
 
@@ -54,8 +53,6 @@ class GetConfigCommand: Command {
         }
         let value: Any
         switch key {
-        case .bin:
-            value = Ice.config.get(\.bin)
         case .reformat:
             value = Ice.config.get(\.reformat)
         }
@@ -75,8 +72,6 @@ class SetConfigCommand: Command {
             throw unrecognizedKeyError
         }
         switch key {
-        case .bin:
-            try Ice.config.set(\.bin, value: value.value)
         case .reformat:
             let val: Bool
             switch value.value.lowercased() {

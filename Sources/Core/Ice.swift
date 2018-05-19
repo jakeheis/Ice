@@ -40,11 +40,6 @@ public class Ice {
         return Registry(registryPath: Paths.registryDirectory)
     }()
     
-//    public static let global: Global = {
-//        setup()
-//        return Global(packagesPath: Paths.packagesDirectory, config: config)
-//    }()
-    
     public static func setup() {
         if Paths.root.exists {
             return

@@ -11,7 +11,6 @@ import XCTest
     public func allTests() -> [XCTestCaseEntry] {
         return [
             testCase(ConfigTests.allTests),
-            testCase(GlobalTests.allTests),
             testCase(PackageTests.allTests),
             testCase(PacakgeWriterTests.allTests),
             testCase(RegistryTests.allTests),

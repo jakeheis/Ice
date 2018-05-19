@@ -15,7 +15,6 @@ import XCTest
             testCase(CleanTests.allTests),
             testCase(ConfigTests.allTests),
             testCase(DumpTests.allTests),
-            testCase(GlobalTests.allTests),
             testCase(InitTests.allTests),
             testCase(NewTests.allTests),
             testCase(ProductTests.allTests),
