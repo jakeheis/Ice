@@ -22,19 +22,13 @@ A few features Ice has that SPM lacks:
 mint install jakeheis/Ice
 ```
 
-### Homebrew
-
-```bash
-brew install jakeheis/repo/ice
-```
-
 ### Manual
 
 ```bash
 git clone https://github.com/jakeheis/Ice
 cd Ice
 swift build -c release
-ln -s .build/release/ice /usr/bin/local/ice
+mv .build/release/ice /usr/bin/local/ice
 ```
 
 ## Better output
