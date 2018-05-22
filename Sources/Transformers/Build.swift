@@ -46,6 +46,8 @@ class BuildErr: BaseTransformer {
             stream.consume()
         } else if let internalError = stream.match(InternalErrorLine.self) {
             internalError.print(to: stderr)
+        } else if let internalWarning = stream.match(InternalWarningLine.self) {
+            internalWarning.print(to: stderr)
         }
     }
 }

@@ -43,6 +43,17 @@ final class InternalErrorLine: Matcher, Matchable {
     }
 }
 
+final class InternalWarningLine: Matcher, Matchable {
+    static let regex = Regex("warning: (.*)$")
+    var message: String { return captures[0] }
+    
+    func print(to out: WritableStream) {
+        out <<< ""
+        out <<< "Warning: ".bold.yellow + message
+        out <<< ""
+    }
+}
+
 final class InternalNoteLine: Matcher, Matchable {
     static let regex = Regex("^note: (.*)$")
     var message: String { return captures[0] }

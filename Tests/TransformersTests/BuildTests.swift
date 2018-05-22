@@ -241,6 +241,17 @@ class BuildTests: XCTestCase {
         """)
     }
     
+    func testUnusedWarning() {
+        let build = TransformerTest(transformer: BuildErr(), isStdout: false)
+        build.send("warning: dependency 'SwiftCLI' is not used by any target")
+        build.expect("""
+        
+        Warning: dependency 'SwiftCLI' is not used by any target
+
+        
+        """)
+    }
+    
     private func createTest() -> TransformerTest {
         return TransformerTest(transformer: BuildOut(), isStdout: true)
     }
