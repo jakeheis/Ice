@@ -5,9 +5,9 @@
 //  Created by Jake Heiser on 8/27/17.
 //
 
+import FileKit
 import Foundation
 import SwiftCLI
-import FileKit
 
 public struct Package: Decodable {
     

@@ -131,13 +131,11 @@ public class SPM {
             if error.captured.stderr.isEmpty {
                 message = nil
             } else {
-                let errorText: String
-                if let match = Regex("^[eE]rror: (.*)$").firstMatch(in: error.captured.stderr), let rest = match.captures[0] {
-                    errorText = rest
+                if let match = Regex("[eE]rror: (.*)$").firstMatch(in: error.captured.stderr), let rest = match.captures[0] {
+                    message = rest
                 } else {
-                    errorText = error.captured.stderr
+                    message = error.captured.stderr
                 }
-                message = "\nError: ".red.bold + errorText + "\n"
             }
             
             throw IceError(message: message, exitStatus: error.exitStatus)

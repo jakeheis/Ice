@@ -25,7 +25,7 @@ class AddCommand: Command {
             throw IceError(message: "not a valid package reference")
         }
         
-        verboseLog("Resolving url: \(ref.url)")
+        verboseOut <<< "Resolving url: \(ref.url)"
         
         let requirement: Package.Dependency.Requirement
         if let versionValue = version.value {
@@ -40,9 +40,12 @@ class AddCommand: Command {
             requirement = .read()
         }
         
-        verboseLog("Resolving at version: \(requirement)")
+        verboseOut <<< "Resolving at version: \(requirement)"
         
         var package = try Package.load()
+        
+        verboseOut <<< "Loaded package: \(package.name)"
+        
         package.addDependency(ref: ref, requirement: requirement)
         if let targetString = targets.value {
             let targets = targetString.components(separatedBy: ",")

@@ -57,3 +57,8 @@ extension Package.Dependency.Requirement {
     
 }
 
+extension Command {
+    var verboseOut: WriteStream {
+        return verbose.value ? WriteStream.stdout : WriteStream.null
+    }
+}
