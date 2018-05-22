@@ -17,9 +17,9 @@ public struct RepositoryReference {
     }
     
     public init?(_ blob: String) {
-        if Regex("^[a-zA-Z]+/[a-zA-Z]+$").matches(blob) {
+        if Regex("^[a-zA-Z\\-]+/[a-zA-Z\\-]+$").matches(blob) {
             self.init(url: "https://github.com/\(blob)")
-        } else if let match = Regex("^(gh|gl):([a-zA-Z]+/[a-zA-Z]+)$").firstMatch(in: blob)  {
+        } else if let match = Regex("^(gh|gl):([a-zA-Z\\-]+/[a-zA-Z\\-]+)$").firstMatch(in: blob)  {
             let path = match.captures[1]!
             let url: String
             if match.captures[0] == "gh" {
@@ -28,7 +28,7 @@ public struct RepositoryReference {
                 url = "https://gitlab.com/\(path)"
             }
             self.init(url: url)
-        } else if Regex("^[a-zA-Z]+$").matches(blob) {
+        } else if Regex("^[a-zA-Z\\-]+$").matches(blob) {
             if let entry = Ice.registry.get(blob) {
                 self.init(url: entry.url)
             } else {
