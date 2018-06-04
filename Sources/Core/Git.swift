@@ -33,7 +33,7 @@ class Git {
     private static func runGit(args: [String], silent: Bool, timeout: Int? = nil) throws {
         let stdout: WriteStream = silent ? .null : .stdout
         let stderr: WriteStream = silent ? .null : .stderr
-        let task = Task(executable: "git", args: args, stdout: stdout, stderr: stderr)
+        let task = Task(executable: "git", arguments: args, stdout: stdout, stderr: stderr)
         
         let interruptItem = createInterruptItem(task: task, timeout: timeout)
         
@@ -47,7 +47,7 @@ class Git {
     }
     
     private static func captureGit(_ args: String...) throws -> CaptureResult {
-        return try capture("git", args)
+        return try capture("git", arguments: args)
     }
     
     private static func createInterruptItem(task: Task, timeout: Int?) -> DispatchWorkItem? {

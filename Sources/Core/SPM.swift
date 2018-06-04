@@ -46,14 +46,14 @@ public class SPM {
     
     public func run(release: Bool, executable: [String]) throws -> Task {
         let arguments = try runArguments(release: release, executable: executable)
-        let task = Task(executable: "swift", args: arguments)
+        let task = Task(executable: "swift", arguments: arguments)
         task.runAsync()
         return task
     }
     
     public func execRun(release: Bool, executable: [String]) throws -> Never {
         let arguments = try runArguments(release: release, executable: executable)
-        try Task.execvp("swift", arguments)
+        try Task.execvp("swift", arguments: arguments)
     }
     
     public func test(filter: String?) throws {
@@ -114,7 +114,7 @@ public class SPM {
         let stdout: WritableStream = transformer?.createStdout() ?? WriteStream.stdout
         let stderr: WritableStream = transformer?.createStderr() ?? WriteStream.stderr
         
-        let task = Task(executable: "swift", args: args, stdout: stdout, stderr: stderr)
+        let task = Task(executable: "swift", arguments: args, stdout: stdout, stderr: stderr)
         let result = task.runSync()
         transformer?.wait()
         
@@ -125,7 +125,7 @@ public class SPM {
     
     private func captureSwift(args: [String]) throws -> CaptureResult {
         do {
-            return try capture("swift", args)
+            return try capture("swift", arguments: args)
         } catch let error as CaptureError {
             let message: String?
             if error.captured.stderr.isEmpty {
