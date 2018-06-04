@@ -81,11 +81,11 @@ public class SPM {
     }
     
     public func update() throws {
-        try runSwift(args: ["package", "generate-xcodeproj"], transformer: .resolve)
+        try runSwift(args: ["package", "update"], transformer: .resolve)
     }
 
     public func generateXcodeProject() throws {
-        try runSwift(args: ["package", "generate-xcodeproj"])
+        try runSwift(args: ["package", "generate-xcodeproj"], transformer: .resolve)
     }
     
     public func showBinPath(release: Bool = false) throws -> String {
