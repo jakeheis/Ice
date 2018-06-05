@@ -23,6 +23,8 @@ class UpdateTests: XCTestCase {
         XCTAssertEqual(result.exitStatus, 0)
         XCTAssertEqual(result.stderr, "")
         XCTAssertEqual(result.stdout, """
+        Update https://github.com/jakeheis/SwiftCLI
+        Resolve https://github.com/jakeheis/SwiftCLI at 4.3.2
         
         """)
     }

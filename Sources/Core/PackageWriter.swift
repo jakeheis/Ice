@@ -10,23 +10,25 @@ import SwiftCLI
 
 class PackageWriter {
     
-    let out: WritableStream
+    private let out: IndentStream
     
     init(stream: WritableStream) {
-        self.out = stream
+        self.out = IndentStream(out: stream)
     }
     
     func write(package: Package) {
         writeStart()
-        writeName(package.name)
-        writePkgConfig(package.pkgConfig)
-        writeProviders(package.providers)
-        writeProducts(package.products)
-        writeDependencies(package.dependencies)
-        writeTargets(package.targets)
-        writeSwiftLanguageVersion(package.swiftLanguageVersions)
-        writeCLangaugeStandard(package.cLanguageStandard)
-        writeCxxLangaugeStandard(package.cxxLanguageStandard)
+        out.indent {
+            writeName(package.name)
+            writePkgConfig(package.pkgConfig)
+            writeProviders(package.providers)
+            writeProducts(package.products)
+            writeDependencies(package.dependencies)
+            writeTargets(package.targets)
+            writeSwiftLanguageVersion(package.swiftLanguageVersions)
+            writeCLangaugeStandard(package.cLanguageStandard)
+            writeCxxLangaugeStandard(package.cxxLanguageStandard)
+        }
         writeEnd()
     }
     
@@ -42,12 +44,12 @@ class PackageWriter {
     }
     
     func writeName(_ name: String) {
-        out <<< "    name: \(name.quoted),"
+        out <<< "name: \(name.quoted),"
     }
     
     func writePkgConfig(_ pkgConfig: String?) {
         if let pkgConfig = pkgConfig {
-            out <<< "    pkgConfig: \(pkgConfig.quoted),"
+            out <<< "pkgConfig: \(pkgConfig.quoted),"
         }
     }
     
@@ -55,12 +57,12 @@ class PackageWriter {
         guard let providers = providers, !providers.isEmpty else {
             return
         }
-        out <<< "    providers: ["
-        for provider in providers {
+        out <<< "providers: ["
+        out.indentEach(providers) { (provider) in
             let values = provider.values.map { $0.quoted }.joined(separator: ", ")
-            out <<< "        .\(provider.name)([\(values)]),"
+            out <<< ".\(provider.name)([\(values)]),"
         }
-        out <<< "    ],"
+        out <<< "],"
     }
     
     func writeProducts(_ products: [Package.Product]) {
@@ -68,8 +70,8 @@ class PackageWriter {
             return
         }
         
-        out <<< "    products: ["
-        for product in products {
+        out <<< "products: ["
+        out.indentEach(products) { (product) in
             let targetsPortion = product.targets.map { $0.quoted }.joined(separator: ", ")
             let typePortion: String
             if let type = product.type {
@@ -77,9 +79,9 @@ class PackageWriter {
             } else {
                 typePortion = ""
             }
-            out <<< "        .\(product.product_type)(name: \(product.name.quoted)\(typePortion), targets: [\(targetsPortion)]),"
+            out <<< ".\(product.product_type)(name: \(product.name.quoted)\(typePortion), targets: [\(targetsPortion)]),"
         }
-        out <<< "    ],"
+        out <<< "],"
     }
     
     func writeDependencies(_ dependencies: [Package.Dependency]) {
@@ -87,8 +89,8 @@ class PackageWriter {
             return
         }
         
-        out <<< "    dependencies: ["
-        for dependency in dependencies {
+        out <<< "dependencies: ["
+        out.indentEach(dependencies) { (dependency) in
             let versionPortion: String
             
             if dependency.requirement.type == .range {
@@ -117,19 +119,18 @@ class PackageWriter {
                 versionPortion = ".\(function)(\(identifier.quoted))"
             }
             
-            out <<< "        .package(url: \(dependency.url.quoted), \(versionPortion)),"
+            out <<< ".package(url: \(dependency.url.quoted), \(versionPortion)),"
         }
-        out <<< "    ],"
+        out <<< "],"
     }
     
     func writeTargets(_ targets: [Package.Target]) {
         if targets.isEmpty {
-            out <<< "    targets: []"
+            out <<< "targets: []"
         } else {
-            out <<< "    targets: ["
-            for target in targets {
-                var line = "        "
-                line += target.isTest ? ".testTarget" : ".target"
+            out <<< "targets: ["
+            out.indentEach(targets) { (target) in
+                var line = target.isTest ? ".testTarget" : ".target"
                 line += "(name: \(target.name.quoted)"
                 line += ", dependencies: [" + target.dependencies.map { $0.name.quoted }.joined(separator: ", ") + "]"
                 if let path = target.path {
@@ -147,21 +148,21 @@ class PackageWriter {
                 line += "),"
                 out <<< line
             }
-            out <<< "    ]"
+            out <<< "]"
         }
     }
     
     func writeSwiftLanguageVersion(_ versions: [Int]?) {
         if let versions = versions {
             let stringVersions = versions.map(String.init).joined(separator: ", ")
-            out <<< "    swiftLanguageVersions: [\(stringVersions)],"
+            out <<< "swiftLanguageVersions: [\(stringVersions)],"
         }
     }
     
     func writeCLangaugeStandard(_ standard: String?) {
         if let standard = standard {
             let converted = standard.replacingOccurrences(of: ":", with: "_")
-            out <<< "    cLanguageStandard: .\(converted),"
+            out <<< "cLanguageStandard: .\(converted),"
         }
     }
     
@@ -170,7 +171,7 @@ class PackageWriter {
             let converted = standard
                 .replacingOccurrences(of: "c++", with: "cxx")
                 .replacingOccurrences(of: "gnu++", with: "gnucxx")
-            out <<< "    cxxLanguageStandard: .\(converted),"
+            out <<< "cxxLanguageStandard: .\(converted),"
         }
     }
     
@@ -178,4 +179,40 @@ class PackageWriter {
         out <<< ")"
     }
     
+}
+
+// MARK: -
+
+private class IndentStream {
+    
+    let out: WritableStream
+    
+    private var indentationLevel = 0
+    
+    init(out: WritableStream) {
+        self.out = out
+    }
+    
+    func print(_ content: String) {
+        out <<< String(repeating: "    ", count: indentationLevel) + content
+    }
+    
+    func indent(_ go: () -> ()) {
+        indentationLevel += 1
+        go()
+        indentationLevel -= 1
+    }
+    
+    func indentEach<T>(_ objects: [T], _ each: (T) -> ()) {
+        indent {
+            for obj in objects {
+                each(obj)
+            }
+        }
+    }
+    
+}
+
+private func <<<(stream: IndentStream, text: String) {
+    stream.print(text)
 }

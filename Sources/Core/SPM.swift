@@ -85,7 +85,7 @@ public class SPM {
     }
 
     public func generateXcodeProject() throws {
-        try runSwift(args: ["package", "generate-xcodeproj"], transformer: .resolve)
+        try runSwift(args: ["package", "generate-xcodeproj"], transformer: .xc)
     }
     
     public func showBinPath(release: Bool = false) throws -> String {

@@ -154,7 +154,7 @@ class Runner {
         
         let out = PipeStream()
         let err = PipeStream()
-        let task = Task(executable: FileManager.default.currentDirectoryPath + "/.build/debug/ice", args: args, currentDirectory: processWorkingDirectory, stdout: out, stderr: err)
+        let task = Task(executable: FileManager.default.currentDirectoryPath + "/.build/debug/ice", arguments: args, directory: processWorkingDirectory, stdout: out, stderr: err)
         task.env["ICE_GLOBAL_ROOT"] = "global"
         
         let interrruptItem = DispatchWorkItem {

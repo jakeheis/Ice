@@ -17,7 +17,7 @@ class XcTests: XCTestCase {
         let result = Runner.execute(args: ["xc", "-n"], sandbox: .lib)
         XCTAssertEqual(result.exitStatus, 0)
         XCTAssertEqual(result.stdout, """
-        generated: ./Lib.xcodeproj
+        Generated Lib.xcodeproj
         
         """)
         XCTAssertEqual(result.stderr, "")

@@ -16,6 +16,7 @@ import XCTest
             testCase(ResolveTests.allTests),
             testCase(TestTests.allTests),
             testCase(UpdateTests.allTests),
+            testCase(XcTests.allTests),
         ]
     }
 #endif
