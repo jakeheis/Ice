@@ -11,7 +11,7 @@ import Core
 class RemoveCommand: Command {
     
     let name = "remove"
-    let shortDescription = "Removes a dependency from the current pacakge"
+    let shortDescription = "Removes a dependency from the current package"
     
     let package = Parameter()
 
