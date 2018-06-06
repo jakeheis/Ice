@@ -7,6 +7,7 @@ let package = Package(
     name: "Ice",
     products: [
         .executable(name: "ice", targets: ["CLI"]),
+        .library(name: "Ice", targets: ["Core"]),
     ],
     dependencies: [
         .package(url: "https://github.com/jakeheis/FileKit", from: "4.1.0"),
