@@ -33,7 +33,9 @@ ice.commands = [
     TargetGroup(),
     TestCommand(),
     UpdateCommand(),
+    VersionCommand(),
     XcCommand()
 ]
 ice.globalOptions = [_verbose]
+ice.versionCommand = nil
 ice.goAndExit()

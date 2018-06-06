@@ -25,6 +25,7 @@ import XCTest
             testCase(TargetTests.allTests),
             testCase(TestTests.allTests),
             testCase(UpdateTests.allTests),
+            testCase(VersionTests.allTests),
             testCase(XcTests.allTests),
         ]
     }
