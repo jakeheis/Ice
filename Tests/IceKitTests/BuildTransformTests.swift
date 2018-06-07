@@ -253,29 +253,30 @@ class BuildTransformTests: XCTestCase {
         """)
     }
     
-//    func testLinkerError() {
-//        let build = createTest()
-//        build.send("""
-//        Linking ./.build/x86_64-apple-macosx10.10/debug/IcePackageTests.xctest/Contents/MacOS/IcePackageTests
-//        Undefined symbols for architecture x86_64:
-//          "__T08SwiftCLI10PipeStreamC04readD0AA04ReadD0CvpWvd", referenced from:
-//              __T06IceKit15TransformerPairC12createStream33_79BB931AD0437A76696F68B8086A823ALL8SwiftCLI08WritableF0_pAA04BaseC0_p11transformer_tFyycfU_ in Transformer.swift.o
-//          "__T08SwiftCLI10PipeStreamCAA08ReadableD0AAWP", referenced from:
-//        ld: symbol(s) not found for architecture x86_64
-//        <unknown>:0: error: link command failed with exit code 1 (use -v to see invocation)
-//        """)
-//        build.expect("""
-//        Link ./.build/x86_64-apple-macosx10.10/debug/IcePackageTests.xctest/Contents/MacOS/IcePackageTests
-//        Undefined symbols for architecture x86_64
-//          "__T08SwiftCLI10PipeStreamC04readD0AA04ReadD0CvpWvd", referenced from:
-//              __T06IceKit15TransformerPairC12createStream33_79BB931AD0437A76696F68B8086A823ALL8SwiftCLI08WritableF0_pAA04BaseC0_p11transformer_tFyycfU_ in Transformer.swift.o
-//          "__T08SwiftCLI10PipeStreamCAA08ReadableD0AAWP", referenced from:
-//        ld: symbol(s) not found for architecture x86_64
-//
-//          ● Error: link command failed with exit code 1 (use -v to see invocation)
-//
-//        """)
-//    }
+    func testLinkerError() {
+        let build = createTest()
+        build.send("""
+        Linking ./.build/x86_64-apple-macosx10.10/debug/IcePackageTests.xctest/Contents/MacOS/IcePackageTests
+        Undefined symbols for architecture x86_64:
+          "__T08SwiftCLI10PipeStreamC04readD0AA04ReadD0CvpWvd", referenced from:
+              __T06IceKit15TransformerPairC12createStream33_79BB931AD0437A76696F68B8086A823ALL8SwiftCLI08WritableF0_pAA04BaseC0_p11transformer_tFyycfU_ in Transformer.swift.o
+          "__T08SwiftCLI10PipeStreamCAA08ReadableD0AAWP", referenced from:
+        ld: symbol(s) not found for architecture x86_64
+        <unknown>:0: error: link command failed with exit code 1 (use -v to see invocation)
+        """)
+        build.expect("""
+        Link ./.build/x86_64-apple-macosx10.10/debug/IcePackageTests.xctest/Contents/MacOS/IcePackageTests
+        Undefined symbols for architecture x86_64:
+          "__T08SwiftCLI10PipeStreamC04readD0AA04ReadD0CvpWvd", referenced from:
+              __T06IceKit15TransformerPairC12createStream33_79BB931AD0437A76696F68B8086A823ALL8SwiftCLI08WritableF0_pAA04BaseC0_p11transformer_tFyycfU_ in Transformer.swift.o
+          "__T08SwiftCLI10PipeStreamCAA08ReadableD0AAWP", referenced from:
+        ld: symbol(s) not found for architecture x86_64
+
+          ● Error: link command failed with exit code 1 (use -v to see invocation)
+
+        
+        """)
+    }
     
     private func createTest() -> TransformerTest {
         return TransformerTest(transformer: BuildOut(), isStdout: true)

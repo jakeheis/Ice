@@ -35,6 +35,14 @@ class BuildOut: BaseTransformer {
             stream.consume()
         } else if let line = stream.match(UnknownErrorLine.self) {
             stdout.print(type: line.type, message: line.message)
+        } else if let linkerError = stream.match(LinkerErrorStartLine.self) {
+            stdout <<< linkerError.text
+            while stream.isOpen() && !stream.nextIs(LinkerErrorEndLine.self) {
+                let line = stream.require(AnyLine.self)
+                stdout <<< line.text
+            }
+            let line = stream.require(AnyLine.self)
+            stdout <<< line.text
         }
     }
     

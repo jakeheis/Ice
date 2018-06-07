@@ -72,5 +72,14 @@ final class WarningsGeneratedLine: Matcher, Matchable {
     static let regex = Regex("^[0-9]+ warnings? generated\\.$")
 }
 
+final class LinkerErrorStartLine: Matcher, Matchable {
+    static let regex = Regex("^(Undefined symbols.*)$")
+    var text: String { return captures[0] }
+}
+
+final class LinkerErrorEndLine: Matcher, Matchable {
+    static let regex = Regex("^ld:")
+}
+
 typealias CodeLine = AnyLine
 typealias SuggestionLine = AnyLine
