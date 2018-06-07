@@ -12,8 +12,8 @@ import SwiftCLI
 public struct Package: Decodable {
     
     public struct Provider: Decodable {
-        let name: String
-        let values: [String]
+        public let name: String
+        public let values: [String]
     }
     
     public struct Product: Decodable {
@@ -58,7 +58,7 @@ public struct Package: Decodable {
     
     public struct Target: Decodable {
         public struct Dependency: Decodable {
-            let name: String
+            public let name: String
         }
         
         public let name: String
@@ -68,18 +68,6 @@ public struct Package: Decodable {
         public let exclude: [String]
         public let sources: [String]?
         public let publicHeadersPath: String?
-    }
-    
-    private enum CodingKeys: String, CodingKey {
-        case name
-        case pkgConfig
-        case providers
-        case products
-        case dependencies
-        case targets
-        case swiftLanguageVersions
-        case cLanguageStandard
-        case cxxLanguageStandard
     }
     
     public static let path = Path("Package.swift")
@@ -94,8 +82,8 @@ public struct Package: Decodable {
     public let cLanguageStandard: String?
     public let cxxLanguageStandard: String?
     
-    public static func load() throws -> Package {
-        let data = try SPM().dumpPackage()
+    public static func load(in directory: Path = ".") throws -> Package {
+        let data = try SPM(directory: directory).dumpPackage()
         return try load(data: data)
     }
     
@@ -226,19 +214,20 @@ public struct Package: Decodable {
     
     // MARK: -
     
-    public func write(to stream: WritableStream? = nil) throws {
+    public func write(to stream: WritableStream? = nil, directory: Path = Path.current) throws {
         let writeStream: WritableStream
         if let stream = stream {
             writeStream = stream
         } else {
-            try "".write(to: Package.path) // Overwrite file
-            guard let fileStream = WriteStream(path: Package.path.rawValue) else  {
-                throw IceError(message: "Couldn't write to \(Package.path)")
+            let path = directory + Package.path
+            try "".write(to: path) // Overwrite file
+            guard let fileStream = WriteStream(path: path.rawValue) else  {
+                throw IceError(message: "couldn't write to \(path)")
             }
             writeStream = fileStream
         }
         
-        let writePackage = Ice.config.get(\.reformat) ? formatted() : self
+        let writePackage = Ice.config.get(\.reformat, directory: directory) ? formatted() : self
         let writer = PackageWriter(stream: writeStream)
         writer.write(package: writePackage)
     }
@@ -249,7 +238,7 @@ public struct Package: Decodable {
 
 extension Package {
     
-    func formatted() -> Package {
+    public func formatted() -> Package {
         return Package(
             name: name,
             pkgConfig: pkgConfig,

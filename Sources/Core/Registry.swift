@@ -135,8 +135,8 @@ public struct RegistryEntry: Codable {
 
 private struct RegistryFile: Codable {
     
-    public var entries: [RegistryEntry]
-    public var lastRefreshed: Date?
+    var entries: [RegistryEntry]
+    var lastRefreshed: Date?
     
     static func load(from path: Path) -> RegistryFile? {
         guard let data = try? Data.read(from: path),

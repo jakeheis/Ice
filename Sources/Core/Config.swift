@@ -12,23 +12,21 @@ public class Config {
     
     let globalPath: Path
     
-    public let localConfig: ConfigFile?
     public private(set) var globalConfig: ConfigFile?
     
     init(globalConfigPath: Path) {
         globalPath = globalConfigPath
-        localConfig = ConfigFile.from(path: Path.current + "ice.json")
         globalConfig = ConfigFile.from(path: globalPath)
     }
     
-    public func get<T>(_ path: KeyPath<ConfigFile, T?>) -> T {
-        if let localConfig = localConfig, let value = localConfig[keyPath: path] {
+    public func get<T>(_ keyPath: KeyPath<ConfigFile, T?>, directory: Path = Path.current) -> T {
+        if let localConfig = ConfigFile.from(path: directory + "ice.json"), let value = localConfig[keyPath: keyPath] {
             return value
         }
-        if let globalConfig = globalConfig, let value = globalConfig[keyPath: path] {
+        if let globalConfig = globalConfig, let value = globalConfig[keyPath: keyPath] {
             return value
         }
-        return ConfigFile.defaultConfig[keyPath: path]!
+        return ConfigFile.defaultConfig[keyPath: keyPath]!
     }
     
     public func set<T>(_ path: WritableKeyPath<ConfigFile, T?>, value: T) throws {

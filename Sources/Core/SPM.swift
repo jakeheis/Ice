@@ -5,6 +5,7 @@
 //  Created by Jake Heiser on 7/21/17.
 //
 
+import FileKit
 import Foundation
 import Regex
 import SwiftCLI
@@ -12,7 +13,11 @@ import Transformers
 
 public class SPM {
     
-    public init() {}
+    public let directory: Path
+    
+    public init(directory: Path = ".") {
+        self.directory = directory
+    }
     
     public enum InitType: String {
         case executable
@@ -45,15 +50,15 @@ public class SPM {
     }
     
     public func run(release: Bool, executable: [String]) throws -> Task {
-        let arguments = try runArguments(release: release, executable: executable)
-        let task = Task(executable: "swift", arguments: arguments)
+        let arguments = try formArgumentsForRun(release: release, executable: executable)
+        let task = Task(executable: "swift", arguments: arguments, directory: directory.rawValue)
         task.runAsync()
         return task
     }
     
-    public func execRun(release: Bool, executable: [String]) throws -> Never {
-        let arguments = try runArguments(release: release, executable: executable)
-        try Task.execvp("swift", arguments: arguments)
+    public func runWithoutReturning(release: Bool, executable: [String]) throws -> Never {
+        let arguments = try formArgumentsForRun(release: release, executable: executable)
+        try Task.execvp("swift", arguments: arguments, directory: directory.rawValue)
     }
     
     public func test(filter: String?) throws {
@@ -114,7 +119,7 @@ public class SPM {
         let stdout: WritableStream = transformer?.createStdout() ?? WriteStream.stdout
         let stderr: WritableStream = transformer?.createStderr() ?? WriteStream.stderr
         
-        let task = Task(executable: "swift", arguments: args, stdout: stdout, stderr: stderr)
+        let task = Task(executable: "swift", arguments: args, directory: directory.rawValue, stdout: stdout, stderr: stderr)
         let result = task.runSync()
         transformer?.wait()
         
@@ -125,7 +130,7 @@ public class SPM {
     
     private func captureSwift(args: [String]) throws -> CaptureResult {
         do {
-            return try capture("swift", arguments: args)
+            return try capture("swift", arguments: args, directory: directory.rawValue)
         } catch let error as CaptureError {
             let message: String?
             if error.captured.stderr.isEmpty {
@@ -142,7 +147,7 @@ public class SPM {
         }
     }
     
-    private func runArguments(release: Bool, executable: [String]) throws -> [String] {
+    private func formArgumentsForRun(release: Bool, executable: [String]) throws -> [String] {
         try build(release: release)
 
         var args = ["run", "--skip-build"]

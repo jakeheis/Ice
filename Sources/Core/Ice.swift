@@ -11,7 +11,7 @@ import Transformers
 
 public class Ice {
     
-    public static let version = "0.5.0"
+    public static let version = "0.6.0"
     
     struct Paths {
         static let rootEnvKey = "ICE_GLOBAL_ROOT"
@@ -40,7 +40,7 @@ public class Ice {
         return Registry(registryPath: Paths.registryDirectory)
     }()
     
-    public static func setup() {
+    private static func setup() {
         if Paths.root.exists {
             return
         }

@@ -5,8 +5,8 @@
 //  Created by Jake Heiser on 8/30/17.
 //
 
-import SwiftCLI
 import Rainbow
+import SwiftCLI
 
 public struct IceError: SwiftCLI.ProcessError {
     public let message: String?

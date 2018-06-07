@@ -33,7 +33,7 @@ class RunCommand: Command {
             }
             try watcher.go()
         } else {
-            try spm.execRun(release: release.value, executable: spmRunArguments())
+            try spm.runWithoutReturning(release: release.value, executable: spmRunArguments())
         }
     }
     
