@@ -14,6 +14,8 @@ class BuildCommand: Command {
     let name = "build"
     let shortDescription = "Builds the current project"
     
+    let target = OptionalParameter()
+    
     let clean = Flag("-c", "--clean")
     let release = Flag("-r", "--release")
     let watch = Flag("-w", "--watch")
@@ -29,12 +31,12 @@ class BuildCommand: Command {
             let watcher = try SourceWatcher() {
                 do {
                     self.stdout <<< "[ice] rebuilding due to changes...".green
-                    try spm.build(release: self.release.value)
+                    try spm.build(release: self.release.value, target: self.target.value)
                 } catch {}
             }
             try watcher.go()
         } else {
-            try spm.build(release: release.value)
+            try spm.build(release: release.value, target: target.value)
         }
     }
     

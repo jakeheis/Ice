@@ -162,4 +162,24 @@ class BuildTests: XCTestCase {
         """)
     }
     
+    func testBuildTarget() {
+        let success = Runner.execute(args: ["build", "Lib"], sandbox: .lib)
+        XCTAssertEqual(success.exitStatus, 0)
+        XCTAssertEqual(success.stderr, "")
+        XCTAssertEqual(success.stdout, """
+        Compile Lib (1 sources)
+
+        """)
+        
+        let error = Runner.execute(args: ["build", "Library"], sandbox: .lib)
+        XCTAssertEqual(error.exitStatus, 1)
+        XCTAssertEqual(error.stdout, "")
+        XCTAssertEqual(error.stderr, """
+        
+        Error: no target named 'Library'
+
+        
+        """)
+    }
+    
 }

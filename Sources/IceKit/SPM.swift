@@ -33,7 +33,7 @@ public class SPM {
     
     // MARK: - Building
     
-    public func build(release: Bool, includeTests: Bool = false) throws {
+    public func build(release: Bool, includeTests: Bool = false, target: String? = nil) throws {
         // Resolve verbosely first because for some reason, SPM does not flush pipe
         // when printing package resolution info
         try resolve()
@@ -44,6 +44,9 @@ public class SPM {
         }
         if includeTests {
             args.append("--build-tests")
+        }
+        if let target = target {
+            args += ["--target", target]
         }
         try runSwift(args: args, transformer: .build)
     }
