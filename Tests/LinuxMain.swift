@@ -1,10 +1,8 @@
 import XCTest
-import CLITests
-import CoreTests
-import TransformersTests
+import IceTests
+import IceKitTests
 
 var tests = [XCTestCaseEntry]()
-tests += CLITests.allTests()
-tests += CoreTests.allTests()
-tests += TransformersTests.allTests()
+tests += IceTests.allTests()
+tests += IceKitTests.allTests()
 XCTMain(tests)

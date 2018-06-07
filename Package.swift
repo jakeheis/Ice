@@ -6,7 +6,8 @@ import PackageDescription
 let package = Package(
     name: "Ice",
     products: [
-        .executable(name: "ice", targets: ["CLI"]),
+        .executable(name: "ice", targets: ["Ice"]),
+        .library(name: "IceKit", targets: ["IceKit"]),
     ],
     dependencies: [
         .package(url: "https://github.com/jakeheis/FileKit", from: "4.1.0"),
@@ -16,11 +17,9 @@ let package = Package(
         .package(url: "https://github.com/scottrhoyt/SwiftyTextTable", from: "0.8.0"),
     ],
     targets: [
-        .target(name: "CLI", dependencies: ["Core", "FileKit", "SwiftCLI", "SwiftyTextTable"]),
-        .target(name: "Core", dependencies: ["FileKit", "Rainbow", "Regex", "Transformers"]),
-        .target(name: "Transformers", dependencies: ["Rainbow", "Regex", "SwiftCLI"]),
-        .testTarget(name: "CLITests", dependencies: ["Rainbow"]),
-        .testTarget(name: "CoreTests", dependencies: ["Core"]),
-        .testTarget(name: "TransformersTests", dependencies: ["Transformers"]),
+        .target(name: "Ice", dependencies: ["IceKit", "FileKit", "SwiftCLI", "SwiftyTextTable"]),
+        .target(name: "IceKit", dependencies: ["FileKit", "Rainbow", "Regex", "SwiftCLI"]),
+        .testTarget(name: "IceTests", dependencies: ["Rainbow"]),
+        .testTarget(name: "IceKitTests", dependencies: ["IceKit"]),
     ]
 )
