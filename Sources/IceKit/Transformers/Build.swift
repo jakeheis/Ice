@@ -43,6 +43,9 @@ class BuildOut: BaseTransformer {
             }
             let line = stream.require(AnyLine.self)
             stdout <<< line.text
+        } else {
+            let line = stream.require(AnyLine.self)
+            stdout <<< line.text
         }
     }
     
@@ -56,6 +59,9 @@ class BuildErr: BaseTransformer {
             internalError.print(to: stderr)
         } else if let internalWarning = stream.match(InternalWarningLine.self) {
             internalWarning.print(to: stderr)
+        } else {
+            let line = stream.require(AnyLine.self)
+            stderr <<< line.text
         }
     }
 }
