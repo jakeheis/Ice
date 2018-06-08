@@ -6,7 +6,7 @@
 //
 
 import XCTest
-import FileKit
+import PathKit
 import Regex
 @testable import IceKit
 
@@ -24,11 +24,11 @@ class RegistryTests: XCTestCase {
     lazy var localPath = registryPath + "local.json"
     
     override func setUp() {
-        try! registryPath.createDirectory(withIntermediateDirectories: true)
+        try! registryPath.mkpath()
     }
     
     override func tearDown() {
-        try! registryPath.deleteFile()
+        try! registryPath.delete()
     }
     
     func testAutoRefresh() throws {
@@ -42,7 +42,7 @@ class RegistryTests: XCTestCase {
         let registry = Registry(registryPath: registryPath)
         try registry.add(name: "Ice-fake", url: "https://github.com/jakeheis/Ice-fake")
         
-        let json = try JSONSerialization.jsonObject(with: try Data.read(from: localPath), options: []) as! [String: Any]
+        let json = try JSONSerialization.jsonObject(with: try localPath.read(), options: []) as! [String: Any]
         let entries = json["entries"] as! [[String: Any]]
         XCTAssertEqual(entries.count, 1)
         XCTAssertEqual(entries[0]["name"] as? String, "Ice-fake")
@@ -51,7 +51,7 @@ class RegistryTests: XCTestCase {
     }
     
     func testGet() throws {
-        try """
+        try localPath.write("""
         {
           "entries": [
             {
@@ -60,7 +60,7 @@ class RegistryTests: XCTestCase {
             }
           ]
         }
-        """.write(to: localPath)
+        """)
         let registry = Registry(registryPath: registryPath)
         
         let entry = registry.get("SwiftCLI-fake")
@@ -70,7 +70,7 @@ class RegistryTests: XCTestCase {
     }
     
     func testRemove() throws {
-        try """
+        try localPath.write("""
         {
           "entries": [
             {
@@ -79,12 +79,12 @@ class RegistryTests: XCTestCase {
             }
           ]
         }
-        """.write(to: localPath)
+        """)
         let registry = Registry(registryPath: registryPath)
         
         try registry.remove("SwiftCLI-fake")
         
-        let json = try JSONSerialization.jsonObject(with: try Data.read(from: localPath), options: []) as! [String: Any]
+        let json = try JSONSerialization.jsonObject(with: try localPath.read(), options: []) as! [String: Any]
         let entries = json["entries"] as! [[String: Any]]
         XCTAssertEqual(entries.count, 0)
         XCTAssertNotNil(json["lastRefreshed"])

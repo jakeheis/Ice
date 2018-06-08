@@ -6,7 +6,7 @@
 //
 
 import Foundation
-import FileKit
+import PathKit
 
 public class Registry {
     
@@ -39,18 +39,18 @@ public class Registry {
     public func refresh(silent: Bool = false) throws {
         let timeout = silent ? 4 : nil
         if sharedRepo.exists {
-            try Git.pull(path: sharedRepo.rawValue, silent: silent, timeout: timeout)
+            try Git.pull(path: sharedRepo.string, silent: silent, timeout: timeout)
         } else {
-            try Git.clone(url: Registry.url, to: sharedRepo.rawValue, version: nil, silent: silent, timeout: timeout)
+            try Git.clone(url: Registry.url, to: sharedRepo.string, version: nil, silent: silent, timeout: timeout)
         }
         
         localRegistry.lastRefreshed = Date()
-        try JSONEncoder().encode(localRegistry).write(to: localPath)
+        try localPath.write(JSONEncoder().encode(localRegistry))
     }
     
     public func add(name: String, url: String) throws {
         localRegistry.entries.append(.init(name: name, url: url, description: nil))
-        try JSONEncoder().encode(localRegistry).write(to: localPath)
+        try localPath.write(JSONEncoder().encode(localRegistry))
     }
     
     public func get(_ name: String) -> RegistryEntry? {
@@ -73,7 +73,7 @@ public class Registry {
         }
         localRegistry.entries.remove(at: index)
         
-        try JSONEncoder().encode(localRegistry).write(to: localPath)
+        try localPath.write(JSONEncoder().encode(localRegistry))
     }
     
     public func search(query: String, includeDescription: Bool) throws -> [RegistryEntry] {
@@ -117,10 +117,10 @@ public class Registry {
     }
     
     private func forEachShared(block: (_ file: RegistryFile, _ fileName: String) -> ()) {
-        let paths = sharedPath.children()
+        let paths = (try? sharedPath.children()) ?? []
         paths.forEach { (path) in
             if let file = RegistryFile.load(from: path) {
-                block(file, path.fileName)
+                block(file, path.lastComponentWithoutExtension)
             }
         }
     }
@@ -139,7 +139,7 @@ private struct RegistryFile: Codable {
     var lastRefreshed: Date?
     
     static func load(from path: Path) -> RegistryFile? {
-        guard let data = try? Data.read(from: path),
+        guard let data = try? path.read(),
             let file = try? JSONDecoder().decode(RegistryFile.self, from: data) else {
                 return nil
         }

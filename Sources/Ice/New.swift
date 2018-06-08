@@ -5,8 +5,8 @@
 //  Created by Jake Heiser on 7/21/17.
 //
 
-import FileKit
 import IceKit
+import PathKit
 import SwiftCLI
 
 class NewCommand: Command {
@@ -25,7 +25,7 @@ class NewCommand: Command {
         if path.exists {
             throw IceError(message: "\(projectName.value) already exists")
         }
-        try path.createDirectory()
+        try path.mkdir()
         
         Path.current = path
         var type: SPM.InitType?

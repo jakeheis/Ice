@@ -7,8 +7,8 @@
 
 import XCTest
 import Foundation
+import PathKit
 import SwiftCLI
-import FileKit
 import IceKit
 
 class PackageTests: XCTestCase {

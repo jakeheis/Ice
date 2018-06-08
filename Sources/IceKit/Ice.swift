@@ -5,8 +5,8 @@
 //  Created by Jake Heiser on 9/22/17.
 //
 
-import FileKit
 import Foundation
+import PathKit
 
 public class Ice {
     
@@ -18,7 +18,7 @@ public class Ice {
             if let root = ProcessInfo.processInfo.environment[rootEnvKey] {
                 return Path(root)
             }
-            return Path.userHome + ".icebox"
+            return Path.home + ".icebox"
         }()
         
         static let versionFile = root + "version"
@@ -44,12 +44,12 @@ public class Ice {
             return
         }
         do {
-            try Paths.root.createDirectory(withIntermediateDirectories: true)
-            try version.write(to: Paths.versionFile)
-            try Paths.packagesDirectory.createDirectory(withIntermediateDirectories: true)
-            try Paths.registryDirectory.createDirectory(withIntermediateDirectories: true)
+            try Paths.root.mkpath()
+            try Paths.versionFile.write(version)
+            try Paths.packagesDirectory.mkpath()
+            try Paths.registryDirectory.mkpath()
         } catch {
-            niceFatalError("Couldn't set up Ice at \(Paths.root)")
+            niceFatalError("couldn't set up Ice at \(Paths.root)")
         }
     }
     

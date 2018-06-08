@@ -5,8 +5,8 @@
 //  Created by Jake Heiser on 8/27/17.
 //
 
-import FileKit
 import Foundation
+import PathKit
 import SwiftCLI
 
 public struct Package: Decodable {
@@ -220,8 +220,8 @@ public struct Package: Decodable {
             writeStream = stream
         } else {
             let path = directory + Package.path
-            try "".write(to: path) // Overwrite file
-            guard let fileStream = WriteStream(path: path.rawValue) else  {
+            try path.write(Data())
+            guard let fileStream = WriteStream(path: path.string) else  {
                 throw IceError(message: "couldn't write to \(path)")
             }
             writeStream = fileStream

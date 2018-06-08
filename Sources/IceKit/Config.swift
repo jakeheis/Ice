@@ -6,7 +6,7 @@
 //
 
 import Foundation
-import FileKit
+import PathKit
 
 public class Config {
     
@@ -42,7 +42,7 @@ public class Config {
         
         self.globalConfig = file
         
-        try ConfigFile.encoder.encode(file).write(to: globalPath)
+        try globalPath.write(ConfigFile.encoder.encode(file))
     }
     
 }
@@ -71,7 +71,7 @@ public struct ConfigFile: Codable {
     }
     
     static func from(path: Path) -> ConfigFile? {
-        guard let data = try? Data.read(from: path),
+        guard let data = try? path.read(),
             let file = try? decoder.decode(ConfigFile.self, from: data) else {
             return nil
         }

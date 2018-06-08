@@ -5,7 +5,6 @@
 //  Created by Jake Heiser on 7/22/17.
 //
 
-import FileKit
 import IceKit
 import SwiftCLI
 

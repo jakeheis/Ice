@@ -5,8 +5,8 @@
 //  Created by Jake Heiser on 7/22/17.
 //
 
-import FileKit
 import IceKit
+import PathKit
 import SwiftCLI
 
 class TargetGroup: CommandGroup {
@@ -44,14 +44,11 @@ private class TargetAddCommand: Command {
             testTarget = Input.readBool(prompt: "> ")
         }
         
-        let intermediatePath = Path.current + (testTarget ? "Tests" : "Sources")
-        try intermediatePath.createDirectory(withIntermediateDirectories: true)
-        
-        let targetPath = intermediatePath + targetName.value
-        try targetPath.createDirectory()
+        let targetPath = Path.current + (testTarget ? "Tests" : "Sources") + targetName.value
+        try targetPath.mkpath()
         
         let initialFile = targetPath + Path(targetName.value + ".swift")
-        try "//\n// \(targetName.value).swift\n// \(package.name)\n//\n".write(to: initialFile)
+        try initialFile.write("//\n// \(targetName.value).swift\n// \(package.name)\n//\n")
         
         package.addTarget(
             name: targetName.value,

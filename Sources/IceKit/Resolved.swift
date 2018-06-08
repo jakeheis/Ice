@@ -5,8 +5,8 @@
 //  Created by Jake Heiser on 3/8/18.
 //
 
-import FileKit
 import Foundation
+import PathKit
 
 public struct Resolved: Decodable {
     
@@ -33,7 +33,7 @@ public struct Resolved: Decodable {
     
     public static func load(from directory: Path) throws -> Resolved {
         do {
-            let data = try Data.read(from: directory + filePath)
+            let data = try (directory + filePath).read()
             return try JSONDecoder().decode(Resolved.self, from: data)
         } catch {
             throw IceError(message: "couldn't parse Package.resolved")

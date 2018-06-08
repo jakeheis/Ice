@@ -6,7 +6,7 @@
 //
 
 import XCTest
-import FileKit
+import PathKit
 @testable import IceKit
 
 class ConfigTests: XCTestCase {
@@ -22,33 +22,33 @@ class ConfigTests: XCTestCase {
     
     override func tearDown() {
         if configPath.exists {
-            try! configPath.deleteFile()
+            try! configPath.delete()
         }
     }
     
     func testGet() {
-        try! """
+        try! configPath.write("""
         {
           "reformat" : true
         }
-        """.write(to: configPath)
+        """)
         
         let config = Config(globalConfigPath: configPath)
         XCTAssertEqual(config.get(\.reformat), true)
     }
     
     func testSet() {
-        try! """
+        try! configPath.write("""
         {
           "reformat" : true
         }
-        """.write(to: configPath)
+        """)
 
         let config = Config(globalConfigPath: configPath)
         try! config.set(\.reformat, value: false)
 
         
-        XCTAssertEqual(try? String.read(from: configPath), """
+        XCTAssertEqual(try? configPath.read(), """
         {
           "reformat" : false
         }
@@ -69,17 +69,17 @@ class ConfigTests: XCTestCase {
     }
     
     func testMigration() {
-        try! """
+        try! configPath.write("""
         {
           "bin" : "/.icebox/bin",
           "reformat" : true
         }
-        """.write(to: configPath)
+        """)
         
         let config = Config(globalConfigPath: configPath)
         try! config.set(\.reformat, value: false)
         
-        XCTAssertEqual(try? String.read(from: configPath), """
+        XCTAssertEqual(try? configPath.read(), """
         {
           "reformat" : false
         }

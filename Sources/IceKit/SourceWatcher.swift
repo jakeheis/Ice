@@ -6,50 +6,81 @@
 //
 
 import Dispatch
-import FileKit
+import PathKit
 
 public class SourceWatcher {
     
     let action: () -> ()
-    private var watcher: FileSystemWatcher?
+    private var watchers: [DispatchSourceFileSystemObject] = []
+    private var startOver = true
     private var needsAction = true
+    private var lastChildren: Set<String> = []
     
-    private let watchQueue = DispatchQueue(label: "com.jakeheis.Ice.Watcher")
+    private let watchQueue = DispatchQueue(label: "com.jakeheis.Ice.SourceWatcher")
     
     public init(action: @escaping () -> ()) throws {
         self.action = action
     }
     
-    public func go() throws {
+    public func go() throws -> Never {
+        while true {
+            actIfNecessary()
+            sleep(1)
+        }
+    }
+    
+    private func startWatch() throws {
         let path: Path
-        if Path("Sources").exists {
-            path = Path("Sources")
-        } else if Path("Source").exists {
-            path = Path("Source")
+        let sources = Path("Sources")
+        let source = Path("Source")
+        if sources.exists && sources.isDirectory {
+            path = sources
+        } else if source.exists && source.isDirectory {
+            path = source
         } else {
             throw IceError(message: "couldn't find source directory to watch")
         }
-        let children = path.children(recursive: true).filter { $0.isDirectory || $0.pathExtension == "swift" }
-        let watcher = FileSystemWatcher(paths: [path] + children) { (event) in
-            self.watchQueue.async {
-                self.needsAction = true
-            }
-        }
-        watcher.watch()
-        self.watcher = watcher
         
-        while true {
-            sleep(1)
-            watcher.flushSync()
-            actIfNecessary()
+        let children = try path.recursiveChildren().filter { $0.isDirectory || $0.extension == "swift" }
+        for child in children {
+            let handle = open(child.string, O_EVTONLY)
+            let source = DispatchSource.makeFileSystemObjectSource(fileDescriptor: handle, eventMask: [.delete, .write, .link, .rename, .revoke], queue: watchQueue)
+            source.setEventHandler {
+                if child.isDirectory {
+                    let newChildren = (try? path.recursiveChildren().filter { $0.isDirectory || $0.extension == "swift" }.map({ $0.string })) ?? []
+                    if !self.lastChildren.symmetricDifference(newChildren).isEmpty {
+                        self.startOver = true
+                        self.needsAction = true
+                        self.lastChildren = Set(newChildren)
+                    }
+                } else {
+                    self.needsAction = true
+                }
+            }
+            source.setCancelHandler {
+                close(handle)
+            }
+            source.resume()
+            watchers.append(source)
+            lastChildren.insert(child.string)
         }
     }
     
     private func actIfNecessary() {
         watchQueue.async {
+            if self.startOver {
+                self.watchers.forEach { $0.cancel() }
+                self.watchers.removeAll()
+                do {
+                    try self.startWatch()
+                } catch {
+                    exit(1)
+                }
+            }
             if self.needsAction {
                 self.action()
             }
+            self.startOver = false
             self.needsAction = false
         }
     }
