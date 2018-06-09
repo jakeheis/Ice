@@ -13,13 +13,22 @@ class AddTests: XCTestCase {
         ("testBasicAdd", testBasicAdd),
         ("testTargetAdd", testTargetAdd),
         ("testVersionedAdd", testVersionedAdd),
+        ("testSingleTargetAdd", testSingleTargetAdd),
+        ("testBranchAdd", testBranchAdd),
+        ("testSHAAdd", testSHAAdd),
+        ("testDifferentNamedLib", testDifferentNamedLib),
     ]
     
     func testBasicAdd() {
         let result = Runner.execute(args: ["add", "jakeheis/Spawn", "-n"], sandbox: .lib)
         XCTAssertEqual(result.exitStatus, 0)
-        XCTAssertEqual(result.stdout, "")
         XCTAssertEqual(result.stderr, "")
+        XCTAssertEqual(result.stdout, """
+        Fetch https://github.com/jakeheis/Spawn
+        Clone https://github.com/jakeheis/Spawn
+        Resolve https://github.com/jakeheis/Spawn at 0.0.6
+        
+        """)
         
         XCTAssertEqual(
             sandboxedFileContents("Package.swift"),
@@ -49,8 +58,13 @@ class AddTests: XCTestCase {
     func testTargetAdd() {
         let result = Runner.execute(args: ["add", "jakeheis/Spawn", "-t", "Lib"], sandbox: .lib)
         XCTAssertEqual(result.exitStatus, 0)
-        XCTAssertEqual(result.stdout, "")
         XCTAssertEqual(result.stderr, "")
+        XCTAssertEqual(result.stdout, """
+        Fetch https://github.com/jakeheis/Spawn
+        Clone https://github.com/jakeheis/Spawn
+        Resolve https://github.com/jakeheis/Spawn at 0.0.6
+        
+        """)
         
         XCTAssertEqual(
             sandboxedFileContents("Package.swift"),
@@ -80,8 +94,13 @@ class AddTests: XCTestCase {
     func testVersionedAdd() {
         let result = Runner.execute(args: ["add", "jakeheis/Spawn", "0.0.5", "-n"], sandbox: .lib)
         XCTAssertEqual(result.exitStatus, 0)
-        XCTAssertEqual(result.stdout, "")
         XCTAssertEqual(result.stderr, "")
+        XCTAssertEqual(result.stdout, """
+        Fetch https://github.com/jakeheis/Spawn
+        Clone https://github.com/jakeheis/Spawn
+        Resolve https://github.com/jakeheis/Spawn at 0.0.6
+        
+        """)
         
         XCTAssertEqual(
             sandboxedFileContents("Package.swift"),
@@ -111,8 +130,14 @@ class AddTests: XCTestCase {
     func testSingleTargetAdd() {
         let result = Runner.execute(args: ["add", "jakeheis/Spawn"], sandbox: .exec)
         XCTAssertEqual(result.exitStatus, 0)
-        XCTAssertEqual(result.stdout, "")
         XCTAssertEqual(result.stderr, "")
+        XCTAssertEqual(result.stdout, """
+        Update https://github.com/jakeheis/SwiftCLI
+        Fetch https://github.com/jakeheis/Spawn
+        Clone https://github.com/jakeheis/Spawn
+        Resolve https://github.com/jakeheis/Spawn at 0.0.6
+        
+        """)
         
         XCTAssertEqual(sandboxedFileContents("Package.swift"), """
         // swift-tools-version:4.0
@@ -137,8 +162,13 @@ class AddTests: XCTestCase {
     func testBranchAdd() {
         let result = Runner.execute(args: ["add", "jakeheis/SwiftCLI", "master", "-n"], sandbox: .lib)
         XCTAssertEqual(result.exitStatus, 0)
-        XCTAssertEqual(result.stdout, "")
         XCTAssertEqual(result.stderr, "")
+        XCTAssertEqual(result.stdout, """
+        Fetch https://github.com/jakeheis/SwiftCLI
+        Clone https://github.com/jakeheis/SwiftCLI
+        Resolve https://github.com/jakeheis/SwiftCLI at master
+        
+        """)
         
         XCTAssertEqual(sandboxedFileContents("Package.swift"), """
         // swift-tools-version:4.0
@@ -166,8 +196,13 @@ class AddTests: XCTestCase {
     func testSHAAdd() {
         let result = Runner.execute(args: ["add", "jakeheis/SwiftCLI", "51ba542611878b2e64e82467b895fdf4240ec32e", "-n"], sandbox: .lib)
         XCTAssertEqual(result.exitStatus, 0)
-        XCTAssertEqual(result.stdout, "")
         XCTAssertEqual(result.stderr, "")
+        XCTAssertEqual(result.stdout, """
+        Fetch https://github.com/jakeheis/SwiftCLI
+        Clone https://github.com/jakeheis/SwiftCLI
+        Resolve https://github.com/jakeheis/SwiftCLI at 51ba542611878b2e64e82467b895fdf4240ec32e
+        
+        """)
         
         XCTAssertEqual(sandboxedFileContents("Package.swift"), """
         // swift-tools-version:4.0
@@ -186,6 +221,38 @@ class AddTests: XCTestCase {
             targets: [
                 .target(name: "Lib", dependencies: []),
                 .testTarget(name: "LibTests", dependencies: ["Lib"]),
+            ]
+        )
+
+        """)
+    }
+    
+    func testDifferentNamedLib() {
+        let result = Runner.execute(args: ["add", "jakeheis/IceLibTest"], sandbox: .exec)
+        XCTAssertEqual(result.exitStatus, 0)
+        XCTAssertEqual(result.stderr, "")
+        XCTAssertEqual(result.stdout, """
+        Update https://github.com/jakeheis/SwiftCLI
+        Fetch https://github.com/jakeheis/IceLibTest
+        Clone https://github.com/jakeheis/IceLibTest
+        Resolve https://github.com/jakeheis/IceLibTest at 1.0.0
+        
+        """)
+        
+        XCTAssertEqual(sandboxedFileContents("Package.swift"), """
+        // swift-tools-version:4.0
+        // Managed by ice
+
+        import PackageDescription
+
+        let package = Package(
+            name: "Exec",
+            dependencies: [
+                .package(url: "https://github.com/jakeheis/SwiftCLI", from: "4.0.3"),
+                .package(url: "https://github.com/jakeheis/IceLibTest", from: "1.0.0"),
+            ],
+            targets: [
+                .target(name: "Exec", dependencies: ["SwiftCLI", "IceLib"]),
             ]
         )
 
