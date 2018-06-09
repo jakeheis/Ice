@@ -20,7 +20,7 @@ class VersionTests: XCTestCase {
         
         buildResult.stdout.assert { (v) in
             v.matches("Ice version: \\d\\.\\d\\.\\d")
-            v.matches("Swift version: \\d\\.\\d")
+            v.matches("Swift version: \\d\\.\\d(\\.\\d)?")
         }
     }
 
