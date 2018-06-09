@@ -26,8 +26,23 @@ class Git {
         return try captureGit("-C", path, "remote", "get-url", "origin").stdout
     }
     
-    static func lsRemote(url: String) throws -> String {
-        return try captureGit("ls-remote", "--tags", url).stdout
+    static func lsRemote(url: String) throws -> [Version] {
+        var versions: [Version] = []
+        let out = LineStream { (line) in
+            guard let index = line.index(of: "\t") else {
+                return
+            }
+            let name = String(line[line.index(index, offsetBy: "refs/tags/".count + 1)...])
+            if let version = Version(name) {
+                versions.append(version)
+            }
+        }
+        let task = Task(executable: "git", arguments: ["ls-remote", "--tags", url], stdout: out, stderr: WriteStream.null)
+        let exitStatus = task.runSync()
+        guard exitStatus == 0 else {
+            throw IceError(message: "not a valid package reference", exitStatus: exitStatus)
+        }
+        return versions
     }
     
     private static func runGit(args: [String], silent: Bool, timeout: Int? = nil) throws {

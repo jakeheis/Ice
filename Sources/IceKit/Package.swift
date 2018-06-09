@@ -7,6 +7,7 @@
 
 import Foundation
 import PathKit
+import Regex
 import SwiftCLI
 
 public struct Package: Decodable {
@@ -70,7 +71,7 @@ public struct Package: Decodable {
         public let publicHeadersPath: String?
     }
     
-    public static let path = Path("Package.swift")
+    public static let packagePath = Path("Package.swift")
     
     public let name: String
     public let pkgConfig: String?
@@ -93,6 +94,16 @@ public struct Package: Decodable {
         } catch {
             throw IceError(message: "couldn't parse Package.swift")
         }
+    }
+    
+    private static let libRegex = Regex("\\.library\\( *name: *\"([^\"]*)\"")
+    public static func retrieveLibrariesOfDependency(named dependency: String) -> [String] {
+        let path = Path(".build/checkouts").glob("\(dependency)*")[0]
+        guard let contents: String = try? (path + packagePath).read().replacingOccurrences(of: "\n", with: " ") else {
+            return []
+        }
+        let matches = libRegex.allMatches(in: contents)
+        return matches.compactMap { $0.captures[0] }
     }
     
     // MARK: - Products
@@ -219,7 +230,7 @@ public struct Package: Decodable {
         if let stream = stream {
             writeStream = stream
         } else {
-            let path = directory + Package.path
+            let path = directory + Package.packagePath
             try path.write(Data())
             guard let fileStream = WriteStream(path: path.string) else  {
                 throw IceError(message: "couldn't write to \(path)")
