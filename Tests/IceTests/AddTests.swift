@@ -92,7 +92,7 @@ class AddTests: XCTestCase {
     }
     
     func testVersionedAdd() {
-        let result = Runner.execute(args: ["add", "jakeheis/Spawn", "0.0.5", "-n"], sandbox: .lib)
+        let result = Runner.execute(args: ["add", "jakeheis/Spawn", "--version=0.0.5", "-n"], sandbox: .lib)
         XCTAssertEqual(result.exitStatus, 0)
         XCTAssertEqual(result.stderr, "")
         XCTAssertEqual(result.stdout, """
@@ -160,7 +160,7 @@ class AddTests: XCTestCase {
     }
     
     func testBranchAdd() {
-        let result = Runner.execute(args: ["add", "jakeheis/SwiftCLI", "master", "-n"], sandbox: .lib)
+        let result = Runner.execute(args: ["add", "jakeheis/SwiftCLI", "--branch=master", "-n"], sandbox: .lib)
         XCTAssertEqual(result.exitStatus, 0)
         XCTAssertEqual(result.stderr, "")
         XCTAssertEqual(result.stdout, """
@@ -194,7 +194,7 @@ class AddTests: XCTestCase {
     }
     
     func testSHAAdd() {
-        let result = Runner.execute(args: ["add", "jakeheis/SwiftCLI", "51ba542611878b2e64e82467b895fdf4240ec32e", "-n"], sandbox: .lib)
+        let result = Runner.execute(args: ["add", "jakeheis/SwiftCLI", "--sha=51ba542611878b2e64e82467b895fdf4240ec32e", "-n"], sandbox: .lib)
         XCTAssertEqual(result.exitStatus, 0)
         XCTAssertEqual(result.stderr, "")
         XCTAssertEqual(result.stdout, """

@@ -15,10 +15,17 @@ class AddCommand: Command {
     let shortDescription = "Adds the given package"
     
     let dependency = Parameter()
-    let version = OptionalParameter()
     
     let targets = Key<String>("-t", "--targets", description: "List of targets which should depend on this dependency")
     let noInteractive = Flag("-n", "--no-interactive", description: "Do not prompt for targets if none are supplied")
+    
+    let version = Key<Version>("--version", description: "The version of the dependency to depend on")
+    let branch = Key<String>("--branch", description: "The branch of the dependency to depend on")
+    let sha = Key<String>("--sha", description: "The commit hash of the dependency to depend on")
+    
+    var optionGroups: [OptionGroup] {
+        return [.atMostOne(version, branch, sha)]
+    }
     
     func execute() throws {
         guard let ref = RepositoryReference(dependency.value) else {
@@ -28,16 +35,16 @@ class AddCommand: Command {
         verboseOut <<< "Resolving url: \(ref.url)"
         
         let requirement: Package.Dependency.Requirement
-        if let versionValue = version.value {
-            guard Package.Dependency.Requirement.validate(versionValue) else {
-                throw IceError(message: "invalid requirement")
-            }
-            requirement = .create(from: versionValue)
+        if let version = version.value {
+            requirement = .init(version: version)
+        } else if let branch = branch.value {
+            requirement = .init(type: .branch, lowerBound: nil, upperBound: nil, identifier: branch)
+        } else if let sha = sha.value {
+            requirement = .init(type: .revision, lowerBound: nil, upperBound: nil, identifier: sha)
         } else if let latestVersion = try ref.latestVersion() {
             requirement = .init(version: latestVersion)
         } else {
-            stdout <<< "Warning:".yellow.bold + " no tagged versions found"
-            requirement = .read()
+            throw IceError(message: "no tagged versions found; manually specify version with --version, --branch, or --sha")
         }
         
         verboseOut <<< "Resolving at version: \(requirement)"

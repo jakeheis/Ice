@@ -14,10 +14,20 @@ class UpdateCommand: Command {
     let shortDescription = "Update package dependencies"
     
     let dependency = OptionalParameter()
-    let version = OptionalParameter()
+    
+    let version = Key<Version>("--version", description: "The new version of the dependency to depend on")
+    let branch = Key<String>("--branch", description: "The new branch of the dependency to depend on")
+    let sha = Key<String>("--sha", description: "The new commit hash of the dependency to depend on")
+    
+    var optionGroups: [OptionGroup] {
+        return [.atMostOne(version, branch, sha)]
+    }
     
     func execute() throws {
         guard let dependency = dependency.value else {
+            guard version.value == nil && branch.value == nil && sha.value == nil else {
+                throw IceError(message: "--version, --branch, and --sha can only be used when updating a specific dependency")
+            }
             try SPM().update()
             return
         }
@@ -28,11 +38,12 @@ class UpdateCommand: Command {
         }
         
         let requirement: Package.Dependency.Requirement
-        if let argVersion = version.value {
-            guard Package.Dependency.Requirement.validate(argVersion) else {
-                throw IceError(message: "invalid requirement")
-            }
-            requirement = .create(from: argVersion)
+        if let version = version.value {
+            requirement = .init(version: version)
+        } else if let branch = branch.value {
+            requirement = .init(type: .branch, lowerBound: nil, upperBound: nil, identifier: branch)
+        } else if let sha = sha.value {
+            requirement = .init(type: .revision, lowerBound: nil, upperBound: nil, identifier: sha)
         } else {
             requirement = try inputVersion(for: dep)
         }
@@ -66,10 +77,12 @@ class UpdateCommand: Command {
             stdout <<< ""
         }
         
-        let chosen = Package.Dependency.Requirement.read()
+        let chosen: Version = Input.readObject(prompt: ">", errorResponse: { (_) in
+            self.stdout <<< "Version must be of the form 'major.minor.patch'"
+        })
         stdout <<< ""
         
-        return chosen
+        return .init(version: chosen)
     }
     
     private func currentVersion(of dep: Package.Dependency) -> String {

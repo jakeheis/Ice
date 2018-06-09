@@ -34,7 +34,7 @@ class UpdateTests: XCTestCase {
         XCTAssertEqual(buildResult.exitStatus, 0)
         XCTAssertEqual(buildResult.stderr, "")
         
-        let result = Runner.execute(args: ["update", "SwiftCLI", "5.0.0"], clean: false)
+        let result = Runner.execute(args: ["update", "SwiftCLI", "--version=5.0.0"], clean: false)
         XCTAssertEqual(result.exitStatus, 0)
         XCTAssertEqual(result.stderr, "")
         XCTAssertEqual(result.stdout, "")

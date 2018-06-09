@@ -34,8 +34,8 @@ private class ProductAddCommand: Command {
     
     var optionGroups: [OptionGroup] {
         return [
-            OptionGroup(options: [executable, library], restriction: .atMostOne),
-            OptionGroup(options: [staticProduct, dynamicProduct, executable], restriction: .atMostOne),
+            .atMostOne(executable, library),
+            .atMostOne(staticProduct, dynamicProduct, executable)
         ]
     }
     
