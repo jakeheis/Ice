@@ -17,14 +17,15 @@ class OutdatedTests: XCTestCase {
         let result = Runner.execute(args: ["outdated"], sandbox: .exec)
         XCTAssertEqual(result.exitStatus, 0)
         XCTAssertEqual(result.stderr, "")
-        XCTAssertEqual(result.stdout, """
-        +----------+-----------------+----------+--------+
-        | Name     | Wanted          | Resolved | Latest |
-        +----------+-----------------+----------+--------+
-        | SwiftCLI | 4.0.3 ..< 5.0.0 | 4.1.2    | 5.1.1  |
-        +----------+-----------------+----------+--------+
-        
-        """)
+        result.stdout.assert { (v) in
+            v.equals("+----------+-----------------+----------+--------+")
+            v.equals("| Name     | Wanted          | Resolved | Latest |")
+            v.equals("+----------+-----------------+----------+--------+")
+            v.matches("\\| SwiftCLI \\| 4\\.0\\.3 \\.\\.< 5\\.0\\.0 \\| 4\\.1\\.2    \\| \\d\\.\\d\\.\\d  \\|")
+            v.equals("+----------+-----------------+----------+--------+")
+            v.empty()
+            v.done()
+        }
     }
     
     func testOutdatedNoDependencies() {
