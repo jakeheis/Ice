@@ -160,7 +160,13 @@ public struct Package: Decodable {
         }
         dependencies.remove(at: index)
         
-        removeDependencyFromTargets(named: name)
+        var libs = Package.retrieveLibrariesOfDependency(named: name)
+        if libs.isEmpty {
+            libs.append(name)
+        }
+        for lib in libs {
+            removeDependencyFromTargets(named: lib)
+        }
     }
     
     private func requirement(for version: Version) -> Dependency.Requirement {
