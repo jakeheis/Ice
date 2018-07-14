@@ -13,11 +13,16 @@ class BuildCommand: Command {
     let name = "build"
     let shortDescription = "Builds the current project"
     
-    let target = OptionalParameter()
+    let target = Key<String>("-t", "--target", description: "The individual target to build; cannot be used with --product")
+    let product = Key<String>("-p", "--product", description: "The individual product to build; cannot be used with --target")
     
-    let clean = Flag("-c", "--clean")
-    let release = Flag("-r", "--release")
-    let watch = Flag("-w", "--watch")
+    let clean = Flag("-c", "--clean", description: "Clean the build folder before building")
+    let release = Flag("-r", "--release", description: "Build with the release configuration")
+    let watch = Flag("-w", "--watch", description: "Watch the current folder and rebuild any time a file changes")
+    
+    var optionGroups: [OptionGroup] {
+        return [.atMostOne(target, product)]
+    }
     
     func execute() throws {
         let spm = SPM()
@@ -30,13 +35,18 @@ class BuildCommand: Command {
             let watcher = try SourceWatcher() {
                 do {
                     self.stdout <<< "[ice] rebuilding due to changes...".green
-                    try spm.build(release: self.release.value, target: self.target.value)
+                    try self.build(spm: spm)
                 } catch {}
             }
             try watcher.go()
         } else {
-            try spm.build(release: release.value, target: target.value)
+            try build(spm: spm)
         }
+    }
+    
+    func build(spm: SPM) throws {
+        let buildOption: SPM.BuildOption? = target.value.flatMap { .target($0) } ?? product.value.flatMap { .product($0) }
+        try spm.build(release: release.value, buildOption: buildOption)
     }
     
 }

@@ -33,7 +33,13 @@ public class SPM {
     
     // MARK: - Building
     
-    public func build(release: Bool, includeTests: Bool = false, target: String? = nil) throws {
+    public enum BuildOption {
+        case includeTests
+        case target(String)
+        case product(String)
+    }
+    
+    public func build(release: Bool, buildOption: BuildOption? = nil) throws {
         // Resolve verbosely first because for some reason, SPM does not flush pipe
         // when printing package resolution info
         try resolve()
@@ -42,11 +48,12 @@ public class SPM {
         if release {
             args += ["-c", "release"]
         }
-        if includeTests {
-            args.append("--build-tests")
-        }
-        if let target = target {
-            args += ["--target", target]
+        if let buildOption = buildOption {
+            switch buildOption {
+            case .includeTests: args.append("--build-tests")
+            case let .target(target): args += ["--target", target]
+            case let .product(product): args += ["--product", product]
+            }
         }
         try runSwift(args: args, transformer: .build)
     }
@@ -64,7 +71,7 @@ public class SPM {
     }
     
     public func test(filter: String?) throws {
-        try build(release: false, includeTests: true)
+        try build(release: false, buildOption: .includeTests)
         
         var args = ["test"]
         if let filter = filter {
