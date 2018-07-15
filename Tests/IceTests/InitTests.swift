@@ -21,6 +21,8 @@ class InitTests: XCTestCase {
         })
         XCTAssertEqual(result.exitStatus, 0)
         XCTAssertEqual(result.stderr, "")
+        
+        #if swift(>=4.1)
         XCTAssertEqual(result.stdout, """
         
         Creating library package: MyNewLib
@@ -40,6 +42,26 @@ class InitTests: XCTestCase {
         
         
         """)
+        #else
+        XCTAssertEqual(result.stdout, """
+        
+        Creating library package: MyNewLib
+
+            create Package.swift
+            create README.md
+            create .gitignore
+            create Sources/
+            create Sources/MyNewLib/MyNewLib.swift
+            create Tests/
+            create Tests/LinuxMain.swift
+            create Tests/MyNewLibTests/
+            create Tests/MyNewLibTests/MyNewLibTests.swift
+
+        Run: ice build
+        
+        
+        """)
+        #endif
         
         XCTAssertTrue(sandboxFileExists(path: "MyNewLib/Package.swift"))
     }

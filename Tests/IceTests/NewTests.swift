@@ -18,6 +18,8 @@ class NewTests: XCTestCase {
         let result = Runner.execute(args: ["new", "MyNewLib", "--lib"])
         XCTAssertEqual(result.exitStatus, 0)
         XCTAssertEqual(result.stderr, "")
+
+        #if swift(>=4.1)
         XCTAssertEqual(result.stdout, """
         
         Creating library package: MyNewLib
@@ -37,6 +39,26 @@ class NewTests: XCTestCase {
         
         
         """)
+        #else
+        XCTAssertEqual(result.stdout, """
+        
+        Creating library package: MyNewLib
+        
+            create Package.swift
+            create README.md
+            create .gitignore
+            create Sources/
+            create Sources/MyNewLib/MyNewLib.swift
+            create Tests/
+            create Tests/LinuxMain.swift
+            create Tests/MyNewLibTests/
+            create Tests/MyNewLibTests/MyNewLibTests.swift
+        
+        Run: cd MyNewLib && ice build
+        
+        
+        """)
+        #endif
         
         XCTAssertTrue(sandboxFileExists(path: "MyNewLib"))
         XCTAssertTrue(sandboxFileExists(path: "MyNewLib/Package.swift"))

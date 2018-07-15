@@ -163,7 +163,7 @@ class BuildTests: XCTestCase {
     }
     
     func testBuildTarget() {
-        let success = Runner.execute(args: ["build", "Lib"], sandbox: .lib)
+        let success = Runner.execute(args: ["build", "--target=Lib"], sandbox: .lib)
         XCTAssertEqual(success.exitStatus, 0)
         XCTAssertEqual(success.stderr, "")
         XCTAssertEqual(success.stdout, """
@@ -171,12 +171,43 @@ class BuildTests: XCTestCase {
 
         """)
         
-        let error = Runner.execute(args: ["build", "Library"], sandbox: .lib)
+        let error = Runner.execute(args: ["build", "--target=Library"], sandbox: .lib)
         XCTAssertEqual(error.exitStatus, 1)
         XCTAssertEqual(error.stdout, "")
         XCTAssertEqual(error.stderr, """
         
         Error: no target named 'Library'
+
+        
+        """)
+    }
+    
+    func testBuildProduct() {
+        let result = Runner.execute(args: ["build", "--product=Exec"], sandbox: .exec)
+        XCTAssertEqual(result.exitStatus, 0)
+        XCTAssertEqual(result.stderr, "")
+        result.stdout.assert { (v) in
+            v.equals("Fetch https://github.com/jakeheis/SwiftCLI")
+            v.equals("Clone https://github.com/jakeheis/SwiftCLI")
+            v.equals("Resolve https://github.com/jakeheis/SwiftCLI at 4.1.2")
+            v.equals("Compile SwiftCLI (23 sources)")
+            v.equals("Compile Exec (1 sources)")
+            v.matches("^Link ./.build/.*0/debug/Exec$")
+            v.empty()
+            v.done()
+        }
+        
+        let result2 = Runner.execute(args: ["build", "--product=Prod"], sandbox: .exec)
+        XCTAssertEqual(result2.exitStatus, 1)
+        XCTAssertEqual(result2.stdout, """
+        Fetch https://github.com/jakeheis/SwiftCLI
+        Clone https://github.com/jakeheis/SwiftCLI
+        Resolve https://github.com/jakeheis/SwiftCLI at 4.1.2
+        
+        """)
+        XCTAssertEqual(result2.stderr, """
+        
+        Error: no product named 'Prod'
 
         
         """)

@@ -131,6 +131,7 @@ class AddTests: XCTestCase {
         let result = Runner.execute(args: ["add", "jakeheis/Spawn"], sandbox: .exec)
         XCTAssertEqual(result.exitStatus, 0)
         XCTAssertEqual(result.stderr, "")
+        #if swift(>=4.1)
         XCTAssertEqual(result.stdout, """
         Update https://github.com/jakeheis/SwiftCLI
         Fetch https://github.com/jakeheis/Spawn
@@ -138,6 +139,15 @@ class AddTests: XCTestCase {
         Resolve https://github.com/jakeheis/Spawn at 0.0.6
         
         """)
+        #else
+        XCTAssertEqual(result.stdout, """
+        Fetch https://github.com/jakeheis/Spawn
+        Update https://github.com/jakeheis/SwiftCLI
+        Clone https://github.com/jakeheis/Spawn
+        Resolve https://github.com/jakeheis/Spawn at 0.0.6
+        
+        """)
+        #endif
         
         XCTAssertEqual(sandboxedFileContents("Package.swift"), """
         // swift-tools-version:4.0
@@ -231,6 +241,7 @@ class AddTests: XCTestCase {
         let result = Runner.execute(args: ["add", "jakeheis/IceLibTest"], sandbox: .exec)
         XCTAssertEqual(result.exitStatus, 0)
         XCTAssertEqual(result.stderr, "")
+        #if swift(>=4.1)
         XCTAssertEqual(result.stdout, """
         Update https://github.com/jakeheis/SwiftCLI
         Fetch https://github.com/jakeheis/IceLibTest
@@ -238,6 +249,15 @@ class AddTests: XCTestCase {
         Resolve https://github.com/jakeheis/IceLibTest at 1.0.0
         
         """)
+        #else
+        XCTAssertEqual(result.stdout, """
+        Fetch https://github.com/jakeheis/IceLibTest
+        Update https://github.com/jakeheis/SwiftCLI
+        Clone https://github.com/jakeheis/IceLibTest
+        Resolve https://github.com/jakeheis/IceLibTest at 1.0.0
+        
+        """)
+        #endif
         
         XCTAssertEqual(sandboxedFileContents("Package.swift"), """
         // swift-tools-version:4.0

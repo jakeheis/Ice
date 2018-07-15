@@ -103,7 +103,11 @@ public struct Package: Decodable {
             return []
         }
         let matches = libRegex.allMatches(in: contents)
+        #if swift(>=4.1)
         return matches.compactMap { $0.captures[0] }
+        #else
+        return matches.flatMap { $0.captures[0] }
+        #endif
     }
     
     // MARK: - Products
