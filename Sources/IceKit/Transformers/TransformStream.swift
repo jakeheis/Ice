@@ -1,5 +1,5 @@
 //
-//  PipeStream.swift
+//  TransformStream.swift
 //  Exec
 //
 //  Created by Jake Heiser on 3/12/18.
@@ -53,7 +53,7 @@ class TransformStream {
     func consume(file: StaticString = #file, fileLine: UInt = #line) {
         readNextLine()
         if _isDebugAssertConfiguration() {
-            PipeStreamRecord.record(action: .init(
+            TransformStreamRecord.record(action: .init(
                 kind: .consumed,
                 sourceFile: String(describing: file),
                 sourceLineNumber: fileLine,
@@ -67,16 +67,22 @@ class TransformStream {
     func require<L: Line>(_ line: L.Type, file: StaticString = #file, fileLine: UInt = #line) -> L {
         guard let match = match(line) else {
             if _isDebugAssertConfiguration() {
-                PipeStreamRecord.dump()
+                TransformStreamRecord.dump()
+                
+                WriteStream.stderr <<< ""
+                WriteStream.stderr <<< "Fatal error: ".bold.red + "failed requirement (\(line), next: '\(nextLine as Any)')"
+                WriteStream.stderr <<< ""
+                WriteStream.stderr <<< "\(file):\(line)"
+                WriteStream.stderr <<< ""
             }
-            niceFatalError("failed requirement (\(line), next: '\(nextLine as Any)')", file: file, line: fileLine)
+            exit(1)
         }
         if _isDebugAssertConfiguration() {
-            PipeStreamRecord.record(action: .init(
+            TransformStreamRecord.record(action: .init(
                 kind: .required,
                 sourceFile: String(describing: file),
                 sourceLineNumber: fileLine,
-                line: PipeStreamRecord.popLast().line,
+                line: TransformStreamRecord.popLast().line,
                 type: String(describing: type(of: match))
             ))
         }
@@ -86,7 +92,7 @@ class TransformStream {
     func match<L: Line>(_ line: L.Type, file: StaticString = #file, fileLine: UInt = #line) -> L? {
         if let match = peek(line) {
             if _isDebugAssertConfiguration() {
-                PipeStreamRecord.record(action: .init(
+                TransformStreamRecord.record(action: .init(
                     kind: .matched,
                     sourceFile: String(describing: file),
                     sourceLineNumber: fileLine,
@@ -110,7 +116,7 @@ class TransformStream {
     
 }
 
-class PipeStreamRecord {
+class TransformStreamRecord {
     
     struct Action: Encodable {
         enum Kind: String, Encodable {
