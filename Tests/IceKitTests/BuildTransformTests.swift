@@ -17,10 +17,13 @@ class BuildTransformTests: XCTestCase {
         ("testError", testError),
         ("testWarningWithSingleNote", testWarningWithSingleNote),
         ("testNoteNoCode", testNoteNoCode),
+        ("testNoteOtherModule", testNoteOtherModule),
         ("testSuggestion", testSuggestion),
         ("testRepeated", testRepeated),
         ("testPackageError", testPackageError),
-        ("testLinkerError", testLinkerError)
+        ("testPCHError", testPCHError),
+        ("testUnusedWarning", testUnusedWarning),
+        ("testLinkerError", testLinkerError),
     ]
     
     func testCompile() {
@@ -61,7 +64,7 @@ class BuildTransformTests: XCTestCase {
     func testError() {
         let build = createTest()
         build.send("""
-        /Ice/Sources/Exec/Exec.swift:19:24: error: cannot convert value of type 'String' to specified type 'Int'
+        /IceIce/Sources/Exec/Exec.swift:19:24: error: cannot convert value of type 'String' to specified type 'Int'
                 let arg: Int = ""
                                ^~
         """)
@@ -71,7 +74,7 @@ class BuildTransformTests: XCTestCase {
 
             let arg: Int = ""
                            ^^
-            at /Ice/Sources/Exec/Exec.swift:19
+            at /IceIce/Sources/Exec/Exec.swift:19
 
         
         """)
@@ -193,10 +196,10 @@ class BuildTransformTests: XCTestCase {
     func testRepeated() {
         let build = createTest()
         build.send("""
-        /Ice/Sources/Exec/Exec.swift:19:24: error: cannot convert value of type 'String' to specified type 'Int'
+        /IceIce/Sources/Exec/Exec.swift:19:24: error: cannot convert value of type 'String' to specified type 'Int'
                 let arg: Int = ""
                                ^~
-        /Ice/Sources/Exec/Exec.swift:19:24: error: cannot convert value of type 'String' to specified type 'Int'
+        /IceIce/Sources/Exec/Exec.swift:19:24: error: cannot convert value of type 'String' to specified type 'Int'
                 let arg: Int = ""
                                ^~
         """)
@@ -206,7 +209,7 @@ class BuildTransformTests: XCTestCase {
 
             let arg: Int = ""
                            ^^
-            at /Ice/Sources/Exec/Exec.swift:19
+            at /IceIce/Sources/Exec/Exec.swift:19
 
         
         """)

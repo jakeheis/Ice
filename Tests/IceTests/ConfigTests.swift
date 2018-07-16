@@ -17,7 +17,7 @@ class ConfigTests: XCTestCase {
     ]
     
     func testGet() {
-        let reformatResult = Runner.execute(args: ["config", "get", "reformat"])
+        let reformatResult = IceBox(template: .empty).run("config", "get", "reformat")
         XCTAssertEqual(reformatResult.exitStatus, 0)
         XCTAssertEqual(reformatResult.stderr, "")
         XCTAssertEqual(reformatResult.stdout, """
@@ -25,9 +25,9 @@ class ConfigTests: XCTestCase {
 
         """)
         
-        let globalResult = Runner.execute(args: ["config", "get", "reformat"], sandboxSetup: {
-            writeToSandbox(path: "global/config.json", contents: "{\n  \"reformat\" : true\n}")
-        })
+        let icebox = IceBox(template: .empty)
+        icebox.createFile(path: "global/config.json", contents: "{\n  \"reformat\" : true\n}")
+        let globalResult = icebox.run("config", "get", "reformat")
         XCTAssertEqual(globalResult.exitStatus, 0)
         XCTAssertEqual(globalResult.stderr, "")
         XCTAssertEqual(globalResult.stdout, """
@@ -37,21 +37,21 @@ class ConfigTests: XCTestCase {
     }
     
     func testSet() {
-        let reformatResult = Runner.execute(args: ["config", "set", "reformat", "true"])
+        let icebox = IceBox(template: .empty)
+        
+        let reformatResult = icebox.run("config", "set", "reformat", "true")
         XCTAssertEqual(reformatResult.exitStatus, 0)
         XCTAssertEqual(reformatResult.stderr, "")
         XCTAssertEqual(reformatResult.stdout, "")
         
-        XCTAssertEqual(
-            sandboxedFileContents("global/config.json"),
-            "{\n  \"reformat\" : true\n}"
-        )
+        XCTAssertEqual(icebox.fileContents("global/config.json"), "{\n  \"reformat\" : true\n}")
     }
     
     func testSetInvalid() {
-        let binResult = Runner.execute(args: ["config", "set", "email", "hi@hi.com"])
-        XCTAssertEqual(binResult.exitStatus, 1)
-        XCTAssertEqual(binResult.stderr, """
+        let result = IceBox(template: .empty).run("config", "set", "email", "hi@hi.com")
+        XCTAssertEqual(result.exitStatus, 1)
+        XCTAssertEqual(result.stdout, "")
+        XCTAssertEqual(result.stderr, """
         
         Error: unrecognized config key
 
@@ -61,11 +61,10 @@ class ConfigTests: XCTestCase {
 
         
         """)
-        XCTAssertEqual(binResult.stdout, "")
     }
     
     func testList() {
-        let result = Runner.execute(args: ["config", "list"])
+        let result = IceBox(template: .empty).run("config", "list")
         XCTAssertEqual(result.exitStatus, 0)
         XCTAssertEqual(result.stderr, "")
         XCTAssertEqual(result.stdout, """

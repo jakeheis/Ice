@@ -14,17 +14,31 @@ class TestTests: XCTestCase {
     ]
     
     func testStructure() {
-        let result = Runner.execute(args: ["test"], sandbox: .lib)
+        let icebox = IceBox(template: .lib)
+        
+        let result = icebox.run("test")
         XCTAssertEqual(result.exitStatus, 0)
         
-        result.stdout.assert { (v) in
+        #if !os(Linux) && !os(Android)
+        result.assertStdout { (v) in
             v.equals("Compile Lib (1 sources)")
             v.equals("Compile LibTests (1 sources)")
             v.matches("^Link \\./\\.build/.*/LibPackageTests$")
             v.empty()
             v.done()
         }
-        result.stderr.assert { (v) in
+        #else
+        result.assertStdout { (v) in
+            v.equals("Compile Lib (1 sources)")
+            v.equals("Compile LibTests (1 sources)")
+            v.equals("Compile LibPackageTests (1 sources)")
+            v.matches("^Link \\./\\.build/.*/LibPackageTests.xctest$")
+            v.empty()
+            v.done()
+        }
+        #endif
+        
+        result.assertStderr { (v) in
             v.empty()
             v.equals("LibPackageTests:")
             v.empty()

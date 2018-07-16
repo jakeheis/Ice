@@ -15,12 +15,14 @@ class RemoveTests: XCTestCase {
     ]
     
     func testBasicRemove() {
-        let result = Runner.execute(args: ["remove", "SwiftCLI"], sandbox: .exec)
+        let icebox = IceBox(template: .exec)
+        
+        let result = icebox.run("remove", "SwiftCLI")
         XCTAssertEqual(result.exitStatus, 0)
         XCTAssertEqual(result.stdout, "")
         XCTAssertEqual(result.stderr, "")
         
-        XCTAssertEqual(sandboxedFileContents("Package.swift"), """
+        XCTAssertEqual(icebox.fileContents("Package.swift"), """
         // swift-tools-version:4.0
         // Managed by ice
 
@@ -37,34 +39,34 @@ class RemoveTests: XCTestCase {
     }
     
     func testRemoveDifferentName() {
-        let result = Runner.execute(args: ["remove", "Mint"], sandbox: .lib, sandboxSetup: {
-            writeToSandbox(path: "Package.swift", contents: """
-            // swift-tools-version:4.0
-            // Managed by ice
+        let icebox = IceBox(template: .lib)
+        icebox.createFile(path: "Package.swift", contents: """
+        // swift-tools-version:4.0
+        // Managed by ice
 
-            import PackageDescription
+        import PackageDescription
 
-            let package = Package(
-                name: "Lib",
-                products: [
-                    .library(name: "Lib", targets: ["Lib"]),
-                ],
-                dependencies: [
-                    .package(url: "https://github.com/yonaskolb/Mint", from: "0.10.1"),
-                ],
-                targets: [
-                    .target(name: "Lib", dependencies: ["MintKit"]),
-                    .testTarget(name: "LibTests", dependencies: ["Lib"]),
-                ]
-            )
-            """)
-        })
+        let package = Package(
+            name: "Lib",
+            products: [
+                .library(name: "Lib", targets: ["Lib"]),
+            ],
+            dependencies: [
+                .package(url: "https://github.com/yonaskolb/Mint", from: "0.10.1"),
+            ],
+            targets: [
+                .target(name: "Lib", dependencies: ["MintKit"]),
+                .testTarget(name: "LibTests", dependencies: ["Lib"]),
+            ]
+        )
+        """)
         
+        let result = icebox.run("remove", "Mint")
         XCTAssertEqual(result.exitStatus, 0)
         XCTAssertEqual(result.stdout, "")
         XCTAssertEqual(result.stderr, "")
         
-        XCTAssertEqual(sandboxedFileContents("Package.swift"), """
+        XCTAssertEqual(icebox.fileContents("Package.swift"), """
         // swift-tools-version:4.0
         // Managed by ice
 

@@ -10,20 +10,12 @@ import SwiftCLI
 
 class Git {
     
-    static func clone(url: String, to path: String, version: Version?, silent: Bool = false, timeout: Int? = nil) throws {
-        var args = ["clone", "--depth", "1"]
-        if let version = version {
-            args += ["--branch", version.raw]
-        }
-        try runGit(args: args + [url, path], silent: silent, timeout: timeout)
+    static func clone(url: String, to path: String, silent: Bool = false, timeout: Int? = nil) throws {
+        try runGit(args: ["clone", "--depth", "1", url, path], silent: silent, timeout: timeout)
     }
     
     static func pull(path: String, silent: Bool, timeout: Int? = nil) throws {
         try runGit(args: ["-C", path, "pull"], silent: silent, timeout: timeout)
-    }
-    
-    static func getRemoteUrl(of path: String) throws -> String {
-        return try captureGit("-C", path, "remote", "get-url", "origin").stdout
     }
     
     static func lsRemote(url: String) throws -> [Version] {
@@ -61,17 +53,13 @@ class Git {
         }
     }
     
-    private static func captureGit(_ args: String...) throws -> CaptureResult {
-        return try capture("git", arguments: args)
-    }
-    
     private static func createInterruptItem(task: Task, timeout: Int?) -> DispatchWorkItem? {
         guard let timeout = timeout else {
             return nil
         }
         
         let item = DispatchWorkItem { [weak task] in
-            task?.interrupt()
+            task?.terminate()
         }
         DispatchQueue.global().asyncAfter(deadline: .now() + .seconds(timeout), execute: item)
         return item

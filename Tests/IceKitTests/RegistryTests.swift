@@ -5,9 +5,8 @@
 //  Created by Jake Heiser on 9/22/17.
 //
 
-import XCTest
 import PathKit
-import Regex
+import XCTest
 @testable import IceKit
 
 class RegistryTests: XCTestCase {
@@ -24,7 +23,7 @@ class RegistryTests: XCTestCase {
     lazy var localPath = registryPath + "local.json"
     
     override func setUp() {
-        try! registryPath.mkpath()
+        try! registryPath.mkdir()
     }
     
     override func tearDown() {

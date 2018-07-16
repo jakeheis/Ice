@@ -16,14 +16,14 @@ class TargetTests: XCTestCase {
     ]
     
     func testBasicAdd() {
-        let result = Runner.execute(args: ["target", "add", "Core"], sandbox: .lib)
+        let icebox = IceBox(template: .lib)
+        
+        let result = icebox.run("target", "add", "Core")
         XCTAssertEqual(result.exitStatus, 0)
         XCTAssertEqual(result.stdout, "")
         XCTAssertEqual(result.stderr, "")
         
-        XCTAssertEqual(
-            sandboxedFileContents("Package.swift"),
-            """
+        XCTAssertEqual(icebox.fileContents("Package.swift"), """
         // swift-tools-version:4.0
         // Managed by ice
 
@@ -45,14 +45,14 @@ class TargetTests: XCTestCase {
     }
     
     func testDependAdd() {
-        let result = Runner.execute(args: ["target", "add", "Core", "-d", "Lib"], sandbox: .lib)
+        let icebox = IceBox(template: .lib)
+        
+        let result = icebox.run("target", "add", "Core", "-d", "Lib")
         XCTAssertEqual(result.exitStatus, 0)
         XCTAssertEqual(result.stdout, "")
         XCTAssertEqual(result.stderr, "")
         
-        XCTAssertEqual(
-            sandboxedFileContents("Package.swift"),
-            """
+        XCTAssertEqual(icebox.fileContents("Package.swift"), """
         // swift-tools-version:4.0
         // Managed by ice
 
@@ -74,14 +74,14 @@ class TargetTests: XCTestCase {
     }
     
     func testTargetRemove() {
-        let result = Runner.execute(args: ["target", "remove", "Lib"], sandbox: .lib)
+        let icebox = IceBox(template: .lib)
+        
+        let result = icebox.run("target", "remove", "Lib")
         XCTAssertEqual(result.exitStatus, 0)
         XCTAssertEqual(result.stdout, "")
         XCTAssertEqual(result.stderr, "")
         
-        XCTAssertEqual(
-            sandboxedFileContents("Package.swift"),
-            """
+        XCTAssertEqual(icebox.fileContents("Package.swift"), """
         // swift-tools-version:4.0
         // Managed by ice
 

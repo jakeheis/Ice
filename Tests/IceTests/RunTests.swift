@@ -6,7 +6,6 @@
 //
 
 import XCTest
-import SwiftCLI
 
 class RunTests: XCTestCase {
     
@@ -16,9 +15,11 @@ class RunTests: XCTestCase {
     ]
     
     func testBasicRun() {
-        Runner.execute(args: ["build"], sandbox: .exec)
+        let icebox = IceBox(template: .exec)
+        
+        icebox.run("build")
 
-        let result = Runner.execute(args: ["run"], clean: false)
+        let result = icebox.run("run")
         XCTAssertEqual(result.exitStatus, 0)
         XCTAssertEqual(result.stderr, "")
         XCTAssertEqual(result.stdout, """
@@ -28,21 +29,24 @@ class RunTests: XCTestCase {
     }
     
     func testWatchRun() {
-        Runner.execute(args: ["build"], sandbox: .exec)
+        let icebox = IceBox(template: .exec)
+        
+        #if !os(Linux) && !os(Android)
+        
+        icebox.run("build")
         
         DispatchQueue.global().asyncAfter(deadline: .now() + 5) {
-            writeToSandbox(path: "Sources/Exec/main.swift", contents: "print(\"hey world\")\n")
+            icebox.createFile(path: "Sources/Exec/main.swift", contents: "print(\"hey world\")\n")
         }
         
         DispatchQueue.global().asyncAfter(deadline: .now() + 10) {
-            Runner.interrupt()
+            icebox.interrupt()
         }
         
-        let result = Runner.execute(args: ["run", "-w"], clean: false)
+        let result = icebox.run("run", "-w")
         XCTAssertEqual(result.exitStatus, 2)
         XCTAssertEqual(result.stderr, "")
-        
-        result.stdout.assert { (v) in
+        result.assertStdout { (v) in
             v.equals("[ice] restarting due to changes...")
             v.equals("Hello, world!")
             v.equals("[ice] restarting due to changes...")
@@ -52,6 +56,20 @@ class RunTests: XCTestCase {
             v.empty()
             v.done()
         }
+        
+        #else
+        
+        let result = icebox.run("run", "-w")
+        XCTAssertEqual(result.exitStatus, 1)
+        XCTAssertEqual(result.stdout, "")
+        XCTAssertEqual(result.stderr, """
+        
+        Error: -w is not supported on Linux
+        
+        
+        """)
+        
+        #endif
     }
     
 }

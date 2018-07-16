@@ -15,11 +15,13 @@ class UpdateTests: XCTestCase {
     ]
     
     func testUpdate() {
-        let buildResult = Runner.execute(args: ["build"], sandbox: .exec)
+        let icebox = IceBox(template: .exec)
+        
+        let buildResult = icebox.run("build")
         XCTAssertEqual(buildResult.exitStatus, 0)
         XCTAssertEqual(buildResult.stderr, "")
         
-        let result = Runner.execute(args: ["update"], clean: false)
+        let result = icebox.run("update")
         XCTAssertEqual(result.exitStatus, 0)
         XCTAssertEqual(result.stderr, "")
         XCTAssertEqual(result.stdout, """
@@ -30,16 +32,18 @@ class UpdateTests: XCTestCase {
     }
     
     func testUpdateSingle() {
-        let buildResult = Runner.execute(args: ["build"], sandbox: .exec)
+        let icebox = IceBox(template: .exec)
+        
+        let buildResult = icebox.run("build")
         XCTAssertEqual(buildResult.exitStatus, 0)
         XCTAssertEqual(buildResult.stderr, "")
         
-        let result = Runner.execute(args: ["update", "SwiftCLI", "--version=5.0.0"], clean: false)
+        let result = icebox.run("update", "SwiftCLI", "--version=5.0.0")
         XCTAssertEqual(result.exitStatus, 0)
         XCTAssertEqual(result.stderr, "")
         XCTAssertEqual(result.stdout, "")
         
-        XCTAssertEqual(sandboxedFileContents("Package.swift"), """
+        XCTAssertEqual(icebox.fileContents("Package.swift"), """
         // swift-tools-version:4.0
         // Managed by ice
 

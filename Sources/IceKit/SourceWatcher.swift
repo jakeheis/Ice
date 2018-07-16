@@ -6,12 +6,12 @@
 //
 
 import Dispatch
+import Foundation
 import PathKit
 
 public class SourceWatcher {
     
     let action: () -> ()
-    private var watchers: [DispatchSourceFileSystemObject] = []
     private var startOver = true
     private var needsAction = true
     private var lastChildren: Set<String> = []
@@ -21,6 +21,10 @@ public class SourceWatcher {
     public init(action: @escaping () -> ()) throws {
         self.action = action
     }
+    
+    #if !os(Linux) && !os(Android)
+    
+    private var watchers: [DispatchSourceFileSystemObject] = []
     
     public func go() throws -> Never {
         while true {
@@ -84,5 +88,13 @@ public class SourceWatcher {
             self.needsAction = false
         }
     }
+    
+    #else
+    
+    public func go() throws -> Never {
+        throw IceError(message: "-w is not supported on Linux")
+    }
+    
+    #endif
     
 }

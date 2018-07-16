@@ -73,13 +73,7 @@ class SetConfigCommand: Command {
         }
         switch key {
         case .reformat:
-            let val: Bool
-            switch value.value.lowercased() {
-            case "true", "t", "yes", "y":
-                val = true
-            case "false", "f", "no", "n":
-                val = false
-            default:
+            guard let val = Bool.convert(from: value.value) else {
                 throw IceError(message: "invalid value (must be true/false)")
             }
             try Ice.config.set(\.reformat, value: val)

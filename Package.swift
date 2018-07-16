@@ -13,13 +13,13 @@ let package = Package(
         .package(url: "https://github.com/kylef/PathKit", from: "0.9.1"),
         .package(url: "https://github.com/onevcat/Rainbow", from: "3.1.1"),
         .package(url: "https://github.com/sharplet/Regex", from: "1.1.0"),
-        .package(url: "https://github.com/jakeheis/SwiftCLI", from: "5.0.0"),
+        .package(url: "https://github.com/jakeheis/SwiftCLI", .branchItem("master")),
         .package(url: "https://github.com/scottrhoyt/SwiftyTextTable", from: "0.8.0"),
     ],
     targets: [
         .target(name: "Ice", dependencies: ["IceKit", "PathKit", "SwiftCLI", "SwiftyTextTable"]),
         .target(name: "IceKit", dependencies: ["PathKit", "Rainbow", "Regex", "SwiftCLI"]),
-        .testTarget(name: "IceKitTests", dependencies: ["IceKit"]),
-        .testTarget(name: "IceTests", dependencies: ["Rainbow"]),
+        .testTarget(name: "IceKitTests", dependencies: ["IceKit", "PathKit"]),
+        .testTarget(name: "IceTests", dependencies: ["Rainbow", "SwiftCLI"]),
     ]
 )

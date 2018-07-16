@@ -20,7 +20,9 @@ class AddTests: XCTestCase {
     ]
     
     func testBasicAdd() {
-        let result = Runner.execute(args: ["add", "jakeheis/Spawn", "-n"], sandbox: .lib)
+        let icebox = IceBox(template: .lib)
+        
+        let result = icebox.run("add", "jakeheis/Spawn", "-n")
         XCTAssertEqual(result.exitStatus, 0)
         XCTAssertEqual(result.stderr, "")
         XCTAssertEqual(result.stdout, """
@@ -30,9 +32,7 @@ class AddTests: XCTestCase {
         
         """)
         
-        XCTAssertEqual(
-            sandboxedFileContents("Package.swift"),
-            """
+        XCTAssertEqual(icebox.fileContents("Package.swift"), """
         // swift-tools-version:4.0
         // Managed by ice
 
@@ -56,7 +56,9 @@ class AddTests: XCTestCase {
     }
     
     func testTargetAdd() {
-        let result = Runner.execute(args: ["add", "jakeheis/Spawn", "-t", "Lib"], sandbox: .lib)
+        let icebox = IceBox(template: .lib)
+        
+        let result = icebox.run("add", "jakeheis/Spawn", "-t", "Lib")
         XCTAssertEqual(result.exitStatus, 0)
         XCTAssertEqual(result.stderr, "")
         XCTAssertEqual(result.stdout, """
@@ -66,9 +68,7 @@ class AddTests: XCTestCase {
         
         """)
         
-        XCTAssertEqual(
-            sandboxedFileContents("Package.swift"),
-            """
+        XCTAssertEqual(icebox.fileContents("Package.swift"), """
         // swift-tools-version:4.0
         // Managed by ice
 
@@ -92,7 +92,9 @@ class AddTests: XCTestCase {
     }
     
     func testVersionedAdd() {
-        let result = Runner.execute(args: ["add", "jakeheis/Spawn", "--version=0.0.5", "-n"], sandbox: .lib)
+        let icebox = IceBox(template: .lib)
+        
+        let result = icebox.run("add", "jakeheis/Spawn", "--version=0.0.5", "-n")
         XCTAssertEqual(result.exitStatus, 0)
         XCTAssertEqual(result.stderr, "")
         XCTAssertEqual(result.stdout, """
@@ -102,9 +104,7 @@ class AddTests: XCTestCase {
         
         """)
         
-        XCTAssertEqual(
-            sandboxedFileContents("Package.swift"),
-            """
+        XCTAssertEqual(icebox.fileContents("Package.swift"), """
         // swift-tools-version:4.0
         // Managed by ice
 
@@ -128,9 +128,12 @@ class AddTests: XCTestCase {
     }
     
     func testSingleTargetAdd() {
-        let result = Runner.execute(args: ["add", "jakeheis/Spawn"], sandbox: .exec)
+        let icebox = IceBox(template: .exec)
+        
+        let result = icebox.run("add", "jakeheis/Spawn")
         XCTAssertEqual(result.exitStatus, 0)
         XCTAssertEqual(result.stderr, "")
+        
         #if swift(>=4.1)
         XCTAssertEqual(result.stdout, """
         Update https://github.com/jakeheis/SwiftCLI
@@ -149,7 +152,7 @@ class AddTests: XCTestCase {
         """)
         #endif
         
-        XCTAssertEqual(sandboxedFileContents("Package.swift"), """
+        XCTAssertEqual(icebox.fileContents("Package.swift"), """
         // swift-tools-version:4.0
         // Managed by ice
 
@@ -170,7 +173,9 @@ class AddTests: XCTestCase {
     }
     
     func testBranchAdd() {
-        let result = Runner.execute(args: ["add", "jakeheis/SwiftCLI", "--branch=master", "-n"], sandbox: .lib)
+        let icebox = IceBox(template: .lib)
+        
+        let result = icebox.run("add", "jakeheis/SwiftCLI", "--branch=master", "-n")
         XCTAssertEqual(result.exitStatus, 0)
         XCTAssertEqual(result.stderr, "")
         XCTAssertEqual(result.stdout, """
@@ -180,7 +185,7 @@ class AddTests: XCTestCase {
         
         """)
         
-        XCTAssertEqual(sandboxedFileContents("Package.swift"), """
+        XCTAssertEqual(icebox.fileContents("Package.swift"), """
         // swift-tools-version:4.0
         // Managed by ice
 
@@ -204,7 +209,9 @@ class AddTests: XCTestCase {
     }
     
     func testSHAAdd() {
-        let result = Runner.execute(args: ["add", "jakeheis/SwiftCLI", "--sha=51ba542611878b2e64e82467b895fdf4240ec32e", "-n"], sandbox: .lib)
+        let icebox = IceBox(template: .lib)
+        
+        let result = icebox.run("add", "jakeheis/SwiftCLI", "--sha=51ba542611878b2e64e82467b895fdf4240ec32e", "-n")
         XCTAssertEqual(result.exitStatus, 0)
         XCTAssertEqual(result.stderr, "")
         XCTAssertEqual(result.stdout, """
@@ -214,7 +221,7 @@ class AddTests: XCTestCase {
         
         """)
         
-        XCTAssertEqual(sandboxedFileContents("Package.swift"), """
+        XCTAssertEqual(icebox.fileContents("Package.swift"), """
         // swift-tools-version:4.0
         // Managed by ice
 
@@ -238,9 +245,12 @@ class AddTests: XCTestCase {
     }
     
     func testDifferentNamedLib() {
-        let result = Runner.execute(args: ["add", "jakeheis/IceLibTest"], sandbox: .exec)
+        let icebox = IceBox(template: .exec)
+        
+        let result = icebox.run("add", "jakeheis/IceLibTest")
         XCTAssertEqual(result.exitStatus, 0)
         XCTAssertEqual(result.stderr, "")
+        
         #if swift(>=4.1)
         XCTAssertEqual(result.stdout, """
         Update https://github.com/jakeheis/SwiftCLI
@@ -259,7 +269,7 @@ class AddTests: XCTestCase {
         """)
         #endif
         
-        XCTAssertEqual(sandboxedFileContents("Package.swift"), """
+        XCTAssertEqual(icebox.fileContents("Package.swift"), """
         // swift-tools-version:4.0
         // Managed by ice
 

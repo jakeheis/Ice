@@ -19,9 +19,9 @@ class AddCommand: Command {
     let targets = Key<String>("-t", "--targets", description: "List of targets which should depend on this dependency")
     let noInteractive = Flag("-n", "--no-interactive", description: "Do not prompt for targets if none are supplied")
     
-    let version = Key<Version>("--version", description: "The version of the dependency to depend on")
-    let branch = Key<String>("--branch", description: "The branch of the dependency to depend on")
-    let sha = Key<String>("--sha", description: "The commit hash of the dependency to depend on")
+    let version = Key<Version>("-w", "--version", description: "The version of the dependency to depend on")
+    let branch = Key<String>("-b", "--branch", description: "The branch of the dependency to depend on")
+    let sha = Key<String>("-s", "--sha", description: "The commit hash of the dependency to depend on")
     
     var optionGroups: [OptionGroup] {
         return [.atMostOne(version, branch, sha)]

@@ -16,9 +16,10 @@ class InitTests: XCTestCase {
     ]
     
     func testLib() {
-        let result = Runner.execute(args: ["init", "--lib"], dir: "MyNewLib", sandboxSetup: {
-            createSandboxDirectory(path: "MyNewLib")
-        })
+        let icebox = IceBox(template: .empty)
+        icebox.createDirectory(path: "MyNewLib")
+        
+        let result = icebox.run("init", "--lib", configure: { $0.currentDirectoryPath += "/MyNewLib" })
         XCTAssertEqual(result.exitStatus, 0)
         XCTAssertEqual(result.stderr, "")
         
@@ -63,13 +64,14 @@ class InitTests: XCTestCase {
         """)
         #endif
         
-        XCTAssertTrue(sandboxFileExists(path: "MyNewLib/Package.swift"))
+        XCTAssertTrue(icebox.fileExists("MyNewLib/Package.swift"))
     }
     
     func testExec() {
-        let result = Runner.execute(args: ["init", "--exec"], dir: "MyNewExec", sandboxSetup: {
-            createSandboxDirectory(path: "MyNewExec")
-        })
+        let icebox = IceBox(template: .empty)
+        icebox.createDirectory(path: "MyNewExec")
+        
+        let result = icebox.run("init", "--exec", configure: { $0.currentDirectoryPath += "/MyNewExec" })
         XCTAssertEqual(result.exitStatus, 0)
         XCTAssertEqual(result.stderr, "")
         XCTAssertEqual(result.stdout, """
@@ -88,7 +90,7 @@ class InitTests: XCTestCase {
         
         """)
         
-        XCTAssertTrue(sandboxFileExists(path: "MyNewExec/Package.swift"))
+        XCTAssertTrue(icebox.fileExists("MyNewExec/Package.swift"))
     }
     
 }

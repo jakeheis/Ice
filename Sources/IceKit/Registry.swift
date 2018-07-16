@@ -41,7 +41,7 @@ public class Registry {
         if sharedRepo.exists {
             try Git.pull(path: sharedRepo.string, silent: silent, timeout: timeout)
         } else {
-            try Git.clone(url: Registry.url, to: sharedRepo.string, version: nil, silent: silent, timeout: timeout)
+            try Git.clone(url: Registry.url, to: sharedRepo.string, silent: silent, timeout: timeout)
         }
         
         localRegistry.lastRefreshed = Date()

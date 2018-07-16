@@ -11,25 +11,26 @@ class OutdatedTests: XCTestCase {
     
     static var allTests = [
         ("testOutdated", testOutdated),
+        ("testOutdatedNoDependencies", testOutdatedNoDependencies),
     ]
     
     func testOutdated() {
-        let result = Runner.execute(args: ["outdated"], sandbox: .exec)
+        let result = IceBox(template: .exec).run("outdated")
         XCTAssertEqual(result.exitStatus, 0)
         XCTAssertEqual(result.stderr, "")
-        result.stdout.assert { (v) in
-            v.equals("+----------+-----------------+----------+--------+")
-            v.equals("| Name     | Wanted          | Resolved | Latest |")
-            v.equals("+----------+-----------------+----------+--------+")
-            v.matches("\\| SwiftCLI \\| 4\\.0\\.3 \\.\\.< 5\\.0\\.0 \\| 4\\.1\\.2    \\| \\d\\.\\d\\.\\d  \\|")
-            v.equals("+----------+-----------------+----------+--------+")
-            v.empty()
-            v.done()
+        result.assertStdout { (t) in
+            t.equals("+----------+-----------------+----------+--------+")
+            t.equals("| Name     | Wanted          | Resolved | Latest |")
+            t.equals("+----------+-----------------+----------+--------+")
+            t.matches("\\| SwiftCLI \\| 4\\.0\\.3 \\.\\.< 5\\.0\\.0 \\| 4\\.1\\.2    \\| \\d\\.\\d\\.\\d  \\|")
+            t.equals("+----------+-----------------+----------+--------+")
+            t.empty()
+            t.done()
         }
     }
     
     func testOutdatedNoDependencies() {
-        let result = Runner.execute(args: ["outdated"], sandbox: .lib)
+        let result = IceBox(template: .lib).run("outdated")
         XCTAssertEqual(result.exitStatus, 0)
         XCTAssertEqual(result.stderr, "")
     }

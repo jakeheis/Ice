@@ -15,38 +15,42 @@ class BuildTests: XCTestCase {
         ("testReleaseBuild", testReleaseBuild),
         ("testWatchBuild", testWatchBuild),
         ("testBuildErrors", testBuildErrors),
+        ("testBuildTarget", testBuildTarget),
+        ("testBuildProduct", testBuildProduct),
     ]
     
     func testSimpleBuild() {
-        let result = Runner.execute(args: ["build"], sandbox: .exec)
+        let icebox = IceBox(template: .exec)
+        let result = icebox.run("build")
         XCTAssertEqual(result.exitStatus, 0)
         XCTAssertEqual(result.stderr, "")
         
-        result.stdout.assert { (v) in
+        result.assertStdout { (v) in
             v.equals("Fetch https://github.com/jakeheis/SwiftCLI")
             v.equals("Clone https://github.com/jakeheis/SwiftCLI")
             v.equals("Resolve https://github.com/jakeheis/SwiftCLI at 4.1.2")
             v.equals("Compile SwiftCLI (23 sources)")
             v.equals("Compile Exec (1 sources)")
-            v.matches("^Link ./.build/.*0/debug/Exec$")
+            v.matches("^Link \\./\\.build/.*/debug/Exec$")
             v.empty()
             v.done()
         }
         
-        XCTAssertTrue(sandboxFileExists(path: ".build/debug/Exec"))
+        XCTAssertTrue(icebox.fileExists(".build/debug/Exec"))
     }
     
     func testCleanBuild() {
-        let initial = Runner.execute(args: ["build", "-c"], sandbox: .lib)
+        let icebox = IceBox(template: .lib)
+        
+        let initial = icebox.run("build", "-c")
         XCTAssertEqual(initial.exitStatus, 0)
         XCTAssertEqual(initial.stderr, "")
-        
         XCTAssertEqual(initial.stdout, """
         Compile Lib (1 sources)
 
         """)
         
-        let followup = Runner.execute(args: ["build", "-c"], clean: false)
+        let followup = icebox.run("build", "-c")
         XCTAssertEqual(followup.exitStatus, 0)
         XCTAssertEqual(followup.stderr, "")
         XCTAssertEqual(followup.stdout, """
@@ -54,11 +58,13 @@ class BuildTests: XCTestCase {
 
         """)
         
-        XCTAssertTrue(sandboxFileExists(path: ".build/debug"))
+        XCTAssertTrue(icebox.fileExists(".build/debug"))
     }
     
     func testReleaseBuild() {
-        let initial = Runner.execute(args: ["build", "-r"], sandbox: .lib)
+        let icebox = IceBox(template: .lib)
+        
+        let initial = icebox.run("build", "-r")
         XCTAssertEqual(initial.exitStatus, 0)
         XCTAssertEqual(initial.stderr, "")
         
@@ -67,20 +73,24 @@ class BuildTests: XCTestCase {
 
         """)
         
-        XCTAssertTrue(sandboxFileExists(path: ".build/release"))
-        XCTAssertFalse(sandboxFileExists(path: ".build/debug"))
+        XCTAssertTrue(icebox.fileExists(".build/release"))
+        XCTAssertFalse(icebox.fileExists(".build/debug"))
     }
     
     func testWatchBuild() {
+        let icebox = IceBox(template: .lib)
+        
+        #if !os(Linux) && !os(Android)
+        
         DispatchQueue.global().asyncAfter(deadline: .now() + 4) {
-            writeToSandbox(path: "Sources/Lib/Lib.swift", contents: "\nprint(\"hey world\")\n")
+            icebox.createFile(path: "Sources/Lib/Lib.swift", contents: "\nprint(\"hey world\")\n")
         }
 
         DispatchQueue.global().asyncAfter(deadline: .now() + 6) {
-            Runner.interrupt()
+            icebox.interrupt()
         }
         
-        let result = Runner.execute(args: ["build", "-w"], sandbox: .lib)
+        let result = icebox.run("build", "-w")
         
         XCTAssertEqual(result.exitStatus, 2)
         XCTAssertEqual(result.stderr, "")
@@ -98,20 +108,35 @@ class BuildTests: XCTestCase {
         
         
         """)
+        
+        #else
+        
+        let result = icebox.run("build", "-w")
+        XCTAssertEqual(result.exitStatus, 1)
+        XCTAssertEqual(result.stdout, "")
+        XCTAssertEqual(result.stderr, """
+
+        Error: -w is not supported on Linux
+
+
+        """)
+        
+        #endif
     }
     
     func testBuildErrors() {
-        let file = """
+        let icebox = IceBox(template: .exec)
+        
+        let contents = """
         let str: String? = "text"
         print(str)
 
         let int: Int = "hello world"
 
         """
-        let result = Runner.execute(args: ["build"], sandbox: .exec, sandboxSetup: {
-            writeToSandbox(path: "Sources/Exec/main.swift", contents: file)
-        })
+        icebox.createFile(path: "Sources/Exec/main.swift", contents: contents)
         
+        let result = icebox.run("build")
         XCTAssertEqual(result.exitStatus, 1)
         XCTAssertEqual(result.stderr, "")
         XCTAssertEqual(result.stdout, """
@@ -163,7 +188,7 @@ class BuildTests: XCTestCase {
     }
     
     func testBuildTarget() {
-        let success = Runner.execute(args: ["build", "--target=Lib"], sandbox: .lib)
+        let success = IceBox(template: .lib).run("build", "--target=Lib")
         XCTAssertEqual(success.exitStatus, 0)
         XCTAssertEqual(success.stderr, "")
         XCTAssertEqual(success.stdout, """
@@ -171,7 +196,7 @@ class BuildTests: XCTestCase {
 
         """)
         
-        let error = Runner.execute(args: ["build", "--target=Library"], sandbox: .lib)
+        let error = IceBox(template: .lib).run("build", "--target=Library")
         XCTAssertEqual(error.exitStatus, 1)
         XCTAssertEqual(error.stdout, "")
         XCTAssertEqual(error.stderr, """
@@ -183,21 +208,21 @@ class BuildTests: XCTestCase {
     }
     
     func testBuildProduct() {
-        let result = Runner.execute(args: ["build", "--product=Exec"], sandbox: .exec)
+        let result = IceBox(template: .exec).run("build", "--product=Exec")
         XCTAssertEqual(result.exitStatus, 0)
         XCTAssertEqual(result.stderr, "")
-        result.stdout.assert { (v) in
+        result.assertStdout { (v) in
             v.equals("Fetch https://github.com/jakeheis/SwiftCLI")
             v.equals("Clone https://github.com/jakeheis/SwiftCLI")
             v.equals("Resolve https://github.com/jakeheis/SwiftCLI at 4.1.2")
             v.equals("Compile SwiftCLI (23 sources)")
             v.equals("Compile Exec (1 sources)")
-            v.matches("^Link ./.build/.*0/debug/Exec$")
+            v.matches("^Link \\./\\.build/.*/debug/Exec$")
             v.empty()
             v.done()
         }
         
-        let result2 = Runner.execute(args: ["build", "--product=Prod"], sandbox: .exec)
+        let result2 = IceBox(template: .exec).run("build", "--product=Prod")
         XCTAssertEqual(result2.exitStatus, 1)
         XCTAssertEqual(result2.stdout, """
         Fetch https://github.com/jakeheis/SwiftCLI

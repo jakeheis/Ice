@@ -15,7 +15,9 @@ class NewTests: XCTestCase {
     ]
     
     func testLib() {
-        let result = Runner.execute(args: ["new", "MyNewLib", "--lib"])
+        let icebox = IceBox(template: .empty)
+        
+        let result = icebox.run("new", "MyNewLib", "--lib")
         XCTAssertEqual(result.exitStatus, 0)
         XCTAssertEqual(result.stderr, "")
 
@@ -60,12 +62,14 @@ class NewTests: XCTestCase {
         """)
         #endif
         
-        XCTAssertTrue(sandboxFileExists(path: "MyNewLib"))
-        XCTAssertTrue(sandboxFileExists(path: "MyNewLib/Package.swift"))
+        XCTAssertTrue(icebox.fileExists("MyNewLib"))
+        XCTAssertTrue(icebox.fileExists("MyNewLib/Package.swift"))
     }
     
     func testExec() {
-        let result = Runner.execute(args: ["new", "MyNewExec", "--exec"])
+        let icebox = IceBox(template: .empty)
+        
+        let result = icebox.run("new", "MyNewExec", "--exec")
         XCTAssertEqual(result.exitStatus, 0)
         XCTAssertEqual(result.stderr, "")
         XCTAssertEqual(result.stdout, """
@@ -83,8 +87,8 @@ class NewTests: XCTestCase {
         
         
         """)
-        XCTAssertTrue(sandboxFileExists(path: "MyNewExec"))
-        XCTAssertTrue(sandboxFileExists(path: "MyNewExec/Package.swift"))
+        XCTAssertTrue(icebox.fileExists("MyNewExec"))
+        XCTAssertTrue(icebox.fileExists("MyNewExec/Package.swift"))
     }
     
 }

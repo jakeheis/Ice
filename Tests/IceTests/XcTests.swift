@@ -14,7 +14,9 @@ class XcTests: XCTestCase {
     ]
     
     func testXc() {
-        let result = Runner.execute(args: ["xc", "-n"], sandbox: .lib)
+        let icebox = IceBox(template: .lib)
+        
+        let result = icebox.run("xc", "-n")
         XCTAssertEqual(result.exitStatus, 0)
         XCTAssertEqual(result.stdout, """
         Generated Lib.xcodeproj
@@ -22,7 +24,7 @@ class XcTests: XCTestCase {
         """)
         XCTAssertEqual(result.stderr, "")
         
-        XCTAssertTrue(sandboxFileExists(path: "Lib.xcodeproj"))
+        XCTAssertTrue(icebox.fileExists("Lib.xcodeproj"))
     }
     
 }

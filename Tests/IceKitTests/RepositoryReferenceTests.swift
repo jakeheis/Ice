@@ -50,9 +50,9 @@ class RepositoryReferenceTests: XCTestCase {
         XCTAssertEqual(ssh?.name, "SwiftCLI")
     }
     
-    func testMostRecentVersion() {
+    func testMostRecentVersion() throws {
         let ref = RepositoryReference("jakeheis/Alamofire")
-        let latest = try! ref?.latestVersion()
+        let latest = try ref?.latestVersion()
         XCTAssertEqual(latest, Version("3.4.1"))
     }
     

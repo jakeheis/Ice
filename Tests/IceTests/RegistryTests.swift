@@ -5,8 +5,8 @@
 //  Created by Jake Heiser on 9/13/17.
 //
 
+import PathKit
 import XCTest
-
 
 class RegistryTests: XCTestCase {
     
@@ -17,19 +17,16 @@ class RegistryTests: XCTestCase {
         ("testRemove", testRemove),
     ]
     
-    override func tearDown() {
-        Runner.clean()
-    }
-    
     func testAdd() {
-        XCTAssertNil(sandboxedFileContents("global/Registry/local.json"))
+        let icebox = IceBox(template: .empty)
+        XCTAssertFalse(icebox.fileExists("global/Registry/local.json"))
         
-        let result = Runner.execute(args: ["registry", "add", "jakeheis/dne", "dne"])
+        let result = icebox.run("registry", "add", "jakeheis/dne", "dne")
         XCTAssertEqual(result.exitStatus, 0)
         XCTAssertEqual(result.stderr, "")
         XCTAssertEqual(result.stdout, "")
         
-        let json = try! JSONSerialization.jsonObject(with: sandboxedFileData("global/Registry/local.json")!, options: []) as! [String: Any]
+        let json = try! JSONSerialization.jsonObject(with: icebox.fileContents("global/Registry/local.json")!, options: []) as! [String: Any]
         let entries = json["entries"] as! [[String: Any]]
         XCTAssertEqual(entries.count, 1)
         XCTAssertEqual(entries[0]["name"] as? String, "dne")
@@ -37,8 +34,7 @@ class RegistryTests: XCTestCase {
     }
     
     func testSharedLookup() {
-        let result = Runner.execute(args: ["registry", "lookup", "Alamofire"])
-        
+        let result = IceBox(template: .empty).run("registry", "lookup", "Alamofire")
         XCTAssertEqual(result.exitStatus, 0)
         XCTAssertEqual(result.stderr, "")
         XCTAssertEqual(result.stdout, """
@@ -48,12 +44,10 @@ class RegistryTests: XCTestCase {
     }
     
     func testLocalLookup() {
-        let result = Runner.execute(args: ["registry", "lookup", "dne"], sandboxSetup: {
-            writeToSandbox(
-                path: "global/Registry/local.json",
-                contents: "{\"entries\":[{\"name\":\"dne\",\"url\":\"https:\\/\\/github.com\\/jakeheis\\/dne\"}]}"
-            )
-        })
+        let icebox = IceBox(template: .empty)
+        icebox.createFile(path: "global/Registry/local.json", contents: "{\"entries\":[{\"name\":\"dne\",\"url\":\"https:\\/\\/github.com\\/jakeheis\\/dne\"}]}")
+        
+        let result = icebox.run("registry", "lookup", "dne")
         XCTAssertEqual(result.exitStatus, 0)
         XCTAssertEqual(result.stderr, "")
         XCTAssertEqual(result.stdout, """
@@ -63,17 +57,15 @@ class RegistryTests: XCTestCase {
     }
     
     func testRemove() {
-        let result = Runner.execute(args: ["registry", "remove", "dne"], sandboxSetup: {
-            writeToSandbox(
-                path: "global/Registry/local.json",
-                contents: "{\"entries\":[{\"name\":\"dne\",\"url\":\"https:\\/\\/github.com\\/jakeheis\\/dne\"}]}"
-            )
-        })
+        let icebox = IceBox(template: .empty)
+        icebox.createFile(path: "global/Registry/local.json", contents: "{\"entries\":[{\"name\":\"dne\",\"url\":\"https:\\/\\/github.com\\/jakeheis\\/dne\"}]}")
+        
+        let result = icebox.run("registry", "remove", "dne")
         XCTAssertEqual(result.exitStatus, 0)
         XCTAssertEqual(result.stderr, "")
         XCTAssertEqual(result.stdout, "")
         
-        let json = try! JSONSerialization.jsonObject(with: sandboxedFileData("global/Registry/local.json")!, options: []) as! [String: Any]
+        let json = try! JSONSerialization.jsonObject(with: icebox.fileContents("global/Registry/local.json")!, options: []) as! [String: Any]
         let entries = json["entries"] as! [[String: Any]]
         XCTAssertEqual(entries.count, 0)
     }

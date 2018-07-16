@@ -14,16 +14,17 @@ class CleanTests: XCTestCase {
     ]
     
     func testClean() {
-        Runner.execute(args: ["build"], sandbox: .lib)
+        let icebox = IceBox(template: .lib)
         
-        XCTAssertTrue(sandboxFileExists(path: ".build/debug"))
+        icebox.run("build")
+        XCTAssertTrue(icebox.fileExists(".build/debug"))
         
-        let binResult = Runner.execute(args: ["clean"], clean: false)
+        let binResult = icebox.run("clean")
         XCTAssertEqual(binResult.exitStatus, 0)
         XCTAssertEqual(binResult.stderr, "")
         XCTAssertEqual(binResult.stdout, "")
         
-        XCTAssertFalse(sandboxFileExists(path: ".build/debug"))
+        XCTAssertFalse(icebox.fileExists(".build/debug"))
     }
     
 }

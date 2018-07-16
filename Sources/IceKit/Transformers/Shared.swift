@@ -16,9 +16,9 @@ extension String {
     
     var beautifyPath: String {
         var improved = self
-        let workingDirPrefix = FileManager.default.currentDirectoryPath
+        let workingDirPrefix = FileManager.default.currentDirectoryPath + "/"
         if hasPrefix(workingDirPrefix) {
-            improved = String(self[index(startIndex, offsetBy: workingDirPrefix.count + 1)...])
+            improved = String(self[index(startIndex, offsetBy: workingDirPrefix.count)...])
         }
         var components = improved.components(separatedBy: "/")
         let last = components.removeLast()

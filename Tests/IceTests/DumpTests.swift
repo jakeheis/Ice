@@ -14,7 +14,7 @@ class DumpTests: XCTestCase {
     ]
     
     func testDump() {
-        let result = Runner.execute(args: ["dump"], sandbox: .exec)
+        let result = IceBox(template: .exec).run("dump")
         XCTAssertEqual(result.exitStatus, 0)
         XCTAssertEqual(result.stderr, "")
         XCTAssertEqual(result.stdout, """

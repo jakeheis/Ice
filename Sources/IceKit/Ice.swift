@@ -7,6 +7,7 @@
 
 import Foundation
 import PathKit
+import SwiftCLI
 
 public class Ice {
     
@@ -23,7 +24,6 @@ public class Ice {
         
         static let versionFile = root + "version"
         static let globalConfigFile = root + "config.json"
-        static let packagesDirectory = root + "Packages"
         static let registryDirectory = root + "Registry"
 
         private init() {}
@@ -44,10 +44,9 @@ public class Ice {
             return
         }
         do {
-            try Paths.root.mkpath()
+            try run("mkdir", "-p", Paths.root.string)
             try Paths.versionFile.write(version)
-            try Paths.packagesDirectory.mkpath()
-            try Paths.registryDirectory.mkpath()
+            try run("mkdir", "-p", Paths.registryDirectory.string)
         } catch {
             niceFatalError("couldn't set up Ice at \(Paths.root)")
         }

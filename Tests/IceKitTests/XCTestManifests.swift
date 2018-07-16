@@ -15,13 +15,11 @@ import XCTest
             testCase(InitTransformTests.allTests),
             testCase(LineTests.allTests),
             testCase(PackageTests.allTests),
-            testCase(PacakgeWriterTests.allTests),
+            testCase(PackageWriterTests.allTests),
             testCase(RegistryTests.allTests),
             testCase(RepositoryReferenceTests.allTests),
             testCase(ResolveTransformTests.allTests),
             testCase(TestTransformTests.allTests),
-            testCase(UpdateTransformTests.allTests),
-            
             testCase(VersionTests.allTests),
             testCase(XcTransformTests.allTests),
         ]

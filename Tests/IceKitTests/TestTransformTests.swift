@@ -32,6 +32,8 @@ class TestTransformTests: XCTestCase {
         ("testAllTests", testAllTests),
         ("testSelectedTests", testSelectedTests),
         ("testInterleavedOutput", testInterleavedOutput),
+        ("testNoTests", testNoTests),
+        ("testNoFilterMatch", testNoFilterMatch),
     ]
     
     func testSuitePass() {
@@ -56,7 +58,7 @@ class TestTransformTests: XCTestCase {
         Test Suite 'AddTests' started at 2017-09-18 10:18:14.163
         Test Case '-[CLITests.AddTests testBasicAdd]' started.
         """)
-        test.send("/Ice/Tests/IceTests/IceTests.swift:9: error: -[IceTests.IceTests testExample] : failed - ")
+        test.send("/IceIce/Tests/IceTests/IceTests.swift:9: error: -[IceTests.IceTests testExample] : failed - ")
         test.send("""
         Test Case '-[CLITests.AddTests testBasicAdd]' failed (0.716 seconds).
         Test Suite 'AddTests' passed at 2017-09-18 10:18:15.728.
@@ -70,7 +72,7 @@ class TestTransformTests: XCTestCase {
 
         \tXCTFail
 
-        \tat /Ice/Tests/IceTests/IceTests.swift:9
+        \tat /IceIce/Tests/IceTests/IceTests.swift:9
         
         
         """)
@@ -82,7 +84,7 @@ class TestTransformTests: XCTestCase {
         Test Suite 'AddTests' started at 2017-09-18 10:18:14.163
         Test Case '-[CLITests.AddTests testBasicAdd]' started.
         """)
-        test.send("/Ice/Tests/IceTests/IceTests.swift:9: error: -[IceTests.IceTests testExample] : XCTAssertEqual failed: (\"Hello, World!\") is not equal to (\"Hello, Worldddd!\") - ")
+        test.send("/IceIce/Tests/IceTests/IceTests.swift:9: error: -[IceTests.IceTests testExample] : XCTAssertEqual failed: (\"Hello, World!\") is not equal to (\"Hello, Worldddd!\") - ")
         test.send("""
         Test Case '-[CLITests.AddTests testBasicAdd]' failed (0.716 seconds).
         Test Suite 'AddTests' passed at 2017-09-18 10:18:15.728.
@@ -99,7 +101,7 @@ class TestTransformTests: XCTestCase {
         \tReceived:
         \tHello, World!
 
-        \tat /Ice/Tests/IceTests/IceTests.swift:9
+        \tat /IceIce/Tests/IceTests/IceTests.swift:9
         
         
         """)
@@ -111,7 +113,7 @@ class TestTransformTests: XCTestCase {
         Test Suite 'AddTests' started at 2017-09-18 10:18:14.163
         Test Case '-[CLITests.AddTests testBasicAdd]' started.
         """)
-        test.send("/Ice/Tests/IceTests/IceTests.swift:23: error: -[IceTests.IceTests testExample] : XCTAssertEqualWithAccuracy failed: (\"4.0\") is not equal to (\"5.0\") +/- (\"0.5\") - ")
+        test.send("/IceIce/Tests/IceTests/IceTests.swift:23: error: -[IceTests.IceTests testExample] : XCTAssertEqualWithAccuracy failed: (\"4.0\") is not equal to (\"5.0\") +/- (\"0.5\") - ")
         test.send("""
         Test Case '-[CLITests.AddTests testBasicAdd]' failed (0.716 seconds).
         Test Suite 'AddTests' passed at 2017-09-18 10:18:15.728.
@@ -128,7 +130,7 @@ class TestTransformTests: XCTestCase {
         \tReceived:
         \t4.0
 
-        \tat /Ice/Tests/IceTests/IceTests.swift:23
+        \tat /IceIce/Tests/IceTests/IceTests.swift:23
         
         
         """)
@@ -140,7 +142,7 @@ class TestTransformTests: XCTestCase {
         Test Suite 'AddTests' started at 2017-09-18 10:18:14.163
         Test Case '-[CLITests.AddTests testBasicAdd]' started.
         """)
-        test.send("/Ice/Tests/IceTests/IceTests.swift:9: error: -[IceTests.IceTests testExample] : XCTAssertNotEqual failed: (\"hello world\") is equal to (\"hello world\") - ")
+        test.send("/IceIce/Tests/IceTests/IceTests.swift:9: error: -[IceTests.IceTests testExample] : XCTAssertNotEqual failed: (\"hello world\") is equal to (\"hello world\") - ")
         test.send("""
         Test Case '-[CLITests.AddTests testBasicAdd]' failed (0.716 seconds).
         Test Suite 'AddTests' passed at 2017-09-18 10:18:15.728.
@@ -157,7 +159,7 @@ class TestTransformTests: XCTestCase {
         \tReceived:
         \thello world
 
-        \tat /Ice/Tests/IceTests/IceTests.swift:9
+        \tat /IceIce/Tests/IceTests/IceTests.swift:9
         
         
         """)
@@ -169,7 +171,7 @@ class TestTransformTests: XCTestCase {
         Test Suite 'AddTests' started at 2017-09-18 10:18:14.163
         Test Case '-[CLITests.AddTests testBasicAdd]' started.
         """)
-        test.send("/Ice/Tests/IceTests/IceTests.swift:23: error: -[IceTests.IceTests testExample] : XCTAssertNotEqualWithAccuracy failed: (\"4.0\") is equal to (\"4.5\") +/- (\"0.5\") - ")
+        test.send("/IceIce/Tests/IceTests/IceTests.swift:23: error: -[IceTests.IceTests testExample] : XCTAssertNotEqualWithAccuracy failed: (\"4.0\") is equal to (\"4.5\") +/- (\"0.5\") - ")
         test.send("""
         Test Case '-[CLITests.AddTests testBasicAdd]' failed (0.716 seconds).
         Test Suite 'AddTests' passed at 2017-09-18 10:18:15.728.
@@ -186,7 +188,7 @@ class TestTransformTests: XCTestCase {
         \tReceived:
         \t4.0
 
-        \tat /Ice/Tests/IceTests/IceTests.swift:23
+        \tat /IceIce/Tests/IceTests/IceTests.swift:23
         
         
         """)
@@ -198,7 +200,7 @@ class TestTransformTests: XCTestCase {
         Test Suite 'AddTests' started at 2017-09-18 10:18:14.163
         Test Case '-[CLITests.AddTests testBasicAdd]' started.
         """)
-        test.send("/Ice/Tests/IceTests/IceTests.swift:9: error: -[FailTests.FailTests testAssertions] : XCTAssertNil failed: \"hello world\" - The value should be nil")
+        test.send("/IceIce/Tests/IceTests/IceTests.swift:9: error: -[FailTests.FailTests testAssertions] : XCTAssertNil failed: \"hello world\" - The value should be nil")
         test.send("""
         Test Case '-[CLITests.AddTests testBasicAdd]' failed (0.716 seconds).
         Test Suite 'AddTests' passed at 2017-09-18 10:18:15.728.
@@ -217,7 +219,7 @@ class TestTransformTests: XCTestCase {
 
         \tNote: The value should be nil
 
-        \tat /Ice/Tests/IceTests/IceTests.swift:9
+        \tat /IceIce/Tests/IceTests/IceTests.swift:9
         
         
         """)
@@ -229,7 +231,7 @@ class TestTransformTests: XCTestCase {
         Test Suite 'AddTests' started at 2017-09-18 10:18:14.163
         Test Case '-[CLITests.AddTests testBasicAdd]' started.
         """)
-        test.send("/Ice/Tests/IceTests/IceTests.swift:9: error: -[FailTests.FailTests testAssertions] : XCTAssertNotNil failed - The value should not be nil")
+        test.send("/IceIce/Tests/IceTests/IceTests.swift:9: error: -[FailTests.FailTests testAssertions] : XCTAssertNotNil failed - The value should not be nil")
         test.send("""
         Test Case '-[CLITests.AddTests testBasicAdd]' failed (0.716 seconds).
         Test Suite 'AddTests' passed at 2017-09-18 10:18:15.728.
@@ -248,7 +250,7 @@ class TestTransformTests: XCTestCase {
 
         \tNote: The value should not be nil
 
-        \tat /Ice/Tests/IceTests/IceTests.swift:9
+        \tat /IceIce/Tests/IceTests/IceTests.swift:9
         
         
         """)
@@ -260,7 +262,7 @@ class TestTransformTests: XCTestCase {
         Test Suite 'AddTests' started at 2017-09-18 10:18:14.163
         Test Case '-[CLITests.AddTests testBasicAdd]' started.
         """)
-        test.send("/Ice/Tests/IceTests/IceTests.swift:9: error: -[FailTests.FailTests testAssertions] : XCTAssertThrowsError failed: did not throw an error - ")
+        test.send("/IceIce/Tests/IceTests/IceTests.swift:9: error: -[FailTests.FailTests testAssertions] : XCTAssertThrowsError failed: did not throw an error - ")
         test.send("""
         Test Case '-[CLITests.AddTests testBasicAdd]' failed (0.716 seconds).
         Test Suite 'AddTests' passed at 2017-09-18 10:18:15.728.
@@ -277,7 +279,7 @@ class TestTransformTests: XCTestCase {
         \tReceived:
         \tno error
 
-        \tat /Ice/Tests/IceTests/IceTests.swift:9
+        \tat /IceIce/Tests/IceTests/IceTests.swift:9
         
         
         """)
@@ -289,7 +291,7 @@ class TestTransformTests: XCTestCase {
         Test Suite 'AddTests' started at 2017-09-18 10:18:14.163
         Test Case '-[CLITests.AddTests testBasicAdd]' started.
         """)
-        test.send("/Ice/Tests/IceTests/IceTests.swift:9: error: -[FailTests.FailTests testAssertions] : XCTAssertNoThrow failed: threw error \"Error Domain=ice Code=1 \"(null)\"\" - ")
+        test.send("/IceIce/Tests/IceTests/IceTests.swift:9: error: -[FailTests.FailTests testAssertions] : XCTAssertNoThrow failed: threw error \"Error Domain=ice Code=1 \"(null)\"\" - ")
         test.send("""
         Test Case '-[CLITests.AddTests testBasicAdd]' failed (0.716 seconds).
         Test Suite 'AddTests' passed at 2017-09-18 10:18:15.728.
@@ -306,7 +308,7 @@ class TestTransformTests: XCTestCase {
         \tReceived:
         \tError Domain=ice Code=1 "(null)"
 
-        \tat /Ice/Tests/IceTests/IceTests.swift:9
+        \tat /IceIce/Tests/IceTests/IceTests.swift:9
         
         
         """)
@@ -318,7 +320,7 @@ class TestTransformTests: XCTestCase {
         Test Suite 'AddTests' started at 2017-09-18 10:18:14.163
         Test Case '-[CLITests.AddTests testBasicAdd]' started.
         """)
-        test.send("/Ice/Tests/IceTests/IceTests.swift:9: error: -[FailTests.FailTests testAssertions] : XCTAssert failed - ")
+        test.send("/IceIce/Tests/IceTests/IceTests.swift:9: error: -[FailTests.FailTests testAssertions] : XCTAssert failed - ")
         test.send("""
         Test Case '-[CLITests.AddTests testBasicAdd]' failed (0.716 seconds).
         Test Suite 'AddTests' passed at 2017-09-18 10:18:15.728.
@@ -335,7 +337,7 @@ class TestTransformTests: XCTestCase {
         \tReceived:
         \tfalse
 
-        \tat /Ice/Tests/IceTests/IceTests.swift:9
+        \tat /IceIce/Tests/IceTests/IceTests.swift:9
         
         
         """)
@@ -347,7 +349,7 @@ class TestTransformTests: XCTestCase {
         Test Suite 'AddTests' started at 2017-09-18 10:18:14.163
         Test Case '-[CLITests.AddTests testBasicAdd]' started.
         """)
-        test.send("/Ice/Tests/IceTests/IceTests.swift:9: error: -[FailTests.FailTests testAssertions] : XCTAssertTrue failed - ")
+        test.send("/IceIce/Tests/IceTests/IceTests.swift:9: error: -[FailTests.FailTests testAssertions] : XCTAssertTrue failed - ")
         test.send("""
         Test Case '-[CLITests.AddTests testBasicAdd]' failed (0.716 seconds).
         Test Suite 'AddTests' passed at 2017-09-18 10:18:15.728.
@@ -364,7 +366,7 @@ class TestTransformTests: XCTestCase {
         \tReceived:
         \tfalse
 
-        \tat /Ice/Tests/IceTests/IceTests.swift:9
+        \tat /IceIce/Tests/IceTests/IceTests.swift:9
         
         
         """)
@@ -376,7 +378,7 @@ class TestTransformTests: XCTestCase {
         Test Suite 'AddTests' started at 2017-09-18 10:18:14.163
         Test Case '-[CLITests.AddTests testBasicAdd]' started.
         """)
-        test.send("/Ice/Tests/IceTests/IceTests.swift:9: error: -[FailTests.FailTests testAssertions] : XCTAssertFalse failed - ")
+        test.send("/IceIce/Tests/IceTests/IceTests.swift:9: error: -[FailTests.FailTests testAssertions] : XCTAssertFalse failed - ")
         test.send("""
         Test Case '-[CLITests.AddTests testBasicAdd]' failed (0.716 seconds).
         Test Suite 'AddTests' passed at 2017-09-18 10:18:15.728.
@@ -393,7 +395,7 @@ class TestTransformTests: XCTestCase {
         \tReceived:
         \ttrue
 
-        \tat /Ice/Tests/IceTests/IceTests.swift:9
+        \tat /IceIce/Tests/IceTests/IceTests.swift:9
         
         
         """)
@@ -405,7 +407,7 @@ class TestTransformTests: XCTestCase {
         Test Suite 'AddTests' started at 2017-09-18 10:18:14.163
         Test Case '-[CLITests.AddTests testBasicAdd]' started.
         """)
-        test.send("/Ice/Tests/IceTests/IceTests.swift:9: error: -[IceTests.IceTests testExample] : XCTAssertGreaterThan failed: (\"1\") is not greater than (\"4\") - one should be greater than four")
+        test.send("/IceIce/Tests/IceTests/IceTests.swift:9: error: -[IceTests.IceTests testExample] : XCTAssertGreaterThan failed: (\"1\") is not greater than (\"4\") - one should be greater than four")
         test.send("""
         Test Case '-[CLITests.AddTests testBasicAdd]' failed (0.716 seconds).
         Test Suite 'AddTests' passed at 2017-09-18 10:18:15.728.
@@ -424,7 +426,7 @@ class TestTransformTests: XCTestCase {
 
         \tNote: one should be greater than four
 
-        \tat /Ice/Tests/IceTests/IceTests.swift:9
+        \tat /IceIce/Tests/IceTests/IceTests.swift:9
         
         
         """)
@@ -436,7 +438,7 @@ class TestTransformTests: XCTestCase {
         Test Suite 'AddTests' started at 2017-09-18 10:18:14.163
         Test Case '-[CLITests.AddTests testBasicAdd]' started.
         """)
-        test.send("/Ice/Tests/IceTests/IceTests.swift:9: error: -[IceTests.IceTests testExample] : XCTAssertGreaterThanOrEqual failed: (\"1\") is less than (\"4\") - one should be greater than or equal to four")
+        test.send("/IceIce/Tests/IceTests/IceTests.swift:9: error: -[IceTests.IceTests testExample] : XCTAssertGreaterThanOrEqual failed: (\"1\") is less than (\"4\") - one should be greater than or equal to four")
         test.send("""
         Test Case '-[CLITests.AddTests testBasicAdd]' failed (0.716 seconds).
         Test Suite 'AddTests' passed at 2017-09-18 10:18:15.728.
@@ -455,7 +457,7 @@ class TestTransformTests: XCTestCase {
 
         \tNote: one should be greater than or equal to four
 
-        \tat /Ice/Tests/IceTests/IceTests.swift:9
+        \tat /IceIce/Tests/IceTests/IceTests.swift:9
         
         
         """)
@@ -467,7 +469,7 @@ class TestTransformTests: XCTestCase {
         Test Suite 'AddTests' started at 2017-09-18 10:18:14.163
         Test Case '-[CLITests.AddTests testBasicAdd]' started.
         """)
-        test.send("/Ice/Tests/IceTests/IceTests.swift:9: error: -[IceTests.IceTests testExample] : XCTAssertLessThan failed: (\"4\") is not less than (\"1\") - ")
+        test.send("/IceIce/Tests/IceTests/IceTests.swift:9: error: -[IceTests.IceTests testExample] : XCTAssertLessThan failed: (\"4\") is not less than (\"1\") - ")
         test.send("""
         Test Case '-[CLITests.AddTests testBasicAdd]' failed (0.716 seconds).
         Test Suite 'AddTests' passed at 2017-09-18 10:18:15.728.
@@ -484,7 +486,7 @@ class TestTransformTests: XCTestCase {
         \tReceived:
         \t4
 
-        \tat /Ice/Tests/IceTests/IceTests.swift:9
+        \tat /IceIce/Tests/IceTests/IceTests.swift:9
         
         
         """)
@@ -496,7 +498,7 @@ class TestTransformTests: XCTestCase {
         Test Suite 'AddTests' started at 2017-09-18 10:18:14.163
         Test Case '-[CLITests.AddTests testBasicAdd]' started.
         """)
-        test.send("/Ice/Tests/IceTests/IceTests.swift:9: error: -[IceTests.IceTests testExample] : XCTAssertLessThanOrEqual failed: (\"4\") is greater than (\"1\") - ")
+        test.send("/IceIce/Tests/IceTests/IceTests.swift:9: error: -[IceTests.IceTests testExample] : XCTAssertLessThanOrEqual failed: (\"4\") is greater than (\"1\") - ")
         test.send("""
         Test Case '-[CLITests.AddTests testBasicAdd]' failed (0.716 seconds).
         Test Suite 'AddTests' passed at 2017-09-18 10:18:15.728.
@@ -513,7 +515,7 @@ class TestTransformTests: XCTestCase {
         \tReceived:
         \t4
 
-        \tat /Ice/Tests/IceTests/IceTests.swift:9
+        \tat /IceIce/Tests/IceTests/IceTests.swift:9
         
         
         """)
@@ -524,7 +526,7 @@ class TestTransformTests: XCTestCase {
         test.send("""
         Test Suite 'AddTests' started at 2017-09-18 10:18:14.163
         Test Case '-[CLITests.AddTests testBasicAdd]' started.
-        /Ice/Tests/IceTests/IceTests.swift:9: error: -[IceTests.IceTests testExample] : XCTAssertEqual failed: ("first line
+        /IceIce/Tests/IceTests/IceTests.swift:9: error: -[IceTests.IceTests testExample] : XCTAssertEqual failed: ("first line
         second line") is not equal to ("first line
         """)
         test.send("third line\") - ")
@@ -547,7 +549,7 @@ class TestTransformTests: XCTestCase {
         \tsecond line
         \t(end)
 
-        \tat /Ice/Tests/IceTests/IceTests.swift:9
+        \tat /IceIce/Tests/IceTests/IceTests.swift:9
         
         
         """)
@@ -570,8 +572,8 @@ class TestTransformTests: XCTestCase {
         Test Case '-[IceTests.SomeTests testOne]' passed (0.000 seconds).
         Test Case '-[IceTests.SomeTests testTwo]' started.
         """)
-        test.send("/Ice/Tests/IceTests/IceTests.swift:11: error: -[IceTests.SomeTests testTwo] : failed - ")
-        test.send("/Ice/Tests/IceTests/IceTests.swift:12: error: -[IceTests.SomeTests testTwo] : failed - ")
+        test.send("/IceIce/Tests/IceTests/IceTests.swift:11: error: -[IceTests.SomeTests testTwo] : failed - ")
+        test.send("/IceIce/Tests/IceTests/IceTests.swift:12: error: -[IceTests.SomeTests testTwo] : failed - ")
         test.send("""
         Test Case '-[IceTests.SomeTests testTwo]' failed (0.001 seconds).
         Test Suite 'SomeTests' failed at 2017-09-18 21:46:20.488.
@@ -594,12 +596,12 @@ class TestTransformTests: XCTestCase {
 
         \tXCTFail
 
-        \tat /Ice/Tests/IceTests/IceTests.swift:11
+        \tat /IceIce/Tests/IceTests/IceTests.swift:11
 
 
         \tXCTFail
 
-        \tat /Ice/Tests/IceTests/IceTests.swift:12
+        \tat /IceIce/Tests/IceTests/IceTests.swift:12
         
         
         Tests:\t1 failed, 3 passed, 4 total
@@ -650,8 +652,8 @@ class TestTransformTests: XCTestCase {
         Test Suite 'SomeTests' started at 2017-09-18 21:53:48.859
         Test Case '-[IceTests.SomeTests testTwo]' started.
         """)
-        test.send("/Ice/Tests/IceTests/IceTests.swift:11: error: -[IceTests.SomeTests testTwo] : failed - ")
-        test.send("/Ice/Tests/IceTests/IceTests.swift:12: error: -[IceTests.SomeTests testTwo] : failed - ")
+        test.send("/IceIce/Tests/IceTests/IceTests.swift:11: error: -[IceTests.SomeTests testTwo] : failed - ")
+        test.send("/IceIce/Tests/IceTests/IceTests.swift:12: error: -[IceTests.SomeTests testTwo] : failed - ")
         test.send("""
         Test Case '-[IceTests.SomeTests testTwo]' failed (0.077 seconds).
         Test Suite 'SomeTests' failed at 2017-09-18 21:53:48.936.
@@ -690,12 +692,12 @@ class TestTransformTests: XCTestCase {
 
         \tXCTFail
 
-        \tat /Ice/Tests/IceTests/IceTests.swift:11
+        \tat /IceIce/Tests/IceTests/IceTests.swift:11
 
 
         \tXCTFail
 
-        \tat /Ice/Tests/IceTests/IceTests.swift:12
+        \tat /IceIce/Tests/IceTests/IceTests.swift:12
 
 
         Tests:\t1 failed, 1 total
