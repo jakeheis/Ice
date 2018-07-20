@@ -10,6 +10,7 @@ let package = Package(
         .library(name: "IceKit", targets: ["IceKit"]),
     ],
     dependencies: [
+        .package(url: "https://github.com/jakeheis/Icebox", from: "0.0.2"),
         .package(url: "https://github.com/kylef/PathKit", from: "0.9.1"),
         .package(url: "https://github.com/onevcat/Rainbow", from: "3.1.1"),
         .package(url: "https://github.com/sharplet/Regex", from: "1.1.0"),
@@ -19,7 +20,7 @@ let package = Package(
     targets: [
         .target(name: "Ice", dependencies: ["IceKit", "PathKit", "SwiftCLI", "SwiftyTextTable"]),
         .target(name: "IceKit", dependencies: ["PathKit", "Rainbow", "Regex", "SwiftCLI"]),
-        .testTarget(name: "IceKitTests", dependencies: ["IceKit", "PathKit"]),
-        .testTarget(name: "IceTests", dependencies: ["Rainbow", "SwiftCLI"]),
+        .testTarget(name: "IceKitTests", dependencies: ["IceKit", "PathKit", "SwiftCLI"]),
+        .testTarget(name: "IceTests", dependencies: ["Icebox", "Rainbow"]),
     ]
 )

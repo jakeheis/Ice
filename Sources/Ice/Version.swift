@@ -17,7 +17,7 @@ class VersionCommand: Command {
         stdout <<< "Ice version: \(Ice.version)"
         
         let swiftFull = try capture("swift", "--version").stdout
-        if let match = Regex("Swift version ([0-9]\\.[0-9](\\.[0-9])?)").firstMatch(in: swiftFull) {
+        if let match = Regex("Swift version ([0-9]\\.[0-9](\\.[0-9])?) ").firstMatch(in: swiftFull) {
             stdout <<< "Swift version: " + match.captures[0]!
         }
     }

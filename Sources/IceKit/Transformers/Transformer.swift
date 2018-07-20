@@ -74,6 +74,12 @@ class TransformerPair {
         }
     }
     
+    deinit {
+        if _isDebugAssertConfiguration() {
+            TransformStreamRecord.clear()
+        }
+    }
+    
 }
 
 // MARK: -

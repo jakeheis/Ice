@@ -1,13 +1,14 @@
 //
-//  Runner.swift
-//  CLITests
+//  Icebox.swift
+//  IceTests
 //
 //  Created by Jake Heiser on 9/13/17.
 //
 
 import Foundation
+import Icebox
 
-class IceConfig: SandboxConfig {
+class IceConfig: IceboxConfig {
     
     enum Templates: String {
         case empty
@@ -25,4 +26,4 @@ class IceConfig: SandboxConfig {
     
 }
 
-typealias IceBox = Sandbox<IceConfig>
+typealias IceBox = Icebox<IceConfig>

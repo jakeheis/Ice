@@ -153,6 +153,12 @@ class TransformStreamRecord {
         print(String(data: data, encoding: .utf8)!)
     }
     
+    static func clear() {
+        actionLock.lock()
+        defer { actionLock.unlock() }
+        actions.removeAll()
+    }
+    
 }
 
 func niceFatalError(_ message: String, file: StaticString = #file, line: UInt = #line) -> Never {
