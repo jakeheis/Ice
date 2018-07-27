@@ -1,6 +1,6 @@
 //
 //  Version.swift
-//  CLI
+//  Ice
 //
 //  Created by Jake Heiser on 6/5/18.
 //
@@ -10,6 +10,7 @@ import Regex
 import SwiftCLI
 
 class VersionCommand: Command {
+    
     let name = "version"
     let shortDescription = "Prints the current version of Ice"
     
@@ -21,4 +22,5 @@ class VersionCommand: Command {
             stdout <<< "Swift version: " + match.captures[0]!
         }
     }
+    
 }

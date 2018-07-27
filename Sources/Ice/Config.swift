@@ -28,8 +28,10 @@ Valid keys:
 """)
 
 class ListConfigCommand: Command {
+    
     let name = "list"
     let shortDescription = "List the current global config"
+    
     func execute() throws {
         let list = ConfigFile.layer(config: Ice.config.globalConfig, onto: ConfigFile.defaultConfig)
         guard let data = try? ConfigFile.encoder.encode(list),
@@ -39,9 +41,11 @@ class ListConfigCommand: Command {
         
         print(str)
     }
+    
 }
 
 class GetConfigCommand: Command {
+    
     let name = "get"
     let shortDescription = "Gets the config for the given key"
     
@@ -58,9 +62,11 @@ class GetConfigCommand: Command {
         }
         stdout <<< String(describing: value)
     }
+    
 }
 
 class SetConfigCommand: Command {
+    
     let name = "set"
     let shortDescription = "Sets the config for the given key"
     
@@ -79,4 +85,5 @@ class SetConfigCommand: Command {
             try Ice.config.set(\.reformat, value: val)
         }
     }
+    
 }

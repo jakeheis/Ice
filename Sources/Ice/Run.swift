@@ -17,8 +17,8 @@ class RunCommand: Command {
     let executable = OptionalParameter()
     let args = OptionalCollectedParameter()
     
-    let release = Flag("-r", "--release")
-    let watch = Flag("-w", "--watch")
+    let release = Flag("-r", "--release", description: "Run the executable built with the release configuration")
+    let watch = Flag("-w", "--watch", description: "Watch the project directory for changes, restarting the executable when change detected")
     
     var task: Task? = nil
     

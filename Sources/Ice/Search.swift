@@ -23,29 +23,28 @@ class SearchCommand: Command {
         let entries = try Ice.registry.search(query: query.value, includeDescription: !onlyName.value)
         
         if entries.isEmpty {
-            print("Warning:".yellow, "no results found")
+            stdout <<< "Warning: ".yellow + "no results found"
             guard let githubQuery = query.value.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed) else {
                 fatalError()
             }
-            print()
-            print("Try a Github search: https://github.com/search?q=\(githubQuery)+language:swift&s=stars")
-            print()
-            return
+            stdout <<< ""
+            stdout <<< "Try a Github search: https://github.com/search?q=\(githubQuery)+language:swift&s=stars"
+            stdout <<< ""
         } else {
-            print()
+            stdout <<< ""
             for entry in entries {
                 printDetail(title: "Name", value: entry.name, prefix: "● ")
                 printDetail(title: "URL", value: entry.url)
                 if let description = entry.description {
                     printDetail(title: "Description", value: description)
                 }
-                print()
+                stdout <<< ""
             }
         }
     }
     
     func printDetail(title: String, value: String, prefix: String = "  ") {
-        print("\(prefix)\(title): ".blue + value)
+        stdout <<< "\(prefix)\(title): ".blue + value
     }
     
 }

@@ -13,7 +13,7 @@ class XcCommand: Command {
     let name = "xc"
     let shortDescription = "Creates a new xcode project for the current package"
     
-    let noOpen = Flag("-n", "--no-open")
+    let noOpen = Flag("-n", "--no-open", description: "Don't open the Xcode project after generating it")
     
     func execute() throws {
         try SPM().generateXcodeProject()

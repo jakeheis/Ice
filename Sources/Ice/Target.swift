@@ -63,6 +63,7 @@ private class TargetAddCommand: Command {
 private class TargetRemoveCommand: Command {
     
     let name = "remove"
+    let shortDescription = "Remove the given target"
     
     let target = Parameter()
     

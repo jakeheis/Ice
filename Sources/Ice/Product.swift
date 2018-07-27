@@ -70,6 +70,7 @@ private class ProductAddCommand: Command {
 private class ProductRemoveCommand: Command {
     
     let name = "remove"
+    let shortDescription = "Remove the given product"
     
     let product = Parameter()
     

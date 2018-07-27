@@ -1,6 +1,6 @@
 //
 //  Registry.swift
-//  CLI
+//  Ice
 //
 //  Created by Jake Heiser on 9/13/17.
 //
@@ -17,6 +17,7 @@ class RegistryGroup: CommandGroup {
 private class AddEntryCommand: Command {
     
     let name = "add"
+    let shortDescription = "Add the given entry to your local registry"
     
     let ref = Parameter()
     let shortName = Parameter()
@@ -34,6 +35,7 @@ private class AddEntryCommand: Command {
 private class RemoveEntryCommand: Command {
     
     let name = "remove"
+    let shortDescription = "Remove the given entry from your local registry"
     
     let from = Parameter()
     

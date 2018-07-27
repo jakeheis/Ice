@@ -68,9 +68,5 @@ extension Version: CustomStringConvertible {
     }
 }
 
-extension Version: ConvertibleFromString {
-    public static func convert(from: String) -> Version? {
-        return Version(from)
-    }
-}
+extension Version: LosslessStringConvertible, ConvertibleFromString {}
 
