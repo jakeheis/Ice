@@ -16,7 +16,7 @@ class DumpCommand: Command {
     
     func execute() throws {
         let data = try SPM().dumpPackage()
-        FileHandle.standardOutput.write(data)
+        stdout.writeData(data)
     }
     
 }

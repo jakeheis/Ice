@@ -79,21 +79,12 @@ public struct Package: Decodable {
     public private(set) var products: [Product]
     public private(set) var dependencies: [Dependency]
     public private(set) var targets: [Target]
-    public let swiftLanguageVersions: [Int]?
+    public let swiftLanguageVersions: [String]?
     public let cLanguageStandard: String?
     public let cxxLanguageStandard: String?
     
     public static func load(in directory: Path = ".") throws -> Package {
-        let data = try SPM(directory: directory).dumpPackage()
-        return try load(data: data)
-    }
-    
-    public static func load(data: Data) throws -> Package {
-        do {
-            return try JSONDecoder().decode(Package.self, from: data)
-        } catch {
-            throw IceError(message: "couldn't parse Package.swift")
-        }
+        return try PackageLoader.load(in: directory)
     }
     
     private static let libRegex = Regex("\\.library\\( *name: *\"([^\"]*)\"")
@@ -249,8 +240,8 @@ public struct Package: Decodable {
         }
         
         let writePackage = Ice.config.get(\.reformat, directory: directory) ? formatted() : self
-        let writer = PackageWriter(stream: writeStream)
-        writer.write(package: writePackage)
+        let writer = PackageWriter(package: writePackage)
+        try writer.write(to: writeStream)
     }
     
 }

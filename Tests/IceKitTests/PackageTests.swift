@@ -9,7 +9,7 @@ import XCTest
 import Foundation
 import PathKit
 import SwiftCLI
-import IceKit
+@testable import IceKit
 
 class PackageTests: XCTestCase {
     
@@ -19,7 +19,7 @@ class PackageTests: XCTestCase {
     ]
     
     func testBasic() throws {
-        XCTAssertEqual(try writePackage(path: "SwiftCLI.json"), """
+        XCTAssertEqual(try loadAndWritePackage(path: "SwiftCLI.json"), """
         // swift-tools-version:4.0
         // Managed by ice
 
@@ -40,7 +40,7 @@ class PackageTests: XCTestCase {
     }
     
     func testComplex() throws {
-        XCTAssertEqual(try writePackage(path: "Ice.json"), """
+        XCTAssertEqual(try loadAndWritePackage(path: "Ice.json"), """
         // swift-tools-version:4.0
         // Managed by ice
 
@@ -69,10 +69,10 @@ class PackageTests: XCTestCase {
         """)
     }
     
-    func writePackage(path: String) throws -> String {
+    func loadAndWritePackage(path: String) throws -> String {
         let data = try Data(contentsOf: URL(fileURLWithPath: "Tests/Fixtures/\(path)"))
-        let package = try Package.load(data: data)
-        let captureStream = PipeStream()
+        let package = try PackageLoader.load(from: data)
+        let captureStream = CaptureStream()
         try package.write(to: captureStream)
         captureStream.closeWrite()
         

@@ -7,70 +7,100 @@
 
 import SwiftCLI
 
-class PackageWriter {
+public class PackageWriter {
     
-    private let out: IndentStream
-    
-    init(stream: WritableStream) {
-        self.out = IndentStream(out: stream)
-    }
-    
-    func write(package: Package) {
-        writeStart()
-        out.indent {
-            writeName(package.name)
-            writePkgConfig(package.pkgConfig)
-            writeProviders(package.providers)
-            writeProducts(package.products)
-            writeDependencies(package.dependencies)
-            writeTargets(package.targets)
-            writeSwiftLanguageVersion(package.swiftLanguageVersions)
-            writeCLangaugeStandard(package.cLanguageStandard)
-            writeCxxLangaugeStandard(package.cxxLanguageStandard)
+    public enum ToolsVersion {
+        case v4
+        case v4_2
+        
+        fileprivate func writer(for package: Package) -> PackageWriterImpl {
+            switch self {
+            case .v4: return Version4_0Writer(package: package)
+            case .v4_2: return Version4_2Writer(package: package)
+            }
         }
-        writeEnd()
     }
     
-    func writeStart() {
-        out <<< """
-        // swift-tools-version:4.0
+    private let writer: PackageWriterImpl
+    
+    public init(package: Package, toolsVersion: ToolsVersion = .v4) {
+        self.writer = toolsVersion.writer(for: package)
+    }
+    
+    public func write(to stream: WritableStream) throws {
+        try writer.write(to: stream)
+    }
+    
+}
+
+protocol PackageWriterImpl {
+    var version: String { get }
+    var package: Package { get }
+    
+    init(package: Package)
+    
+    func addSwiftLanguageVersions(_ versions: [String]?, to arguments: PackageArguments) throws
+}
+
+extension PackageWriterImpl {
+    
+    func write(to out: WritableStream) throws {
+        // Iniitally write to intermediate stream so that if an error is thrown, partial package is not written
+        let stream = CaptureStream()
+        
+        stream <<< """
+        // swift-tools-version:\(version)
         // Managed by ice
         
         import PackageDescription
         
         let package = Package(
         """
+        
+        let arguments = PackageArguments()
+        addName(package.name, to: arguments)
+        addPkgConfig(package.pkgConfig, to: arguments)
+        addProviders(package.providers, to: arguments)
+        addProducts(package.products, to: arguments)
+        addDependencies(package.dependencies, to: arguments)
+        addTargets(package.targets, to: arguments)
+        try addSwiftLanguageVersions(package.swiftLanguageVersions, to: arguments)
+        addCLangaugeStandard(package.cLanguageStandard, to: arguments)
+        addCxxLangaugeStandard(package.cxxLanguageStandard, to: arguments)
+        arguments.write(to: stream)
+        
+        stream <<< ")"
+        
+        stream.closeWrite()
+        out.write(stream.readAll())
     }
     
-    func writeName(_ name: String) {
-        out <<< "name: \(name.quoted),"
+    func addName(_ name: String, to arguments: PackageArguments) {
+        arguments.addSimple(key: "name", value: name.quoted)
     }
     
-    func writePkgConfig(_ pkgConfig: String?) {
+    func addPkgConfig(_ pkgConfig: String?, to arguments: PackageArguments) {
         if let pkgConfig = pkgConfig {
-            out <<< "pkgConfig: \(pkgConfig.quoted),"
+            arguments.addSimple(key: "pkgConfig", value: pkgConfig.quoted)
         }
     }
     
-    func writeProviders(_ providers: [Package.Provider]?) {
+    func addProviders(_ providers: [Package.Provider]?, to arguments: PackageArguments) {
         guard let providers = providers, !providers.isEmpty else {
             return
         }
-        out <<< "providers: ["
-        out.indentEach(providers) { (provider) in
+        arguments.addArray(key: "providers", children: providers.map { (provider) in
             let values = provider.values.map { $0.quoted }.joined(separator: ", ")
-            out <<< ".\(provider.name)([\(values)]),"
-        }
-        out <<< "],"
+            return ".\(provider.name)([\(values)])"
+        })
     }
     
-    func writeProducts(_ products: [Package.Product]) {
+    func addProducts(_ products: [Package.Product], to arguments: PackageArguments) {
         if products.isEmpty {
             return
         }
         
-        out <<< "products: ["
-        out.indentEach(products) { (product) in
+        arguments.addArray(key: "products", children: products.map { (product) in
             let targetsPortion = product.targets.map { $0.quoted }.joined(separator: ", ")
             let typePortion: String
             if let type = product.type {
@@ -78,24 +108,22 @@ class PackageWriter {
             } else {
                 typePortion = ""
             }
-            out <<< ".\(product.product_type)(name: \(product.name.quoted)\(typePortion), targets: [\(targetsPortion)]),"
-        }
-        out <<< "],"
+            return ".\(product.product_type)(name: \(product.name.quoted)\(typePortion), targets: [\(targetsPortion)])"
+        })
     }
     
-    func writeDependencies(_ dependencies: [Package.Dependency]) {
+    func addDependencies(_ dependencies: [Package.Dependency], to arguments: PackageArguments) {
         if dependencies.isEmpty {
             return
         }
         
-        out <<< "dependencies: ["
-        out.indentEach(dependencies) { (dependency) in
+        arguments.addArray(key: "dependencies", children: dependencies.map { (dependency) in
             let versionPortion: String
             
             if dependency.requirement.type == .range {
                 guard let lowerBoundString = dependency.requirement.lowerBound, let lowerBound = Version(lowerBoundString),
                     let upperBoundString = dependency.requirement.upperBound, let upperBound = Version(upperBoundString) else {
-                        fatalError("Wrong")
+                        niceFatalError("Impossible dependency requirement; invalid range specified")
                 }
                 if upperBound == Version(lowerBound.major + 1, 0, 0) {
                     versionPortion = "from: \(lowerBoundString.quoted)"
@@ -106,29 +134,27 @@ class PackageWriter {
                 }
             } else {
                 guard let identifier = dependency.requirement.identifier else {
-                    fatalError("Wrong")
+                    niceFatalError("Impossible dependency requirement; \(dependency.requirement.type) specified, but no identifier given")
                 }
                 let function: String
                 switch dependency.requirement.type {
                 case .branch: function = "branchItem"
                 case .exact: function = "exact"
                 case .revision: function = "revision"
-                default: return
+                default: fatalError()
                 }
                 versionPortion = ".\(function)(\(identifier.quoted))"
             }
             
-            out <<< ".package(url: \(dependency.url.quoted), \(versionPortion)),"
-        }
-        out <<< "],"
+            return ".package(url: \(dependency.url.quoted), \(versionPortion))"
+        })
     }
     
-    func writeTargets(_ targets: [Package.Target]) {
+    func addTargets(_ targets: [Package.Target], to arguments: PackageArguments) {
         if targets.isEmpty {
-            out <<< "targets: []"
+            arguments.addSimple(key: "targets", value: "[]")
         } else {
-            out <<< "targets: ["
-            out.indentEach(targets) { (target) in
+            arguments.addArray(key: "targets", children: targets.map { (target) in
                 var line = target.isTest ? ".testTarget" : ".target"
                 line += "(name: \(target.name.quoted)"
                 line += ", dependencies: [" + target.dependencies.map { $0.name.quoted }.joined(separator: ", ") + "]"
@@ -144,74 +170,139 @@ class PackageWriter {
                 if let publicHeadersPath = target.publicHeadersPath {
                     line += ", publicHeadersPath: \(publicHeadersPath.quoted)"
                 }
-                line += "),"
-                out <<< line
-            }
-            out <<< "]"
+                line += ")"
+                return line
+            })
         }
     }
     
-    func writeSwiftLanguageVersion(_ versions: [Int]?) {
-        if let versions = versions {
-            let stringVersions = versions.map(String.init).joined(separator: ", ")
-            out <<< "swiftLanguageVersions: [\(stringVersions)],"
-        }
-    }
-    
-    func writeCLangaugeStandard(_ standard: String?) {
+    func addCLangaugeStandard(_ standard: String?, to arguments: PackageArguments) {
         if let standard = standard {
             let converted = standard.replacingOccurrences(of: ":", with: "_")
-            out <<< "cLanguageStandard: .\(converted),"
+            arguments.addSimple(key: "cLanguageStandard", value: ".\(converted)")
         }
     }
     
-    func writeCxxLangaugeStandard(_ standard: String?) {
+    func addCxxLangaugeStandard(_ standard: String?, to arguments: PackageArguments) {
         if let standard = standard {
             let converted = standard
                 .replacingOccurrences(of: "c++", with: "cxx")
                 .replacingOccurrences(of: "gnu++", with: "gnucxx")
-            out <<< "cxxLanguageStandard: .\(converted),"
+            arguments.addSimple(key: "cxxLanguageStandard", value: ".\(converted)")
         }
     }
     
-    func writeEnd() {
-        out <<< ")"
+    fileprivate func createVersionError() -> Error {
+        return IceError(message: "cannot write package in version \(version); try a different tools version")
     }
     
 }
 
-// MARK: -
-
-private class IndentStream {
+final class Version4_0Writer: PackageWriterImpl {
     
-    let out: WritableStream
+    let version = "4.0"
+    let package: Package
     
-    private var indentationLevel = 0
-    
-    init(out: WritableStream) {
-        self.out = out
+    init(package: Package) {
+        self.package = package
     }
     
-    func print(_ content: String) {
-        out <<< String(repeating: "    ", count: indentationLevel) + content
-    }
-    
-    func indent(_ go: () -> ()) {
-        indentationLevel += 1
-        go()
-        indentationLevel -= 1
-    }
-    
-    func indentEach<T>(_ objects: [T], _ each: (T) -> ()) {
-        indent {
-            for obj in objects {
-                each(obj)
+    func addSwiftLanguageVersions(_ versions: [String]?, to arguments: PackageArguments) throws {
+        if let versions = versions {
+            guard !versions.map(Int.init).contains(nil) else {
+                throw createVersionError()
             }
+            let stringVersions = versions.joined(separator: ", ")
+            arguments.addSimple(key: "swiftLanguageVersions", value: "[\(stringVersions)]")
         }
     }
     
 }
 
-private func <<<(stream: IndentStream, text: String) {
-    stream.print(text)
+final class Version4_2Writer: PackageWriterImpl {
+    
+    let version = "4.2"
+    let package: Package
+    
+    init(package: Package) {
+        self.package = package
+    }
+    
+    func addSwiftLanguageVersions(_ versions: [String]?, to arguments: PackageArguments) {
+        if let versions = versions {
+            var enumVersions: [String] = []
+            for version in versions {
+                if version == "3" {
+                    enumVersions.append(".v3")
+                } else if version == "4" {
+                    enumVersions.append(".v4")
+                } else if version == "4.2" {
+                    enumVersions.append(".v4_2")
+                } else {
+                    enumVersions.append(".version(\(version))")
+                }
+            }
+            arguments.addSimple(key: "swiftLanguageVersions", value: "[\(enumVersions.joined(separator: ", "))]")
+        }
+    }
+    
+}
+
+// MARK: - PackageArgument
+
+protocol PackageArgument {
+    func write(to stream: WritableStream, terminator: String)
+}
+
+extension PackageArgument {
+    var singleIndent: String {
+        return "    "
+    }
+    
+    var doubleIndent: String {
+        return String(repeating: singleIndent, count: 2)
+    }
+}
+
+class PackageArguments {
+    
+    struct SimpleArgument: PackageArgument {
+        let key: String
+        let value: Any
+        
+        func write(to stream: WritableStream, terminator: String) {
+            stream <<< singleIndent + key + ": " + String(describing: value) + terminator
+        }
+    }
+    
+    struct ArrayArgument: PackageArgument {
+        let key: String
+        let children: [String]
+        
+        func write(to stream: WritableStream, terminator: String) {
+            stream <<< singleIndent + key + ": ["
+            for child in children {
+                stream <<< doubleIndent + child + ","
+            }
+            stream <<< singleIndent + "]" + terminator
+        }
+    }
+    
+    private var arguments: [PackageArgument] = []
+    
+    func addSimple(key: String, value: Any) {
+        arguments.append(SimpleArgument(key: key, value: value))
+    }
+    
+    func addArray(key: String, children: [String]) {
+        arguments.append(ArrayArgument(key: key, children: children))
+    }
+    
+    func write(to stream: WritableStream) {
+        for (index, argument) in arguments.enumerated() {
+            let terminator = (index == arguments.index(before: arguments.endIndex) ? "" : ",")
+            argument.write(to: stream, terminator: terminator)
+        }
+    }
+    
 }
