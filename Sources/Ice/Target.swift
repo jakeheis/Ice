@@ -55,7 +55,7 @@ private class TargetAddCommand: Command {
             isTest: testTarget,
             dependencies: dependencies.value?.commaSeparated() ?? []
         )
-        try package.write()
+        try package.sync()
     }
     
 }
@@ -70,7 +70,7 @@ private class TargetRemoveCommand: Command {
     func execute() throws {
         var project = try Package.load()
         try project.removeTarget(named: target.value)
-        try project.write()
+        try project.sync()
     }
     
 }

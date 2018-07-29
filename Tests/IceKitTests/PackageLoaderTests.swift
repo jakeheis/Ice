@@ -1,5 +1,5 @@
 //
-//  PackageTests.swift
+//  PackageLoaderTests.swift
 //  IceKitTests
 //
 //  Created by Jake Heiser on 9/11/17.
@@ -11,7 +11,7 @@ import PathKit
 import SwiftCLI
 @testable import IceKit
 
-class PackageTests: XCTestCase {
+class PackageLoaderTests: XCTestCase {
     
     static var allTests = [
         ("testBasic", testBasic),
@@ -19,7 +19,18 @@ class PackageTests: XCTestCase {
     ]
     
     func testBasic() throws {
-        XCTAssertEqual(try loadAndWritePackage(path: "SwiftCLI.json"), """
+        let data = try Data(contentsOf: URL(fileURLWithPath: "Tests/Fixtures/SwiftCLI.json"))
+        let package = try PackageLoader.load(from: data, directory: Path.current, toolsVersion: SwiftToolsVersion.v4)
+        
+        XCTAssertEqual(package.directory, Path.current)
+        XCTAssertEqual(package.toolsVersion, .v4)
+        XCTAssertEqual(package.dirty, false)
+        
+        let captureStream = CaptureStream()
+        try package.write(to: captureStream)
+        captureStream.closeWrite()
+        
+        XCTAssertEqual(captureStream.readAll(), """
         // swift-tools-version:4.0
         // Managed by ice
 
@@ -40,8 +51,19 @@ class PackageTests: XCTestCase {
     }
     
     func testComplex() throws {
-        XCTAssertEqual(try loadAndWritePackage(path: "Ice.json"), """
-        // swift-tools-version:4.0
+        let data = try Data(contentsOf: URL(fileURLWithPath: "Tests/Fixtures/Ice.json"))
+        let package = try PackageLoader.load(from: data, directory: Path.current, toolsVersion: SwiftToolsVersion(major: 4, minor: 1, patch: 0))
+        
+        XCTAssertEqual(package.directory, Path.current)
+        XCTAssertEqual(package.toolsVersion, SwiftToolsVersion(major: 4, minor: 1, patch: 0))
+        XCTAssertEqual(package.dirty, false)
+        
+        let captureStream = CaptureStream()
+        try package.write(to: captureStream)
+        captureStream.closeWrite()
+        
+        XCTAssertEqual(captureStream.readAll(), """
+        // swift-tools-version:4.1
         // Managed by ice
 
         import PackageDescription
@@ -67,16 +89,6 @@ class PackageTests: XCTestCase {
         )
 
         """)
-    }
-    
-    func loadAndWritePackage(path: String) throws -> String {
-        let data = try Data(contentsOf: URL(fileURLWithPath: "Tests/Fixtures/\(path)"))
-        let package = try PackageLoader.load(from: data)
-        let captureStream = CaptureStream()
-        try package.write(to: captureStream)
-        captureStream.closeWrite()
-        
-        return captureStream.readAll()
     }
     
 }

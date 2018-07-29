@@ -18,7 +18,7 @@ class RemoveCommand: Command {
     func execute() throws {
         var project = try Package.load()
         try project.removeDependency(named: package.value)
-        try project.write()
+        try project.sync()
     }
     
 }

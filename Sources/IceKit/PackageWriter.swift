@@ -9,22 +9,16 @@ import SwiftCLI
 
 public class PackageWriter {
     
-    public enum ToolsVersion {
-        case v4
-        case v4_2
-        
-        fileprivate func writer(for package: Package) -> PackageWriterImpl {
-            switch self {
-            case .v4: return Version4_0Writer(package: package)
-            case .v4_2: return Version4_2Writer(package: package)
-            }
-        }
-    }
-    
     private let writer: PackageWriterImpl
     
-    public init(package: Package, toolsVersion: ToolsVersion = .v4) {
-        self.writer = toolsVersion.writer(for: package)
+    public init(package: PackageV4_2, toolsVersion: SwiftToolsVersion) throws {
+        if toolsVersion >= SwiftToolsVersion.v4_2 {
+            self.writer = Version4_2Writer(package: package, toolsVersion: toolsVersion)
+        } else if toolsVersion >= SwiftToolsVersion.v4 {
+            self.writer = Version4_0Writer(package: package, toolsVersion: toolsVersion)
+        } else {
+            throw IceError(message: "tools version \(toolsVersion) not supported")
+        }
     }
     
     public func write(to stream: WritableStream) throws {
@@ -34,10 +28,10 @@ public class PackageWriter {
 }
 
 protocol PackageWriterImpl {
-    var version: String { get }
-    var package: Package { get }
+    var package: PackageV4_2 { get }
+    var toolsVersion: SwiftToolsVersion { get }
     
-    init(package: Package)
+    init(package: PackageV4_2, toolsVersion: SwiftToolsVersion)
     
     func addSwiftLanguageVersions(_ versions: [String]?, to arguments: PackageArguments) throws
 }
@@ -49,7 +43,7 @@ extension PackageWriterImpl {
         let stream = CaptureStream()
         
         stream <<< """
-        // swift-tools-version:\(version)
+        // swift-tools-version:\(toolsVersion)
         // Managed by ice
         
         import PackageDescription
@@ -85,7 +79,7 @@ extension PackageWriterImpl {
         }
     }
     
-    func addProviders(_ providers: [Package.Provider]?, to arguments: PackageArguments) {
+    func addProviders(_ providers: [PackageV4_2.Provider]?, to arguments: PackageArguments) {
         guard let providers = providers, !providers.isEmpty else {
             return
         }
@@ -95,7 +89,7 @@ extension PackageWriterImpl {
         })
     }
     
-    func addProducts(_ products: [Package.Product], to arguments: PackageArguments) {
+    func addProducts(_ products: [PackageV4_2.Product], to arguments: PackageArguments) {
         if products.isEmpty {
             return
         }
@@ -112,7 +106,7 @@ extension PackageWriterImpl {
         })
     }
     
-    func addDependencies(_ dependencies: [Package.Dependency], to arguments: PackageArguments) {
+    func addDependencies(_ dependencies: [PackageV4_2.Dependency], to arguments: PackageArguments) {
         if dependencies.isEmpty {
             return
         }
@@ -150,7 +144,7 @@ extension PackageWriterImpl {
         })
     }
     
-    func addTargets(_ targets: [Package.Target], to arguments: PackageArguments) {
+    func addTargets(_ targets: [PackageV4_2.Target], to arguments: PackageArguments) {
         if targets.isEmpty {
             arguments.addSimple(key: "targets", value: "[]")
         } else {
@@ -193,18 +187,19 @@ extension PackageWriterImpl {
     }
     
     fileprivate func createVersionError() -> Error {
-        return IceError(message: "cannot write package in version \(version); try a different tools version")
+        return IceError(message: "cannot write package in version \(toolsVersion); try a different tools version")
     }
     
 }
 
 final class Version4_0Writer: PackageWriterImpl {
     
-    let version = "4.0"
-    let package: Package
+    let package: PackageV4_2
+    let toolsVersion: SwiftToolsVersion
     
-    init(package: Package) {
+    init(package: PackageV4_2, toolsVersion: SwiftToolsVersion) {
         self.package = package
+        self.toolsVersion = toolsVersion
     }
     
     func addSwiftLanguageVersions(_ versions: [String]?, to arguments: PackageArguments) throws {
@@ -221,11 +216,12 @@ final class Version4_0Writer: PackageWriterImpl {
 
 final class Version4_2Writer: PackageWriterImpl {
     
-    let version = "4.2"
-    let package: Package
+    let package: PackageV4_2
+    let toolsVersion: SwiftToolsVersion
     
-    init(package: Package) {
+    init(package: PackageV4_2, toolsVersion: SwiftToolsVersion) {
         self.package = package
+        self.toolsVersion = toolsVersion
     }
     
     func addSwiftLanguageVersions(_ versions: [String]?, to arguments: PackageArguments) {

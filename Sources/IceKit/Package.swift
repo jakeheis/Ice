@@ -10,87 +10,18 @@ import PathKit
 import Regex
 import SwiftCLI
 
-public struct Package: Decodable {
+public struct Package {
     
-    public struct Provider: Decodable {
-        public let name: String
-        public let values: [String]
-    }
-    
-    public struct Product: Decodable {
-        public let name: String
-        public let product_type: String
-        public var targets: [String]
-        public let type: String? // If library, static, dynamic, or nil; if executable, nil
-        
-        public var isExecutable: Bool {
-            return product_type == "executable"
-        }
-    }
-    
-    public struct Dependency: Decodable {
-        public struct Requirement: Decodable {
-            public enum RequirementType: String, Decodable {
-                case range
-                case branch
-                case exact
-                case revision
-            }
-            public let type: RequirementType
-            public let lowerBound: String?
-            public let upperBound: String?
-            public let identifier: String?
-            
-            public init(type: RequirementType, lowerBound: String?, upperBound: String?, identifier: String?) {
-                self.type = type
-                self.lowerBound = lowerBound
-                self.upperBound = upperBound
-                self.identifier = identifier
-            }
-            
-            public init(version: Version){
-                self.init(type: .range, lowerBound: version.raw, upperBound: Version(version.major + 1, 0, 0).raw, identifier: nil)
-            }
-        }
-        
-        public let url: String
-        public var requirement: Requirement
-    }
-    
-    public struct Target: Decodable {
-        public struct Dependency: Decodable {
-            public let name: String
-        }
-        
-        public let name: String
-        public let isTest: Bool
-        public var dependencies: [Dependency]
-        public let path: String?
-        public let exclude: [String]
-        public let sources: [String]?
-        public let publicHeadersPath: String?
-    }
-    
-    public static let packagePath = Path("Package.swift")
-    
-    public let name: String
-    public let pkgConfig: String?
-    public let providers: [Provider]?
-    public private(set) var products: [Product]
-    public private(set) var dependencies: [Dependency]
-    public private(set) var targets: [Target]
-    public let swiftLanguageVersions: [String]?
-    public let cLanguageStandard: String?
-    public let cxxLanguageStandard: String?
+    public static let fileName = Path("Package.swift")
+    private static let libRegex = Regex("\\.library\\( *name: *\"([^\"]*)\"")
     
     public static func load(in directory: Path = ".") throws -> Package {
         return try PackageLoader.load(in: directory)
     }
     
-    private static let libRegex = Regex("\\.library\\( *name: *\"([^\"]*)\"")
     public static func retrieveLibrariesOfDependency(named dependency: String) -> [String] {
         let path = Path(".build/checkouts").glob("\(dependency)*")[0]
-        guard let contents: String = try? (path + packagePath).read().replacingOccurrences(of: "\n", with: " ") else {
+        guard let contents: String = try? (path + Package.fileName).read().replacingOccurrences(of: "\n", with: " ") else {
             return []
         }
         let matches = libRegex.allMatches(in: contents)
@@ -99,6 +30,33 @@ public struct Package: Decodable {
         #else
         return matches.flatMap { $0.captures[0] }
         #endif
+    }
+    
+    public var name: String {
+        return data.name
+    }
+    
+    public var products: [PackageV4_2.Product] {
+        return data.products
+    }
+    
+    public var dependencies: [PackageV4_2.Dependency] {
+        return data.dependencies
+    }
+    
+    public var targets: [PackageV4_2.Target] {
+        return data.targets
+    }
+    
+    private var data: PackageV4_2
+    public let directory: Path
+    public let toolsVersion: SwiftToolsVersion
+    public var dirty = false
+    
+    init(data: PackageV4_2, directory: Path, toolsVersion: SwiftToolsVersion) {
+        self.data = data
+        self.directory = directory
+        self.toolsVersion = toolsVersion
     }
     
     // MARK: - Products
@@ -122,38 +80,46 @@ public struct Package: Decodable {
         case .dynamicLibrary: libraryType = "dynamic"
         case .library, .executable: libraryType = nil
         }
-        let newProduct = Product(name: name, product_type: productType, targets: targets, type: libraryType)
-        products.append(newProduct)
+        data.products.append(.init(
+            name: name,
+            product_type: productType,
+            targets: targets,
+            type: libraryType)
+        )
+        dirty = true
     }
     
     public mutating func removeProduct(name: String) throws {
-        guard let index = products.index(where: { $0.name == name }) else {
+        guard let index = data.products.index(where: { $0.name == name }) else {
             throw IceError(message: "can't remove product \(name)")
         }
-        products.remove(at: index)
+        data.products.remove(at: index)
+        dirty = true
     }
     
     // MARK: - Dependencies
     
-    public mutating func addDependency(ref: RepositoryReference, requirement: Dependency.Requirement) {
-        dependencies.append(Dependency(
+    public mutating func addDependency(ref: RepositoryReference, requirement: PackageV4_2.Dependency.Requirement) {
+        data.dependencies.append(.init(
             url: ref.url,
             requirement: requirement
         ))
+        dirty = true
     }
     
-    public mutating func updateDependency(dependency: Dependency, to requirement: Dependency.Requirement) throws {
-        guard let index = dependencies.index(where: { $0.url == dependency.url }) else {
+    public mutating func updateDependency(dependency: PackageV4_2.Dependency, to requirement: PackageV4_2.Dependency.Requirement) throws {
+        guard let index = data.dependencies.index(where: { $0.url == dependency.url }) else {
             throw IceError(message: "can't update dependency \(dependency.url)")
         }
-        dependencies[index].requirement = requirement
+        data.dependencies[index].requirement = requirement
+        dirty = true
     }
     
     public mutating func removeDependency(named name: String) throws {
-        guard let index = dependencies.index(where: { RepositoryReference(url: $0.url).name == name }) else {
+        guard let index = data.dependencies.index(where: { RepositoryReference(url: $0.url).name == name }) else {
             throw IceError(message: "can't remove dependency \(name)")
         }
-        dependencies.remove(at: index)
+        data.dependencies.remove(at: index)
         
         var libs = Package.retrieveLibrariesOfDependency(named: name)
         if libs.isEmpty {
@@ -162,22 +128,14 @@ public struct Package: Decodable {
         for lib in libs {
             removeDependencyFromTargets(named: lib)
         }
-    }
-    
-    private func requirement(for version: Version) -> Dependency.Requirement {
-        return Dependency.Requirement(
-            type: .range,
-            lowerBound: version.raw,
-            upperBound: Version(version.major + 1, 0, 0).raw,
-            identifier: nil
-        )
+        dirty = true
     }
     
     // MARK: - Targets
     
     public mutating func addTarget(name: String, isTest: Bool, dependencies: [String]) {
-        let dependencies = dependencies.map { Package.Target.Dependency(name: $0) }
-        let newTarget = Target(
+        let dependencies = dependencies.map { PackageV4_2.Target.Dependency(name: $0) }
+        data.targets.append(.init(
             name: name,
             isTest: isTest,
             dependencies: dependencies,
@@ -185,73 +143,79 @@ public struct Package: Decodable {
             exclude: [],
             sources: nil,
             publicHeadersPath: nil
-        )
-        targets.append(newTarget)
+        ))
+        dirty = true
     }
     
     public mutating func depend(target: String, on lib: String) throws {
-        guard let targetIndex = targets.index(where:  { $0.name == target }) else {
+        guard let targetIndex = data.targets.index(where: { $0.name == target }) else {
             throw IceError(message: "target '\(target)' not found")
         }
-        if targets[targetIndex].dependencies.contains(where: { $0.name == lib }) {
+        if data.targets[targetIndex].dependencies.contains(where: { $0.name == lib }) {
             return
         }
-        targets[targetIndex].dependencies.append(Target.Dependency(name: lib))
+        data.targets[targetIndex].dependencies.append(.init(name: lib))
+        dirty = true
     }
     
     public mutating func removeTarget(named name: String) throws {
-        guard let index = targets.index(where: { $0.name == name }) else {
+        guard let index = data.targets.index(where: { $0.name == name }) else {
             throw IceError(message: "can't remove target \(name)")
         }
-        targets.remove(at: index)
+        data.targets.remove(at: index)
         
-        removeDependencyFromTargets(named : name)
+        removeDependencyFromTargets(named: name)
         
-        products = products.map { (oldProduct) in
+        data.products = data.products.map { (oldProduct) in
             var newProduct = oldProduct
             newProduct.targets = newProduct.targets.filter { $0 != name }
             return newProduct
         }
+        dirty = true
     }
     
     // MARK: - Helpers
     
     private mutating func removeDependencyFromTargets(named name: String) {
-        targets = targets.map { (oldTarget) in
+        data.targets = data.targets.map { (oldTarget) in
             var newTarget = oldTarget
             newTarget.dependencies = newTarget.dependencies.filter { $0.name != name }
             return newTarget
         }
+        dirty = true
     }
     
     // MARK: -
     
-    public func write(to stream: WritableStream? = nil, directory: Path = Path.current) throws {
-        let writeStream: WritableStream
-        if let stream = stream {
-            writeStream = stream
-        } else {
-            let path = directory + Package.packagePath
-            try path.write(Data())
-            guard let fileStream = WriteStream(path: path.string) else  {
-                throw IceError(message: "couldn't write to \(path)")
-            }
-            writeStream = fileStream
+    public mutating func sync() throws {
+        if !dirty {
+            return
         }
         
-        let writePackage = Ice.config.get(\.reformat, directory: directory) ? formatted() : self
-        let writer = PackageWriter(package: writePackage)
-        try writer.write(to: writeStream)
+        let path = directory + Package.fileName
+        try path.write(Data())
+        guard let fileStream = WriteStream(path: path.string) else  {
+            throw IceError(message: "couldn't write to \(path)")
+        }
+        
+        try write(to: fileStream)
+        dirty = false
+    }
+    
+    public func write(to stream: WritableStream) throws {
+        let writePackage = Ice.config.get(\.reformat, directory: directory) ? data.formatted() : data
+        let writer = try PackageWriter(package: writePackage, toolsVersion: toolsVersion)
+        try writer.write(to: stream)
     }
     
 }
 
 // MARK: - Formatted
 
-extension Package {
+extension PackageV4_2 {
     
-    public func formatted() -> Package {
-        return Package(
+    public func formatted() -> PackageV4_2 {
+        return PackageV4_2(
             name: name,
             pkgConfig: pkgConfig,
             providers: providers?.map(Provider.formatted),
@@ -266,10 +230,10 @@ extension Package {
     
 }
 
-extension Package.Provider {
+extension PackageV4_2.Provider {
     
-    static func formatted(product: Package.Provider) -> Package.Provider {
-        return Package.Provider(
+    static func formatted(product: PackageV4_2.Provider) -> PackageV4_2.Provider {
+        return .init(
             name: product.name,
             values: product.values.sorted()
         )
@@ -277,10 +241,10 @@ extension Package.Provider {
     
 }
 
-extension Package.Product {
+extension PackageV4_2.Product {
     
-    static func formatted(product: Package.Product) -> Package.Product {
-        return Package.Product(
+    static func formatted(product: PackageV4_2.Product) -> PackageV4_2.Product {
+        return .init(
             name: product.name,
             product_type: product.product_type,
             targets: product.targets.sorted(),
@@ -289,7 +253,7 @@ extension Package.Product {
     
     }
     
-    static func packageSort(lhs: Package.Product, rhs: Package.Product) -> Bool {
+    static func packageSort(lhs: PackageV4_2.Product, rhs: PackageV4_2.Product) -> Bool {
         if lhs.isExecutable && !rhs.isExecutable { return true }
         if !lhs.isExecutable && rhs.isExecutable { return false }
         return lhs.name < rhs.name
@@ -297,18 +261,18 @@ extension Package.Product {
     
 }
 
-extension Package.Dependency {
+extension PackageV4_2.Dependency {
     
-    static func packageSort(lhs: Package.Dependency, rhs: Package.Dependency) -> Bool {
+    static func packageSort(lhs: PackageV4_2.Dependency, rhs: PackageV4_2.Dependency) -> Bool {
         return RepositoryReference(url: lhs.url).name < RepositoryReference(url: rhs.url).name
     }
     
 }
 
-extension Package.Target {
+extension PackageV4_2.Target {
     
-    static func formatted(target: Package.Target) -> Package.Target {
-        return Package.Target(
+    static func formatted(target: PackageV4_2.Target) -> PackageV4_2.Target {
+        return .init(
             name: target.name,
             isTest: target.isTest,
             dependencies: target.dependencies.sorted { $0.name < $1.name },
@@ -319,7 +283,7 @@ extension Package.Target {
         )
     }
     
-    static func packageSort(lhs: Package.Target, rhs: Package.Target) -> Bool {
+    static func packageSort(lhs: PackageV4_2.Target, rhs: PackageV4_2.Target) -> Bool {
         if lhs.isTest && !rhs.isTest { return false }
         if !lhs.isTest && rhs.isTest { return true }
         return lhs.name < rhs.name

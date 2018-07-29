@@ -34,7 +34,7 @@ class AddCommand: Command {
         
         verboseOut <<< "Resolving url: \(ref.url)"
         
-        let requirement: Package.Dependency.Requirement
+        let requirement: PackageV4_2.Dependency.Requirement
         if let version = version.value {
             requirement = .init(version: version)
         } else if let branch = branch.value {
@@ -58,7 +58,7 @@ class AddCommand: Command {
         verboseOut <<< "Loaded package: \(package.name)"
         
         package.addDependency(ref: ref, requirement: requirement)
-        try package.write()
+        try package.sync()
         
         try SPM().resolve()
         
@@ -99,7 +99,7 @@ class AddCommand: Command {
             }
         }
         
-        try package.write()
+        try package.sync()
     }
     
 }

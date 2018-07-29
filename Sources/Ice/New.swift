@@ -37,8 +37,9 @@ class NewCommand: Command {
         try SPM().initPackage(type: type)
         
         // Reformat
-        let p = try Package.load()
-        try p.write()
+        var package = try Package.load()
+        package.dirty = true
+        try package.sync()
         
         stdout <<< ""
         stdout <<< "Run: ".blue.bold + "cd \(projectName.value) && ice build"

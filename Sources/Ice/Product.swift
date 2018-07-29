@@ -62,7 +62,7 @@ private class ProductAddCommand: Command {
             type: type,
             targets: productTargets
         )
-        try package.write()
+        try package.sync()
     }
     
 }
@@ -77,7 +77,7 @@ private class ProductRemoveCommand: Command {
     func execute() throws {
         var project = try Package.load()
         try project.removeProduct(name: product.value)
-        try project.write()
+        try project.sync()
     }
     
 }

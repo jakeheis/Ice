@@ -22,14 +22,14 @@ class PackageWriterTests: XCTestCase {
         ("testCxxLanguageStandard", testCxxLanguageStandard),
     ]
     
-    let products: [Package.Product] = [
+    let products: [PackageV4_2.Product] = [
         .init(name: "exec", product_type: "executable", targets: ["MyLib"], type: nil),
         .init(name: "Lib", product_type: "library", targets: ["Core"], type: nil),
         .init(name: "Static", product_type: "library", targets: ["MyLib"], type: "static"),
         .init(name: "Dynamic", product_type: "library", targets: ["Core"], type: "dynamic")
     ]
     
-    let dependencies: [Package.Dependency] = [
+    let dependencies: [PackageV4_2.Dependency] = [
         .init(
             url: "https://github.com/jakeheis/SwiftCLI",
             requirement: .init(
@@ -86,7 +86,7 @@ class PackageWriterTests: XCTestCase {
         )
     ]
     
-    let targets: [Package.Target] = [
+    let targets: [PackageV4_2.Target] = [
         .init(name: "CLI", isTest: false, dependencies: [
             .init(name: "Core")
             ], path: nil, exclude: [], sources: nil, publicHeadersPath: nil),
@@ -102,12 +102,12 @@ class PackageWriterTests: XCTestCase {
             ], path: nil, exclude: [], sources: ["only.swift"], publicHeadersPath: "headers.h")
     ]
     
-    let providers: [Package.Provider] = [
+    let providers: [PackageV4_2.Provider] = [
         .init(name: "brew", values: ["libssh2"]),
         .init(name: "apt", values: ["libssh2-1-dev", "libssh2-2-dev"])
     ]
     
-    lazy var package = Package(
+    lazy var package = PackageV4_2(
         name: "myPackage",
         pkgConfig: "config",
         providers: providers,
@@ -121,7 +121,7 @@ class PackageWriterTests: XCTestCase {
     
     func testFull() throws {
         let capture = CaptureStream()
-        let writer = PackageWriter(package: package, toolsVersion: .v4)
+        let writer = try PackageWriter(package: package, toolsVersion: .v4)
         try writer.write(to: capture)
         capture.closeWrite()
         
@@ -166,7 +166,7 @@ class PackageWriterTests: XCTestCase {
         """)
         
         let capture42 = CaptureStream()
-        let writer42 = PackageWriter(package: package, toolsVersion: .v4_2)
+        let writer42 = try PackageWriter(package: package, toolsVersion: .v4_2)
         try writer42.write(to: capture42)
         capture42.closeWrite()
         
@@ -307,9 +307,9 @@ class PackageWriterTests: XCTestCase {
     
     // MARK: -
     
-    private func withWriter<T: PackageWriterImpl>(_ run: (T, PackageArguments) throws -> ()) rethrows -> String {
+    private func withWriter<T: PackageWriterImpl>(_ toolsVersion: SwiftToolsVersion, _ run: (T, PackageArguments) throws -> ()) rethrows -> String {
         let arguments = PackageArguments()
-        let writer = T(package: package)
+        let writer = T(package: package, toolsVersion: toolsVersion)
         try run(writer, arguments)
         
         let capture = CaptureStream()
@@ -320,11 +320,11 @@ class PackageWriterTests: XCTestCase {
     }
     
     private func with4_0(_ run: (Version4_0Writer, PackageArguments) throws -> ()) rethrows -> String {
-        return try withWriter(run)
+        return try withWriter(.v4, run)
     }
     
     private func with4_2(_ run: (Version4_2Writer, PackageArguments) throws -> ()) rethrows -> String {
-        return try withWriter(run)
+        return try withWriter(.v4_2, run)
     }
     
 }
