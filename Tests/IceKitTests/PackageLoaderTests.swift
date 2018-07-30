@@ -18,8 +18,10 @@ class PackageLoaderTests: XCTestCase {
         ("testComplex", testComplex),
     ]
     
+    private let fixturesPath = Path("Tests/Fixtures")
+    
     func testBasic() throws {
-        let data = try Data(contentsOf: URL(fileURLWithPath: "Tests/Fixtures/SwiftCLI.json"))
+        let data: Data = try (fixturesPath + "SwiftCLI.json").read()
         let package = try PackageLoader.load(from: data, directory: Path.current, toolsVersion: SwiftToolsVersion.v4)
         
         XCTAssertEqual(package.directory, Path.current)
@@ -51,7 +53,7 @@ class PackageLoaderTests: XCTestCase {
     }
     
     func testComplex() throws {
-        let data = try Data(contentsOf: URL(fileURLWithPath: "Tests/Fixtures/Ice.json"))
+        let data: Data = try (fixturesPath + "Ice.json").read()
         let package = try PackageLoader.load(from: data, directory: Path.current, toolsVersion: SwiftToolsVersion(major: 4, minor: 1, patch: 0))
         
         XCTAssertEqual(package.directory, Path.current)

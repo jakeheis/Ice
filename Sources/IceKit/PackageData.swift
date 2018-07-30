@@ -7,14 +7,14 @@
 
 public typealias ModernPackageData = PackageDataV4_2
 
-public struct PackageDataV4_2: Decodable {
+public struct PackageDataV4_2: Codable {
     
-    public struct Provider: Decodable {
+    public struct Provider: Codable {
         public let name: String
         public let values: [String]
     }
     
-    public struct Product: Decodable {
+    public struct Product: Codable {
         public let name: String
         public let product_type: String
         public var targets: [String]
@@ -25,9 +25,9 @@ public struct PackageDataV4_2: Decodable {
         }
     }
     
-    public struct Dependency: Decodable {
-        public struct Requirement: Decodable {
-            public enum RequirementType: String, Decodable {
+    public struct Dependency: Codable {
+        public struct Requirement: Codable {
+            public enum RequirementType: String, Codable {
                 case range
                 case branch
                 case exact
@@ -58,8 +58,8 @@ public struct PackageDataV4_2: Decodable {
         }
     }
     
-    public struct Target: Decodable {
-        public struct Dependency: Decodable {
+    public struct Target: Codable {
+        public struct Dependency: Codable {
             public let name: String
         }
         
@@ -84,7 +84,7 @@ public struct PackageDataV4_2: Decodable {
     
 }
 
-public struct PackageDataV4_0: Decodable {
+public struct PackageDataV4_0: Codable {
     
     public typealias Provider = PackageDataV4_2.Provider
     public typealias Product = PackageDataV4_2.Product

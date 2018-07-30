@@ -62,7 +62,7 @@ class AddCommand: Command {
         
         try SPM().resolve()
         
-        var libs = Package.retrieveLibrariesOfDependency(named: ref.name)
+        var libs = package.retrieveLibrariesOfDependency(named: ref.name)
         if libs.count > 1 {
             stdout <<< ""
             stdout <<< "Note: ".bold.blue + "this dependency offers multiple libraries (" + libs.joined(separator: ", ") + ")"

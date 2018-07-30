@@ -24,19 +24,6 @@ public struct Package {
         return try PackageLoader.load(in: directory)
     }
     
-    public static func retrieveLibrariesOfDependency(named dependency: String) -> [String] {
-        let path = Path(".build/checkouts").glob("\(dependency)*")[0]
-        guard let contents: String = try? (path + Package.fileName).read().replacingOccurrences(of: "\n", with: " ") else {
-            return []
-        }
-        let matches = libRegex.allMatches(in: contents)
-        #if swift(>=4.1)
-        return matches.compactMap { $0.captures[0] }
-        #else
-        return matches.flatMap { $0.captures[0] }
-        #endif
-    }
-    
     public var name: String {
         return data.name
     }
@@ -53,7 +40,7 @@ public struct Package {
         return data.targets
     }
     
-    private var data: ModernPackageData {
+    private(set) var data: ModernPackageData {
         didSet {
             dirty = true
         }
@@ -131,7 +118,7 @@ public struct Package {
         }
         data.dependencies.remove(at: index)
         
-        var libs = Package.retrieveLibrariesOfDependency(named: name)
+        var libs = retrieveLibrariesOfDependency(named: name)
         if libs.isEmpty {
             libs.append(name)
         }
@@ -192,6 +179,20 @@ public struct Package {
     
     // MARK: -
     
+    public func retrieveLibrariesOfDependency(named dependency: String) -> [String] {
+        let glob = (directory + ".build" + "checkouts").glob("\(dependency)*")
+        guard let path = glob.first,
+            let contents: String = try? (path + Package.fileName).read().replacingOccurrences(of: "\n", with: " ") else {
+                return []
+        }
+        let matches = Package.libRegex.allMatches(in: contents)
+        #if swift(>=4.1)
+        return matches.compactMap { $0.captures[0] }
+        #else
+        return matches.flatMap { $0.captures[0] }
+        #endif
+    }
+    
     public mutating func sync() throws {
         if !dirty {
             return
@@ -208,13 +209,8 @@ public struct Package {
     }
     
     public func write(to stream: WritableStream) throws {
-        let writePackage: ModernPackageData
-        if Ice.config.get(\.reformat, directory: directory) {
-            writePackage = PackageFormatter(package: data).format()
-        } else {
-            writePackage = data
-        }
-        let writer = try PackageWriter(package: writePackage, toolsVersion: toolsVersion)
+        let format = Ice.config.get(\.reformat, directory: directory)
+        let writer = try PackageWriter(package: self, format: format)
         try writer.write(to: stream)
     }
     

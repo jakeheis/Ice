@@ -11,6 +11,11 @@ public class PackageWriter {
     
     private let writer: PackageWriterImpl
     
+    public convenience init(package: Package, format: Bool = false) throws {
+        let data = format ? PackageFormatter(package: package.data).format() : package.data
+        try self.init(package: data, toolsVersion: package.toolsVersion)
+    }
+    
     public init(package: ModernPackageData, toolsVersion: SwiftToolsVersion) throws {
         if toolsVersion >= SwiftToolsVersion.v4_2 {
             self.writer = Version4_2Writer(package: package, toolsVersion: toolsVersion)
