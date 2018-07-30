@@ -22,14 +22,14 @@ class PackageWriterTests: XCTestCase {
         ("testCxxLanguageStandard", testCxxLanguageStandard),
     ]
     
-    let products: [PackageV4_2.Product] = [
+    let products: [PackageDataV4_2.Product] = [
         .init(name: "exec", product_type: "executable", targets: ["MyLib"], type: nil),
         .init(name: "Lib", product_type: "library", targets: ["Core"], type: nil),
         .init(name: "Static", product_type: "library", targets: ["MyLib"], type: "static"),
         .init(name: "Dynamic", product_type: "library", targets: ["Core"], type: "dynamic")
     ]
     
-    let dependencies: [PackageV4_2.Dependency] = [
+    let dependencies: [PackageDataV4_2.Dependency] = [
         .init(
             url: "https://github.com/jakeheis/SwiftCLI",
             requirement: .init(
@@ -86,7 +86,7 @@ class PackageWriterTests: XCTestCase {
         )
     ]
     
-    let targets: [PackageV4_2.Target] = [
+    let targets: [PackageDataV4_2.Target] = [
         .init(name: "CLI", isTest: false, dependencies: [
             .init(name: "Core")
             ], path: nil, exclude: [], sources: nil, publicHeadersPath: nil),
@@ -102,12 +102,12 @@ class PackageWriterTests: XCTestCase {
             ], path: nil, exclude: [], sources: ["only.swift"], publicHeadersPath: "headers.h")
     ]
     
-    let providers: [PackageV4_2.Provider] = [
+    let providers: [PackageDataV4_2.Provider] = [
         .init(name: "brew", values: ["libssh2"]),
         .init(name: "apt", values: ["libssh2-1-dev", "libssh2-2-dev"])
     ]
     
-    lazy var package = PackageV4_2(
+    lazy var package = PackageDataV4_2(
         name: "myPackage",
         pkgConfig: "config",
         providers: providers,

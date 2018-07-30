@@ -34,7 +34,7 @@ class AddCommand: Command {
         
         verboseOut <<< "Resolving url: \(ref.url)"
         
-        let requirement: PackageV4_2.Dependency.Requirement
+        let requirement: Package.Dependency.Requirement
         if let version = version.value {
             requirement = .init(version: version)
         } else if let branch = branch.value {

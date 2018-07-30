@@ -12,6 +12,11 @@ import SwiftCLI
 
 public struct Package {
     
+    public typealias Provider = ModernPackageData.Provider
+    public typealias Product = ModernPackageData.Product
+    public typealias Dependency = ModernPackageData.Dependency
+    public typealias Target = ModernPackageData.Target
+    
     public static let fileName = Path("Package.swift")
     private static let libRegex = Regex("\\.library\\( *name: *\"([^\"]*)\"")
     
@@ -36,24 +41,24 @@ public struct Package {
         return data.name
     }
     
-    public var products: [PackageV4_2.Product] {
+    public var products: [Product] {
         return data.products
     }
     
-    public var dependencies: [PackageV4_2.Dependency] {
+    public var dependencies: [Dependency] {
         return data.dependencies
     }
     
-    public var targets: [PackageV4_2.Target] {
+    public var targets: [Target] {
         return data.targets
     }
     
-    private var data: PackageV4_2
+    private var data: ModernPackageData
     public let directory: Path
     public let toolsVersion: SwiftToolsVersion
     public var dirty = false
     
-    init(data: PackageV4_2, directory: Path, toolsVersion: SwiftToolsVersion) {
+    init(data: ModernPackageData, directory: Path, toolsVersion: SwiftToolsVersion) {
         self.data = data
         self.directory = directory
         self.toolsVersion = toolsVersion
@@ -99,7 +104,7 @@ public struct Package {
     
     // MARK: - Dependencies
     
-    public mutating func addDependency(ref: RepositoryReference, requirement: PackageV4_2.Dependency.Requirement) {
+    public mutating func addDependency(ref: RepositoryReference, requirement: Package.Dependency.Requirement) {
         data.dependencies.append(.init(
             url: ref.url,
             requirement: requirement
@@ -107,17 +112,17 @@ public struct Package {
         dirty = true
     }
     
-    public mutating func updateDependency(dependency: PackageV4_2.Dependency, to requirement: PackageV4_2.Dependency.Requirement) throws {
+    public mutating func updateDependency(dependency: Package.Dependency, to requirement: Package.Dependency.Requirement) throws {
         guard let index = data.dependencies.index(where: { $0.url == dependency.url }) else {
-            throw IceError(message: "can't update dependency \(dependency.url)")
+            throw IceError(message: "can't update dependency \(dependency.name)")
         }
         data.dependencies[index].requirement = requirement
         dirty = true
     }
     
     public mutating func removeDependency(named name: String) throws {
-        guard let index = data.dependencies.index(where: { RepositoryReference(url: $0.url).name == name }) else {
-            throw IceError(message: "can't remove dependency \(name)")
+        guard let index = data.dependencies.index(where: { $0.name == name }) else {
+            throw IceError(message: "no dependency named \(name)")
         }
         data.dependencies.remove(at: index)
         
@@ -134,7 +139,7 @@ public struct Package {
     // MARK: - Targets
     
     public mutating func addTarget(name: String, isTest: Bool, dependencies: [String]) {
-        let dependencies = dependencies.map { PackageV4_2.Target.Dependency(name: $0) }
+        let dependencies = dependencies.map { Package.Target.Dependency(name: $0) }
         data.targets.append(.init(
             name: name,
             isTest: isTest,
@@ -203,90 +208,14 @@ public struct Package {
     }
     
     public func write(to stream: WritableStream) throws {
-        let writePackage = Ice.config.get(\.reformat, directory: directory) ? data.formatted() : data
+        let writePackage: ModernPackageData
+        if Ice.config.get(\.reformat, directory: directory) {
+            writePackage = PackageFormatter(package: data).format()
+        } else {
+            writePackage = data
+        }
         let writer = try PackageWriter(package: writePackage, toolsVersion: toolsVersion)
         try writer.write(to: stream)
-    }
-    
-}
-
-// MARK: - Formatted
-
-extension PackageV4_2 {
-    
-    public func formatted() -> PackageV4_2 {
-        return PackageV4_2(
-            name: name,
-            pkgConfig: pkgConfig,
-            providers: providers?.map(Provider.formatted),
-            products: products.map(Product.formatted).sorted(by: Product.packageSort),
-            dependencies: dependencies.sorted(by: Dependency.packageSort),
-            targets: targets.map(Target.formatted).sorted(by: Target.packageSort),
-            swiftLanguageVersions: swiftLanguageVersions?.sorted(),
-            cLanguageStandard: cLanguageStandard,
-            cxxLanguageStandard: cxxLanguageStandard
-        )
-    }
-    
-}
-
-extension PackageV4_2.Provider {
-    
-    static func formatted(product: PackageV4_2.Provider) -> PackageV4_2.Provider {
-        return .init(
-            name: product.name,
-            values: product.values.sorted()
-        )
-    }
-    
-}
-
-extension PackageV4_2.Product {
-    
-    static func formatted(product: PackageV4_2.Product) -> PackageV4_2.Product {
-        return .init(
-            name: product.name,
-            product_type: product.product_type,
-            targets: product.targets.sorted(),
-            type: product.type
-        )
-    
-    }
-    
-    static func packageSort(lhs: PackageV4_2.Product, rhs: PackageV4_2.Product) -> Bool {
-        if lhs.isExecutable && !rhs.isExecutable { return true }
-        if !lhs.isExecutable && rhs.isExecutable { return false }
-        return lhs.name < rhs.name
-    }
-    
-}
-
-extension PackageV4_2.Dependency {
-    
-    static func packageSort(lhs: PackageV4_2.Dependency, rhs: PackageV4_2.Dependency) -> Bool {
-        return RepositoryReference(url: lhs.url).name < RepositoryReference(url: rhs.url).name
-    }
-    
-}
-
-extension PackageV4_2.Target {
-    
-    static func formatted(target: PackageV4_2.Target) -> PackageV4_2.Target {
-        return .init(
-            name: target.name,
-            isTest: target.isTest,
-            dependencies: target.dependencies.sorted { $0.name < $1.name },
-            path: target.path,
-            exclude: target.exclude.sorted(),
-            sources: target.sources?.sorted(),
-            publicHeadersPath: target.publicHeadersPath
-        )
-    }
-    
-    static func packageSort(lhs: PackageV4_2.Target, rhs: PackageV4_2.Target) -> Bool {
-        if lhs.isTest && !rhs.isTest { return false }
-        if !lhs.isTest && rhs.isTest { return true }
-        return lhs.name < rhs.name
     }
     
 }

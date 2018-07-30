@@ -11,7 +11,7 @@ public class PackageWriter {
     
     private let writer: PackageWriterImpl
     
-    public init(package: PackageV4_2, toolsVersion: SwiftToolsVersion) throws {
+    public init(package: ModernPackageData, toolsVersion: SwiftToolsVersion) throws {
         if toolsVersion >= SwiftToolsVersion.v4_2 {
             self.writer = Version4_2Writer(package: package, toolsVersion: toolsVersion)
         } else if toolsVersion >= SwiftToolsVersion.v4 {
@@ -28,10 +28,10 @@ public class PackageWriter {
 }
 
 protocol PackageWriterImpl {
-    var package: PackageV4_2 { get }
+    var package: ModernPackageData { get }
     var toolsVersion: SwiftToolsVersion { get }
     
-    init(package: PackageV4_2, toolsVersion: SwiftToolsVersion)
+    init(package: ModernPackageData, toolsVersion: SwiftToolsVersion)
     
     func addSwiftLanguageVersions(_ versions: [String]?, to arguments: PackageArguments) throws
 }
@@ -79,7 +79,7 @@ extension PackageWriterImpl {
         }
     }
     
-    func addProviders(_ providers: [PackageV4_2.Provider]?, to arguments: PackageArguments) {
+    func addProviders(_ providers: [Package.Provider]?, to arguments: PackageArguments) {
         guard let providers = providers, !providers.isEmpty else {
             return
         }
@@ -89,7 +89,7 @@ extension PackageWriterImpl {
         })
     }
     
-    func addProducts(_ products: [PackageV4_2.Product], to arguments: PackageArguments) {
+    func addProducts(_ products: [Package.Product], to arguments: PackageArguments) {
         if products.isEmpty {
             return
         }
@@ -106,7 +106,7 @@ extension PackageWriterImpl {
         })
     }
     
-    func addDependencies(_ dependencies: [PackageV4_2.Dependency], to arguments: PackageArguments) {
+    func addDependencies(_ dependencies: [Package.Dependency], to arguments: PackageArguments) {
         if dependencies.isEmpty {
             return
         }
@@ -144,7 +144,7 @@ extension PackageWriterImpl {
         })
     }
     
-    func addTargets(_ targets: [PackageV4_2.Target], to arguments: PackageArguments) {
+    func addTargets(_ targets: [Package.Target], to arguments: PackageArguments) {
         if targets.isEmpty {
             arguments.addSimple(key: "targets", value: "[]")
         } else {
@@ -194,10 +194,10 @@ extension PackageWriterImpl {
 
 final class Version4_0Writer: PackageWriterImpl {
     
-    let package: PackageV4_2
+    let package: ModernPackageData
     let toolsVersion: SwiftToolsVersion
     
-    init(package: PackageV4_2, toolsVersion: SwiftToolsVersion) {
+    init(package: ModernPackageData, toolsVersion: SwiftToolsVersion) {
         self.package = package
         self.toolsVersion = toolsVersion
     }
@@ -216,10 +216,10 @@ final class Version4_0Writer: PackageWriterImpl {
 
 final class Version4_2Writer: PackageWriterImpl {
     
-    let package: PackageV4_2
+    let package: ModernPackageData
     let toolsVersion: SwiftToolsVersion
     
-    init(package: PackageV4_2, toolsVersion: SwiftToolsVersion) {
+    init(package: ModernPackageData, toolsVersion: SwiftToolsVersion) {
         self.package = package
         self.toolsVersion = toolsVersion
     }

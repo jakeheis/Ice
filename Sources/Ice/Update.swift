@@ -37,7 +37,7 @@ class UpdateCommand: Command {
             throw IceError(message: "No dependency found with that name")
         }
         
-        let requirement: PackageV4_2.Dependency.Requirement
+        let requirement: Package.Dependency.Requirement
         if let version = version.value {
             requirement = .init(version: version)
         } else if let branch = branch.value {
@@ -53,7 +53,7 @@ class UpdateCommand: Command {
         try package.sync()
     }
     
-    private func inputVersion(for dep: PackageV4_2.Dependency) throws -> PackageV4_2.Dependency.Requirement {
+    private func inputVersion(for dep: Package.Dependency) throws -> Package.Dependency.Requirement {
         stdout <<< ""
         let current = currentVersion(of: dep)
         stdout <<< "Current version: ".dim + current
@@ -85,7 +85,7 @@ class UpdateCommand: Command {
         return .init(version: chosen)
     }
     
-    private func currentVersion(of dep: PackageV4_2.Dependency) -> String {
+    private func currentVersion(of dep: Package.Dependency) -> String {
         if let resolved = try? Resolved.load(from: "."), let pin = resolved.findPin(url: dep.url) {
             if let version = pin.state.version {
                 return version
