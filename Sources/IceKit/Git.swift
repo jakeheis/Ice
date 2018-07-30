@@ -32,7 +32,7 @@ class Git {
         let task = Task(executable: "git", arguments: ["ls-remote", "--tags", url], stdout: out, stderr: WriteStream.null)
         let exitStatus = task.runSync()
         guard exitStatus == 0 else {
-            throw IceError(message: "not a valid package reference", exitStatus: exitStatus)
+            throw IceError(message: "couldn't retrieve versions at \(url)", exitStatus: exitStatus)
         }
         return versions
     }

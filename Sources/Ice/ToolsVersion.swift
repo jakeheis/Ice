@@ -37,7 +37,13 @@ class UpdateToolsVersion: Command {
     let version = Parameter()
     
     func execute() throws {
+        guard let toolsVersion = SwiftToolsVersion(version.value) else {
+            throw IceError(message: "invalid tools version")
+        }
         
+        var package = try Package.load()
+        package.toolsVersion = toolsVersion
+        try package.sync()
     }
     
 }

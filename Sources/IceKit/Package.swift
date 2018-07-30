@@ -53,9 +53,18 @@ public struct Package {
         return data.targets
     }
     
-    private var data: ModernPackageData
+    private var data: ModernPackageData {
+        didSet {
+            dirty = true
+        }
+    }
+    
     public let directory: Path
-    public let toolsVersion: SwiftToolsVersion
+    public var toolsVersion: SwiftToolsVersion {
+        didSet {
+            dirty = true
+        }
+    }
     public var dirty = false
     
     init(data: ModernPackageData, directory: Path, toolsVersion: SwiftToolsVersion) {
@@ -91,7 +100,6 @@ public struct Package {
             targets: targets,
             type: libraryType)
         )
-        dirty = true
     }
     
     public mutating func removeProduct(name: String) throws {
@@ -99,7 +107,6 @@ public struct Package {
             throw IceError(message: "can't remove product \(name)")
         }
         data.products.remove(at: index)
-        dirty = true
     }
     
     // MARK: - Dependencies
@@ -109,7 +116,6 @@ public struct Package {
             url: ref.url,
             requirement: requirement
         ))
-        dirty = true
     }
     
     public mutating func updateDependency(dependency: Package.Dependency, to requirement: Package.Dependency.Requirement) throws {
@@ -117,7 +123,6 @@ public struct Package {
             throw IceError(message: "can't update dependency \(dependency.name)")
         }
         data.dependencies[index].requirement = requirement
-        dirty = true
     }
     
     public mutating func removeDependency(named name: String) throws {
@@ -133,7 +138,6 @@ public struct Package {
         for lib in libs {
             removeDependencyFromTargets(named: lib)
         }
-        dirty = true
     }
     
     // MARK: - Targets
@@ -149,7 +153,6 @@ public struct Package {
             sources: nil,
             publicHeadersPath: nil
         ))
-        dirty = true
     }
     
     public mutating func depend(target: String, on lib: String) throws {
@@ -160,7 +163,6 @@ public struct Package {
             return
         }
         data.targets[targetIndex].dependencies.append(.init(name: lib))
-        dirty = true
     }
     
     public mutating func removeTarget(named name: String) throws {
@@ -176,7 +178,6 @@ public struct Package {
             newProduct.targets = newProduct.targets.filter { $0 != name }
             return newProduct
         }
-        dirty = true
     }
     
     // MARK: - Helpers
@@ -187,7 +188,6 @@ public struct Package {
             newTarget.dependencies = newTarget.dependencies.filter { $0.name != name }
             return newTarget
         }
-        dirty = true
     }
     
     // MARK: -
