@@ -15,12 +15,10 @@ public class Ice {
     public let version = "0.6.0"
     
     public let root: Path
-    public let config: Config
     public let registry: Registry
     
     public init(root: Path = Ice.defaultRoot) throws {
         let versionFile = root + "version"
-        let configFile = root + "config.json"
         let registryDirectory = root + "Registry"
         
         if !root.exists {
@@ -30,8 +28,11 @@ public class Ice {
         }
         
         self.root = root
-        self.config = Config(globalConfigPath: configFile)
         self.registry = Registry(registryPath: registryDirectory)
+    }
+    
+    public func config(for directory: Path) -> Config {
+        return Config(globalPath: root + "config.json", directory: directory)
     }
     
 }

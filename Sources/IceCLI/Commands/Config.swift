@@ -8,12 +8,13 @@
 import Foundation
 import IceKit
 import SwiftCLI
+import SwiftyTextTable
 
 class ConfigGroup: IceObject, CommandGroup {
     let name = "config"
     let shortDescription = "Ice global config commands"
     lazy var children: [Routable] = [
-        ListConfigCommand(ice: ice),
+        ShowConfigCommand(ice: ice),
         GetConfigCommand(ice: ice),
         SetConfigCommand(ice: ice)
     ]
@@ -27,19 +28,54 @@ Valid keys:
   reformat      whether Ice should organize your Package.swift (alphabetize, etc.); defaults to false
 """)
 
-class ListConfigCommand: IceObject, Command {
+class ShowConfigCommand: IceObject, Command {
     
-    let name = "list"
-    let shortDescription = "List the current global config"
+    let name = "show"
+    let shortDescription = "Show the current Ice configuration"
     
     func execute() throws {
-        let list = ConfigFile.layer(config: config.globalConfig, onto: ConfigFile.defaultConfig)
-        guard let data = try? ConfigFile.encoder.encode(list),
-            let str = String(data: data, encoding: .utf8) else {
-                throw IceError(message: "couldn't retrieve config")
-        }
+        let keyCol = TextTableColumn(header: "Key")
+        let localCol = TextTableColumn(header: "Local")
+        let globalCol = TextTableColumn(header: "Global")
+        let resolvedCol = TextTableColumn(header: "Resolved")
+        var table = TextTable(columns: [keyCol, localCol, globalCol, resolvedCol])
         
-        print(str)
+        table.addRow(values: row(key: .reformat, value: { $0.reformat?.description }))
+        stdout <<< table.render()
+    }
+    
+    func row(key: Config.Keys, value dig: (Config.File) -> String?) -> [String] {
+        var values: [String] = [key.rawValue]
+        
+        if let value = dig(config.local) {
+            values.append(value)
+        } else {
+            values.append("(none)")
+        }
+        if let value = dig(config.global) {
+            values.append(value)
+        } else {
+            let value = dig(Config.defaultConfig)!
+            values.append(value)
+        }
+        values.append(config.get(key))
+        
+        return values
+    }
+    
+    private func printConfig(heading: String, file: Config.File?) {
+        guard let file = file else {
+            return
+        }
+        var lines: [String] = []
+        if let reformat = file.reformat {
+            lines.append("  reformat: " + reformat.description)
+        }
+        if lines.isEmpty {
+            return
+        }
+        stdout <<< heading
+        stdout <<< lines.joined(separator: "\n")
     }
     
 }
@@ -52,15 +88,10 @@ class GetConfigCommand: IceObject, Command {
     let key = Parameter()
     
     func execute() throws {
-        guard let key = ConfigFile.Keys(rawValue: key.value) else {
+        guard let key = Config.Keys(rawValue: key.value) else {
             throw unrecognizedKeyError
         }
-        let value: Any
-        switch key {
-        case .reformat:
-            value = config.get(\.reformat)
-        }
-        stdout <<< String(describing: value)
+        stdout <<< config.get(key)
     }
     
 }
@@ -73,8 +104,15 @@ class SetConfigCommand: IceObject, Command {
     let key = Parameter()
     let value = Parameter()
     
+    let global = Flag("-g", "--global", description: "Update the global configuation; default")
+    let local = Flag("-l", "--local", description: "Update the local configuation")
+    
+    var optionGroups: [OptionGroup] {
+        return [.atMostOne(global, local)]
+    }
+    
     func execute() throws {
-        guard let key = ConfigFile.Keys(rawValue: key.value) else {
+        guard let key = Config.Keys(rawValue: key.value) else {
             throw unrecognizedKeyError
         }
         switch key {
@@ -82,7 +120,7 @@ class SetConfigCommand: IceObject, Command {
             guard let val = Bool.convert(from: value.value) else {
                 throw IceError(message: "invalid value (must be true/false)")
             }
-            try config.set(\.reformat, value: val)
+            try config.set(\.reformat, value: val, global: !local.value)
         }
     }
     

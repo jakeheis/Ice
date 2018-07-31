@@ -10,73 +10,74 @@ import PathKit
 
 public class Config {
     
-    let globalPath: Path
-    
-    public private(set) var globalConfig: ConfigFile?
-    
-    init(globalConfigPath: Path) {
-        globalPath = globalConfigPath
-        globalConfig = ConfigFile.from(path: globalPath)
-    }
-    
-    public func get<T>(_ keyPath: KeyPath<ConfigFile, T?>, directory: Path = Path.current) -> T {
-        if let localConfig = ConfigFile.from(path: directory + "ice.json"), let value = localConfig[keyPath: keyPath] {
-            return value
-        }
-        if let globalConfig = globalConfig, let value = globalConfig[keyPath: keyPath] {
-            return value
-        }
-        return ConfigFile.defaultConfig[keyPath: keyPath]!
-    }
-    
-    public func set<T>(_ path: WritableKeyPath<ConfigFile, T?>, value: T) throws {
-        var file: ConfigFile
-        if let existing = self.globalConfig {
-            file = existing
-        } else {
-            let new = ConfigFile(reformat: nil)
-            file = new
-        }
-        
-        file[keyPath: path] = value
-        
-        self.globalConfig = file
-        
-        try globalPath.write(ConfigFile.encoder.encode(file))
-    }
-    
-}
-
-public struct ConfigFile: Codable {
-    
-    public static let encoder: JSONEncoder = {
-        let encoder = JSONEncoder()
-        encoder.outputFormatting = .prettyPrinted
-        return encoder
-    }()
-    public static let decoder = JSONDecoder()
-    
-    public static let defaultConfig = ConfigFile(
-        reformat: false
-    )
-    
     public enum Keys: String {
         case reformat
     }
     
-    public var reformat: Bool?
-    
-    public static func layer(config: ConfigFile?, onto: ConfigFile) -> ConfigFile {
-        return ConfigFile(reformat: config?.reformat ?? onto.reformat)
-    }
-    
-    static func from(path: Path) -> ConfigFile? {
-        guard let data = try? path.read(),
-            let file = try? decoder.decode(ConfigFile.self, from: data) else {
-            return nil
+    public struct File: Codable {
+        
+        public var reformat: Bool?
+        
+        static func from(path: Path) -> File? {
+            guard let data = try? path.read(),
+                let file = try? decoder.decode(File.self, from: data) else {
+                    return nil
+            }
+            return file
         }
-        return file
     }
     
-}
+    public static let defaultConfig = File(
+        reformat: false
+    )
+    
+    private static let encoder: JSONEncoder = {
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = .prettyPrinted
+        return encoder
+    }()
+    private static let decoder = JSONDecoder()
+    
+    public let globalPath: Path
+    public let localPath: Path
+    
+    public private(set) var global: File
+    public private(set) var local: File
+    
+    init(globalPath: Path, directory: Path) {
+        self.globalPath = globalPath
+        self.localPath = directory + "ice.json"
+        
+        self.global = File.from(path: globalPath) ?? Config.defaultConfig
+        self.local = File.from(path: localPath) ?? File(reformat: nil)
+    }
+    
+    public func get(_ key: Keys) -> String {
+        let val: Any
+        switch key {
+        case .reformat: val = get(\.reformat)
+        }
+        return String(describing: val)
+    }
+    
+    public func get<T>(_ keyPath: KeyPath<File, T?>) -> T {
+        if let value = local[keyPath: keyPath] {
+            return value
+        }
+        if let value = global[keyPath: keyPath] {
+            return value
+        }
+        return Config.defaultConfig[keyPath: keyPath]!
+    }
+    
+    public func set<T>(_ path: WritableKeyPath<File, T?>, value: T, global setGlobal: Bool) throws {
+        if setGlobal {
+            global[keyPath: path] = value
+            try globalPath.write(Config.encoder.encode(global))
+        } else {
+            local[keyPath: path] = value
+            try localPath.write(Config.encoder.encode(local))
+        }
+    }
 
+}

@@ -9,19 +9,6 @@ import Foundation
 import IceKit
 import SwiftCLI
 
-class IceObject {
-    let ice: Ice
-    init(ice: Ice) {
-        self.ice = ice
-    }
-    var registry: Registry {
-        return ice.registry
-    }
-    var config: Config {
-        return ice.config
-    }
-}
-
 class AddCommand: IceObject, Command {
     
     let name = "add"

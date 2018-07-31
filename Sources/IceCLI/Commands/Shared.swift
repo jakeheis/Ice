@@ -6,7 +6,24 @@
 //
 
 import IceKit
+import PathKit
 import SwiftCLI
+
+class IceObject {
+    
+    let ice: Ice
+    let config: Config
+    
+    var registry: Registry {
+        return ice.registry
+    }
+    
+    init(ice: Ice) {
+        self.ice = ice
+        self.config = ice.config(for: Path.current)
+    }
+    
+}
 
 struct GlobalOptions {
     static let verbose = Flag("-v", "--verbose")
