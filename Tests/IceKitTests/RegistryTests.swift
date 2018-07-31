@@ -18,16 +18,16 @@ class RegistryTests: XCTestCase {
         ("testRemove", testRemove),
     ]
     
-    let registryPath: Path = {
-        let path = Path("/tmp/ice/Registry")
-        if path.exists {
-            try! path.delete()
-        }
-        try! path.mkpath()
-        return path
-    }()
+    let registryPath: Path = Path("/tmp/ice/Registry")
     var sharedPath: Path { return registryPath + "shared" + "Registry" }
     var localPath: Path {  return registryPath + "local.json" }
+    
+    override func setUp() {
+        if registryPath.exists {
+            try! registryPath.delete()
+        }
+        try! registryPath.mkpath()
+    }
     
     func testAutoRefresh() throws {
         XCTAssertFalse(sharedPath.exists)

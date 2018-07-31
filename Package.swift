@@ -18,7 +18,8 @@ let package = Package(
         .package(url: "https://github.com/scottrhoyt/SwiftyTextTable", from: "0.8.0"),
     ],
     targets: [
-        .target(name: "Ice", dependencies: ["IceKit", "PathKit", "SwiftCLI", "SwiftyTextTable"]),
+        .target(name: "Ice", dependencies: ["IceCLI"]),
+        .target(name: "IceCLI", dependencies: ["IceKit", "PathKit", "Rainbow", "SwiftCLI", "SwiftyTextTable"]),
         .target(name: "IceKit", dependencies: ["PathKit", "Rainbow", "Regex", "SwiftCLI"]),
         .testTarget(name: "IceKitTests", dependencies: ["IceKit", "PathKit", "SwiftCLI"]),
         .testTarget(name: "IceTests", dependencies: ["Icebox", "Rainbow"]),
