@@ -208,8 +208,8 @@ public struct Package {
         dirty = false
     }
     
-    public func write(to stream: WritableStream) throws {
-        let format = Ice.config.get(\.reformat, directory: directory)
+    public func write(to stream: WritableStream, format: Bool = false) throws {
+//        let format = Ice.config.get(\.reformat, directory: directory)
         let writer = try PackageWriter(package: self, format: format)
         try writer.write(to: stream)
     }

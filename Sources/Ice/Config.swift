@@ -9,13 +9,13 @@ import Foundation
 import IceKit
 import SwiftCLI
 
-class ConfigGroup: CommandGroup {
+class ConfigGroup: IceObject, CommandGroup {
     let name = "config"
     let shortDescription = "Ice global config commands"
-    let children: [Routable] = [
-        ListConfigCommand(),
-        GetConfigCommand(),
-        SetConfigCommand()
+    lazy var children: [Routable] = [
+        ListConfigCommand(ice: ice),
+        GetConfigCommand(ice: ice),
+        SetConfigCommand(ice: ice)
     ]
 }
 
@@ -27,13 +27,13 @@ Valid keys:
   reformat      whether Ice should organize your Package.swift (alphabetize, etc.); defaults to false
 """)
 
-class ListConfigCommand: Command {
+class ListConfigCommand: IceObject, Command {
     
     let name = "list"
     let shortDescription = "List the current global config"
     
     func execute() throws {
-        let list = ConfigFile.layer(config: Ice.config.globalConfig, onto: ConfigFile.defaultConfig)
+        let list = ConfigFile.layer(config: config.globalConfig, onto: ConfigFile.defaultConfig)
         guard let data = try? ConfigFile.encoder.encode(list),
             let str = String(data: data, encoding: .utf8) else {
                 throw IceError(message: "couldn't retrieve config")
@@ -44,7 +44,7 @@ class ListConfigCommand: Command {
     
 }
 
-class GetConfigCommand: Command {
+class GetConfigCommand: IceObject, Command {
     
     let name = "get"
     let shortDescription = "Gets the config for the given key"
@@ -58,14 +58,14 @@ class GetConfigCommand: Command {
         let value: Any
         switch key {
         case .reformat:
-            value = Ice.config.get(\.reformat)
+            value = config.get(\.reformat)
         }
         stdout <<< String(describing: value)
     }
     
 }
 
-class SetConfigCommand: Command {
+class SetConfigCommand: IceObject, Command {
     
     let name = "set"
     let shortDescription = "Sets the config for the given key"
@@ -82,7 +82,7 @@ class SetConfigCommand: Command {
             guard let val = Bool.convert(from: value.value) else {
                 throw IceError(message: "invalid value (must be true/false)")
             }
-            try Ice.config.set(\.reformat, value: val)
+            try config.set(\.reformat, value: val)
         }
     }
     

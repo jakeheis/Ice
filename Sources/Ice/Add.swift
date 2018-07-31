@@ -9,7 +9,20 @@ import Foundation
 import IceKit
 import SwiftCLI
 
-class AddCommand: Command {
+class IceObject {
+    let ice: Ice
+    init(ice: Ice) {
+        self.ice = ice
+    }
+    var registry: Registry {
+        return ice.registry
+    }
+    var config: Config {
+        return ice.config
+    }
+}
+
+class AddCommand: IceObject, Command {
     
     let name = "add"
     let shortDescription = "Adds the given package"
@@ -28,7 +41,7 @@ class AddCommand: Command {
     }
     
     func execute() throws {
-        guard let ref = RepositoryReference(dependency.value) else {
+        guard let ref = RepositoryReference(blob: dependency.value, registry: registry) else {
             throw IceError(message: "not a valid package reference")
         }
         

@@ -9,13 +9,13 @@ import IceKit
 import Regex
 import SwiftCLI
 
-class VersionCommand: Command {
+class VersionCommand: IceObject, Command {
     
     let name = "version"
     let shortDescription = "Prints the current version of Ice"
     
     func execute() throws {
-        stdout <<< "Ice version: \(Ice.version)"
+        stdout <<< "Ice version: \(ice.version)"
         
         let swiftFull = try capture("swift", "--version").stdout
         if let match = Regex("Swift version ([0-9]\\.[0-9](\\.[0-9])?) ").firstMatch(in: swiftFull) {

@@ -5,51 +5,33 @@
 //  Created by Jake Heiser on 9/22/17.
 //
 
-import Foundation
 import PathKit
 import SwiftCLI
 
 public class Ice {
     
-    public static let version = "0.6.0"
+    public static let defaultRoot = Path.home + ".icebox"
     
-    struct Paths {
-        static let rootEnvKey = "ICE_GLOBAL_ROOT"
-        static let root: Path = {
-            if let root = ProcessInfo.processInfo.environment[rootEnvKey] {
-                return Path(root)
-            }
-            return Path.home + ".icebox"
-        }()
+    public let version = "0.6.0"
+    
+    public let root: Path
+    public let config: Config
+    public let registry: Registry
+    
+    public init(root: Path = Ice.defaultRoot) throws {
+        let versionFile = root + "version"
+        let configFile = root + "config.json"
+        let registryDirectory = root + "Registry"
         
-        static let versionFile = root + "version"
-        static let globalConfigFile = root + "config.json"
-        static let registryDirectory = root + "Registry"
-
-        private init() {}
-    }
-    
-    public static let config: Config = {
-        setup()
-        return Config(globalConfigPath: Paths.globalConfigFile)
-    }()
-    
-    public static let registry: Registry = {
-        setup()
-        return Registry(registryPath: Paths.registryDirectory)
-    }()
-    
-    private static func setup() {
-        if Paths.root.exists {
-            return
+        if !root.exists {
+            try run("mkdir", "-p", root.string)
+            try versionFile.write(version)
+            try run("mkdir", "-p", registryDirectory.string)
         }
-        do {
-            try run("mkdir", "-p", Paths.root.string)
-            try Paths.versionFile.write(version)
-            try run("mkdir", "-p", Paths.registryDirectory.string)
-        } catch {
-            niceFatalError("couldn't set up Ice at \(Paths.root)")
-        }
+        
+        self.root = root
+        self.config = Config(globalConfigPath: configFile)
+        self.registry = Registry(registryPath: registryDirectory)
     }
     
 }

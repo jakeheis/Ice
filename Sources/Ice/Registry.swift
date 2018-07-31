@@ -8,13 +8,18 @@
 import IceKit
 import SwiftCLI
 
-class RegistryGroup: CommandGroup {
+class RegistryGroup: IceObject, CommandGroup {
     let name = "registry"
     let shortDescription = "Manage local package registry"
-    let children: [Routable] = [AddEntryCommand(), RemoveEntryCommand(), LookupEntryCommand(), RefreshCommand()]
+    lazy var children: [Routable] = [
+        AddEntryCommand(ice: ice),
+        RemoveEntryCommand(ice: ice),
+        LookupEntryCommand(ice: ice),
+        RefreshCommand(ice: ice)
+    ]
 }
 
-private class AddEntryCommand: Command {
+private class AddEntryCommand: IceObject, Command {
     
     let name = "add"
     let shortDescription = "Add the given entry to your local registry"
@@ -23,16 +28,16 @@ private class AddEntryCommand: Command {
     let shortName = Parameter()
 
     func execute() throws {
-        guard let ref = RepositoryReference(ref.value) else {
+        guard let ref = RepositoryReference(blob: ref.value, registry: registry) else {
             throw IceError(message: "invalid repository reference")
         }
         
-        try Ice.registry.add(name: shortName.value, url: ref.url)
+        try registry.add(name: shortName.value, url: ref.url)
     }
     
 }
 
-private class RemoveEntryCommand: Command {
+private class RemoveEntryCommand: IceObject, Command {
     
     let name = "remove"
     let shortDescription = "Remove the given entry from your local registry"
@@ -40,32 +45,34 @@ private class RemoveEntryCommand: Command {
     let from = Parameter()
     
     func execute() throws {
-        try Ice.registry.remove(from.value)
+        try registry.remove(from.value)
     }
     
 }
 
-private class LookupEntryCommand: Command {
+private class LookupEntryCommand: IceObject, Command {
     
     let name = "lookup"
+    let shortDescription = "Lookup an entry in the registry"
     
     let from = Parameter()
     
     func execute() throws {
-        guard let value = Ice.registry.get(from.value) else {
+        guard let value = registry.get(from.value) else {
             throw IceError(message: "couldn't find \(from.value)")
         }
-        print(value.url)
+        stdout <<< value.url
     }
     
 }
 
-private class RefreshCommand: Command {
+private class RefreshCommand: IceObject, Command {
     
     let name = "refresh"
+    let shortDescription = "Refresh the global registry"
     
     func execute() throws {
-        try Ice.registry.refresh()
+        try registry.refresh()
     }
     
 }

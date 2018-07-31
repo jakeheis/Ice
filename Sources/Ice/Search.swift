@@ -10,7 +10,7 @@ import IceKit
 import Rainbow
 import SwiftCLI
 
-class SearchCommand: Command {
+class SearchCommand: IceObject, Command {
     
     let name = "search"
     let shortDescription = "Searches for the given package"
@@ -20,7 +20,7 @@ class SearchCommand: Command {
     let onlyName = Flag("-n", "--name-only", description: "Only search for packages matching the name")
     
     func execute() throws {
-        let entries = try Ice.registry.search(query: query.value, includeDescription: !onlyName.value)
+        let entries = try registry.search(query: query.value, includeDescription: !onlyName.value)
         
         if entries.isEmpty {
             stdout <<< "Warning: ".yellow + "no results found"
