@@ -40,43 +40,28 @@ class ShowConfigCommand: IceObject, Command {
         let resolvedCol = TextTableColumn(header: "Resolved")
         var table = TextTable(columns: [keyCol, localCol, globalCol, resolvedCol])
         
-        table.addRow(values: row(key: .reformat, value: { $0.reformat?.description }))
-        table.addRow(values: row(key: .openAfterXc, value: { $0.openAfterXc?.description }))
+        table.addRow(values: createRow(key: .reformat, value: { $0.reformat?.description }))
+        table.addRow(values: createRow(key: .openAfterXc, value: { $0.openAfterXc?.description }))
         stdout <<< table.render()
     }
     
-    func row(key: Config.Keys, value dig: (Config.File) -> String?) -> [String] {
+    func createRow(key: Config.Keys, value retrieveValue: (Config.File) -> String?) -> [String] {
         var values: [String] = [key.rawValue]
         
-        if let value = dig(config.local) {
+        if let value = retrieveValue(config.local) {
             values.append(value)
         } else {
             values.append("(none)")
         }
-        if let value = dig(config.global) {
+        if let value = retrieveValue(config.global) {
             values.append(value)
         } else {
-            let value = dig(Config.defaultConfig)!
+            let value = retrieveValue(Config.defaultConfig)!
             values.append(value)
         }
         values.append(config.get(key))
         
         return values
-    }
-    
-    private func printConfig(heading: String, file: Config.File?) {
-        guard let file = file else {
-            return
-        }
-        var lines: [String] = []
-        if let reformat = file.reformat {
-            lines.append("  reformat: " + reformat.description)
-        }
-        if lines.isEmpty {
-            return
-        }
-        stdout <<< heading
-        stdout <<< lines.joined(separator: "\n")
     }
     
 }

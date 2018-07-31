@@ -13,11 +13,13 @@ public class Registry {
     private static let url = "https://github.com/jakeheis/IceRegistry"
     
     let directory: Path
-    private lazy var localPath = directory + "local.json"
-    private lazy var sharedRepo = directory + "shared"
-    private lazy var sharedPath = sharedRepo + "Registry"
+    private var localPath: Path { return directory + "local.json" }
+    private var sharedRepo: Path { return directory + "shared" }
+    private var sharedPath: Path { return sharedRepo + "Registry" }
     
-    private lazy var localRegistry = RegistryFile.load(from: localPath) ?? RegistryFile(entries: [], lastRefreshed: nil)
+    private lazy var localRegistry = {
+        return LocalRegistryFile.load(from: localPath) ?? LocalRegistryFile(entries: [], lastRefreshed: nil)
+    }()
     
     init(registryPath: Path) {
         self.directory = registryPath
@@ -45,12 +47,12 @@ public class Registry {
         }
         
         localRegistry.lastRefreshed = Date()
-        try localPath.write(JSONEncoder().encode(localRegistry))
+        try write()
     }
     
     public func add(name: String, url: String) throws {
         localRegistry.entries.append(.init(name: name, url: url, description: nil))
-        try localPath.write(JSONEncoder().encode(localRegistry))
+        try write()
     }
     
     public func get(_ name: String) -> RegistryEntry? {
@@ -59,7 +61,7 @@ public class Registry {
         }
         
         let letterPath = sharedPath + (String(name.uppercased()[name.startIndex]) + ".json")
-        let sharedRegistry = RegistryFile.load(from: letterPath)
+        let sharedRegistry = SharedRegistryFile.load(from: letterPath)
         if let matching = sharedRegistry?.entries.first(where: { $0.name == name }) {
             return matching
         }
@@ -73,7 +75,7 @@ public class Registry {
         }
         localRegistry.entries.remove(at: index)
         
-        try localPath.write(JSONEncoder().encode(localRegistry))
+        try write()
     }
     
     public func search(query: String, includeDescription: Bool) throws -> [RegistryEntry] {
@@ -116,13 +118,17 @@ public class Registry {
         return localEntries + entries
     }
     
-    private func forEachShared(block: (_ file: RegistryFile, _ fileName: String) -> ()) {
+    private func forEachShared(block: (_ file: SharedRegistryFile, _ fileName: String) -> ()) {
         let paths = (try? sharedPath.children()) ?? []
         paths.forEach { (path) in
-            if let file = RegistryFile.load(from: path) {
+            if let file = SharedRegistryFile.load(from: path) {
                 block(file, path.lastComponentWithoutExtension)
             }
         }
+    }
+    
+    private func write() throws {
+        try localPath.write(JSONEncoder().encode(localRegistry))
     }
     
 }
@@ -133,14 +139,28 @@ public struct RegistryEntry: Codable {
     public let description: String?
 }
 
-private struct RegistryFile: Codable {
+private struct LocalRegistryFile: Codable {
     
     var entries: [RegistryEntry]
     var lastRefreshed: Date?
     
-    static func load(from path: Path) -> RegistryFile? {
+    static func load(from path: Path) -> LocalRegistryFile? {
         guard let data = try? path.read(),
-            let file = try? JSONDecoder().decode(RegistryFile.self, from: data) else {
+            let file = try? JSONDecoder().decode(LocalRegistryFile.self, from: data) else {
+                return nil
+        }
+        return file
+    }
+    
+}
+
+private struct SharedRegistryFile: Codable {
+    
+    var entries: [RegistryEntry]
+    
+    static func load(from path: Path) -> SharedRegistryFile? {
+        guard let data = try? path.read(),
+            let file = try? JSONDecoder().decode(SharedRegistryFile.self, from: data) else {
                 return nil
         }
         return file

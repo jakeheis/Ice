@@ -13,7 +13,7 @@ class ConfigTests: XCTestCase {
         ("testGet", testGet),
         ("testSet", testSet),
         ("testSetInvalid", testSetInvalid),
-        ("testList", testList),
+        ("testShow", testShow),
     ]
     
     func testGet() {
@@ -44,7 +44,7 @@ class ConfigTests: XCTestCase {
         XCTAssertEqual(reformatResult.stderr, "")
         XCTAssertEqual(reformatResult.stdout, "")
         
-        XCTAssertEqual(icebox.fileContents("global/config.json"), "{\n  \"reformat\" : true\n}")
+        XCTAssertEqual(icebox.fileContents("global/config.json"), "{\n  \"openAfterXc\" : true,\n  \"reformat\" : true\n}")
     }
     
     func testSetInvalid() {
@@ -63,14 +63,17 @@ class ConfigTests: XCTestCase {
         """)
     }
     
-    func testList() {
-        let result = IceBox(template: .empty).run("config", "list")
+    func testShow() {
+        let result = IceBox(template: .empty).run("config", "show")
         XCTAssertEqual(result.exitStatus, 0)
         XCTAssertEqual(result.stderr, "")
         XCTAssertEqual(result.stdout, """
-        {
-          "reformat" : false
-        }
+        +-------------+--------+--------+----------+
+        | Key         | Local  | Global | Resolved |
+        +-------------+--------+--------+----------+
+        | reformat    | (none) | false  | false    |
+        | openAfterXc | (none) | true   | true     |
+        +-------------+--------+--------+----------+
         
         """)
     }
