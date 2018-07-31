@@ -8,7 +8,7 @@
 import IceKit
 import SwiftCLI
 
-class XcCommand: Command {
+class XcCommand: IceObject, Command {
     
     let name = "xc"
     let shortDescription = "Creates a new xcode project for the current package"
@@ -18,12 +18,14 @@ class XcCommand: Command {
     func execute() throws {
         try SPM().generateXcodeProject()
         
-        if !noOpen.value {
-            let package = try Package.load()
-            do {
-                try run("open", "\(package.name).xcodeproj")
-            } catch {}
+        if noOpen.value || config.get(\.openAfterXc) == false {
+            return
         }
+        
+        let package = try Package.load()
+        do {
+            try run("open", "\(package.name).xcodeproj")
+        } catch {}
     }
     
 }

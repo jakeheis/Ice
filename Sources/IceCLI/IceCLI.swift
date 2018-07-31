@@ -49,7 +49,7 @@ public class IceCLI {
             ToolsVersionGroup(),
             UpdateCommand(),
             VersionCommand(ice: ice),
-            XcCommand()
+            XcCommand(ice: ice)
         ]
         cli.globalOptions = [GlobalOptions.verbose]
         cli.versionCommand = nil

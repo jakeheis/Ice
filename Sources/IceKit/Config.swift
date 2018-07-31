@@ -12,11 +12,13 @@ public class Config {
     
     public enum Keys: String {
         case reformat
+        case openAfterXc
     }
     
     public struct File: Codable {
         
         public var reformat: Bool?
+        public var openAfterXc: Bool?
         
         static func from(path: Path) -> File? {
             guard let data = try? path.read(),
@@ -28,7 +30,8 @@ public class Config {
     }
     
     public static let defaultConfig = File(
-        reformat: false
+        reformat: false,
+        openAfterXc: true
     )
     
     private static let encoder: JSONEncoder = {
@@ -49,13 +52,14 @@ public class Config {
         self.localPath = directory + "ice.json"
         
         self.global = File.from(path: globalPath) ?? Config.defaultConfig
-        self.local = File.from(path: localPath) ?? File(reformat: nil)
+        self.local = File.from(path: localPath) ?? File(reformat: nil, openAfterXc: nil)
     }
     
     public func get(_ key: Keys) -> String {
         let val: Any
         switch key {
         case .reformat: val = get(\.reformat)
+        case .openAfterXc: val = get(\.openAfterXc)
         }
         return String(describing: val)
     }

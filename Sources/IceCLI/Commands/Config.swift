@@ -41,6 +41,7 @@ class ShowConfigCommand: IceObject, Command {
         var table = TextTable(columns: [keyCol, localCol, globalCol, resolvedCol])
         
         table.addRow(values: row(key: .reformat, value: { $0.reformat?.description }))
+        table.addRow(values: row(key: .openAfterXc, value: { $0.openAfterXc?.description }))
         stdout <<< table.render()
     }
     
@@ -121,6 +122,11 @@ class SetConfigCommand: IceObject, Command {
                 throw IceError(message: "invalid value (must be true/false)")
             }
             try config.set(\.reformat, value: val, global: !local.value)
+        case .openAfterXc:
+            guard let val = Bool.convert(from: value.value) else {
+                throw IceError(message: "invalid value (must be true/false)")
+            }
+            try config.set(\.openAfterXc, value: val, global: !local.value)
         }
     }
     
