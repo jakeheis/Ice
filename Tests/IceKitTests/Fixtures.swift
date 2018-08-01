@@ -113,6 +113,22 @@ struct Fixtures {
         dependencies: dependencies,
         targets: targets,
         swiftLanguageVersions: ["3", "4"],
+        cLanguageStandard: "iso9899:199409",
+        cxxLanguageStandard: "gnu++1z"
+    )
+    
+    static var package4_2 = PackageDataV4_2(
+        name: "myPackage",
+        pkgConfig: "config",
+        providers: providers,
+        products: products,
+        dependencies: dependencies + [
+            .init(url: "/Projects/PathKit", requirement: .init(type: .localPackage, lowerBound: nil, upperBound: nil, identifier: nil))
+        ],
+        targets: targets  + [
+            .init(name: "Clibssh2", type: .system, dependencies: [], path: "aPath", exclude: [], sources: nil, publicHeadersPath: nil, pkgConfig: "pc", providers: Fixtures.providers)
+        ],
+        swiftLanguageVersions: ["3", "4", "4.2"],
         cLanguageStandard: "c90",
         cxxLanguageStandard: "c++03"
     )

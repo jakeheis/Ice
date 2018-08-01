@@ -87,7 +87,7 @@ public struct PackageDataV4_2: Codable {
     public internal(set) var products: [PackageDataV4_2.Product]
     public internal(set) var dependencies: [PackageDataV4_2.Dependency]
     public internal(set) var targets: [PackageDataV4_2.Target]
-    public let swiftLanguageVersions: [String]?
+    public internal(set) var swiftLanguageVersions: [String]?
     public let cLanguageStandard: String?
     public let cxxLanguageStandard: String?
     

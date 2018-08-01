@@ -33,29 +33,32 @@ public class PackageWriter {
 }
 
 protocol PackageWriterImpl {
-    static var baseVersion: SwiftToolsVersion { get }
-    
     var package: ModernPackageData { get }
     var toolsVersion: SwiftToolsVersion { get }
     
     init(package: ModernPackageData, toolsVersion: SwiftToolsVersion)
     
-    func addSwiftLanguageVersions(_ versions: [String]?, to function: inout FunctionCallComponent) throws
+    func canWrite() -> Bool
+    func addSwiftLanguageVersions(to function: inout FunctionCallComponent)
 }
 
 extension PackageWriterImpl {
     
     func write(to out: WritableStream) throws {
+        guard canWrite() else {
+            throw IceError(message: "cannot write package in version \(toolsVersion); try a different tools version")
+        }
+        
         var function = FunctionCallComponent(name: "Package")
-        addName(package.name, to: &function)
-        addPkgConfig(package.pkgConfig, to: &function)
-        addProviders(package.providers, to: &function)
-        addProducts(package.products, to: &function)
-        try addDependencies(package.dependencies, to: &function)
-        try addTargets(package.targets, to: &function)
-        try addSwiftLanguageVersions(package.swiftLanguageVersions, to: &function)
-        addCLangaugeStandard(package.cLanguageStandard, to: &function)
-        addCxxLangaugeStandard(package.cxxLanguageStandard, to: &function)
+        addName(to: &function)
+        addPkgConfig(to: &function)
+        addProviders(to: &function)
+        addProducts(to: &function)
+        addDependencies(to: &function)
+        addTargets(to: &function)
+        addSwiftLanguageVersions(to: &function)
+        addCLangaugeStandard(to: &function)
+        addCxxLangaugeStandard(to: &function)
         
         out <<< """
         // swift-tools-version:\(toolsVersion)
@@ -67,18 +70,18 @@ extension PackageWriterImpl {
         """
     }
     
-    func addName(_ name: String, to function: inout FunctionCallComponent) {
-        function.addQuoted(key: "name", value: name)
+    func addName(to function: inout FunctionCallComponent) {
+        function.addQuoted(key: "name", value: package.name)
     }
     
-    func addPkgConfig(_ pkgConfig: String?, to function: inout FunctionCallComponent) {
-        if let pkgConfig = pkgConfig {
+    func addPkgConfig(to function: inout FunctionCallComponent) {
+        if let pkgConfig = package.pkgConfig {
             function.addQuoted(key: "pkgConfig", value: pkgConfig)
         }
     }
     
-    func addProviders(_ providers: [Package.Provider]?, to function: inout FunctionCallComponent) {
-        guard let providers = providers, !providers.isEmpty else {
+    func addProviders(to function: inout FunctionCallComponent) {
+        guard let providers = package.providers, !providers.isEmpty else {
             return
         }
         function.addMultilineArray(key: "providers", children: providers.map { (provider) in
@@ -86,12 +89,12 @@ extension PackageWriterImpl {
         })
     }
     
-    func addProducts(_ products: [Package.Product], to function: inout FunctionCallComponent) {
-        if products.isEmpty {
+    func addProducts(to function: inout FunctionCallComponent) {
+        if package.products.isEmpty {
             return
         }
         
-        function.addMultilineArray(key: "products", children: products.map { (product) in
+        function.addMultilineArray(key: "products", children: package.products.map { (product) in
             var prodFunc = FunctionCallComponent(staticMember: product.product_type)
             prodFunc.addQuoted(key: "name", value: product.name)
             if let type = product.type {
@@ -102,17 +105,14 @@ extension PackageWriterImpl {
         })
     }
     
-    func addDependencies(_ dependencies: [Package.Dependency], to function: inout FunctionCallComponent) throws {
-        if dependencies.isEmpty {
+    func addDependencies(to function: inout FunctionCallComponent) {
+        if package.dependencies.isEmpty {
             return
         }
         
-        function.addMultilineArray(key: "dependencies", children: try dependencies.map { (dependency) in
+        function.addMultilineArray(key: "dependencies", children: package.dependencies.map { (dependency) in
             var depFunction = FunctionCallComponent(staticMember: "package")
             if dependency.requirement.type == .localPackage {
-                if Self.baseVersion < .v4_2 {
-                    throw createVersionError()
-                }
                 depFunction.addQuoted(key: "path", value: dependency.url)
             } else {
                 depFunction.addQuoted(key: "url", value: dependency.url)
@@ -122,7 +122,7 @@ extension PackageWriterImpl {
             case .range:
                 guard let lowerBoundString = dependency.requirement.lowerBound, let lowerBound = Version(lowerBoundString),
                     let upperBoundString = dependency.requirement.upperBound, let upperBound = Version(upperBoundString) else {
-                        throw IceError(message: "impossible dependency requirement; invalid range specified")
+                        fatalError("impossible dependency requirement; invalid range specified")
                 }
                 if upperBound == Version(lowerBound.major + 1, 0, 0) {
                     depFunction.addQuoted(key: "from", value: lowerBoundString)
@@ -135,7 +135,7 @@ extension PackageWriterImpl {
                 }
             case .branch, .exact, .revision:
                 guard let identifier = dependency.requirement.identifier else {
-                    throw IceError(message: "impossible dependency requirement; \(dependency.requirement.type) specified, but no identifier given")
+                    fatalError("impossible dependency requirement; \(dependency.requirement.type) specified, but no identifier given")
                 }
                 var idFunc = FunctionCallComponent(staticMember: dependency.requirement.type.rawValue)
                 idFunc.addQuoted(key: nil, value: identifier)
@@ -147,11 +147,11 @@ extension PackageWriterImpl {
         })
     }
     
-    func addTargets(_ targets: [Package.Target], to function: inout FunctionCallComponent) throws {
-        if targets.isEmpty {
+    func addTargets(to function: inout FunctionCallComponent) {
+        if package.targets.isEmpty {
             function.addSingleLineArray(key: "targets", children: [])
         } else {
-            function.addMultilineArray(key: "targets", children: try targets.map { (target) in
+            function.addMultilineArray(key: "targets", children: package.targets.map { (target) in
                 let functionName: String
                 switch target.type {
                 case .regular: functionName = "target"
@@ -168,9 +168,6 @@ extension PackageWriterImpl {
                     functionCall.addQuoted(key: "path", value: path)
                 }
                 if target.type == .system {
-                    if Self.baseVersion < .v4_2 {
-                        throw createVersionError()
-                    }
                     if let pkgConfig = target.pkgConfig {
                         functionCall.addQuoted(key: "pkgConfig", value: pkgConfig)
                     }
@@ -193,24 +190,20 @@ extension PackageWriterImpl {
         }
     }
     
-    func addCLangaugeStandard(_ standard: String?, to function: inout FunctionCallComponent) {
-        if let standard = standard {
+    func addCLangaugeStandard(to function: inout FunctionCallComponent) {
+        if let standard = package.cLanguageStandard {
             let converted = standard.replacingOccurrences(of: ":", with: "_")
             function.addSimple(key: "cLanguageStandard", value: ".\(converted)")
         }
     }
     
-    func addCxxLangaugeStandard(_ standard: String?, to function: inout FunctionCallComponent) {
-        if let standard = standard {
+    func addCxxLangaugeStandard(to function: inout FunctionCallComponent) {
+        if let standard = package.cxxLanguageStandard {
             let converted = standard
                 .replacingOccurrences(of: "c++", with: "cxx")
                 .replacingOccurrences(of: "gnu++", with: "gnucxx")
             function.addSimple(key: "cxxLanguageStandard", value: ".\(converted)")
         }
-    }
-    
-    fileprivate func createVersionError() -> Error {
-        return IceError(message: "cannot write package in version \(toolsVersion); try a different tools version")
     }
     
     private func providerComponent(for provider: Package.Provider) -> Component {
@@ -223,8 +216,6 @@ extension PackageWriterImpl {
 
 final class Version4_0Writer: PackageWriterImpl {
     
-    static let baseVersion = SwiftToolsVersion.v4
-    
     let package: ModernPackageData
     let toolsVersion: SwiftToolsVersion
     
@@ -233,11 +224,21 @@ final class Version4_0Writer: PackageWriterImpl {
         self.toolsVersion = toolsVersion
     }
     
-    func addSwiftLanguageVersions(_ versions: [String]?, to function: inout FunctionCallComponent) throws {
-        if let versions = versions {
-            guard !versions.map(Int.init).contains(nil) else {
-                throw createVersionError()
-            }
+    func canWrite() -> Bool {
+        if package.dependencies.contains(where:  { $0.requirement.type == .localPackage }) {
+            return false
+        }
+        if package.targets.contains(where:  { $0.type == .system }) {
+            return false
+        }
+        if package.swiftLanguageVersions?.contains(where: { Int($0) == nil }) == true {
+            return false
+        }
+        return true
+    }
+    
+    func addSwiftLanguageVersions(to function: inout FunctionCallComponent) {
+        if let versions = package.swiftLanguageVersions {
             function.addSingleLineArray(key: "swiftLanguageVersions", children: versions)
         }
     }
@@ -246,8 +247,6 @@ final class Version4_0Writer: PackageWriterImpl {
 
 final class Version4_2Writer: PackageWriterImpl {
     
-    static let baseVersion = SwiftToolsVersion.v4_2
-    
     let package: ModernPackageData
     let toolsVersion: SwiftToolsVersion
     
@@ -256,8 +255,12 @@ final class Version4_2Writer: PackageWriterImpl {
         self.toolsVersion = toolsVersion
     }
     
-    func addSwiftLanguageVersions(_ versions: [String]?, to function: inout FunctionCallComponent) throws {
-        if let versions = versions {
+    func canWrite() -> Bool {
+        return true
+    }
+    
+    func addSwiftLanguageVersions(to function: inout FunctionCallComponent) {
+        if let versions = package.swiftLanguageVersions {
             var enumVersions: [String] = []
             for version in versions {
                 if version == "3" {
