@@ -133,6 +133,9 @@ class PackageLoaderTests: XCTestCase {
                 .target(name: "IceKit", dependencies: ["PathKit", "Rainbow", "Regex", "SwiftCLI"]),
                 .testTarget(name: "IceKitTests", dependencies: ["IceKit", "PathKit", "SwiftCLI"]),
                 .testTarget(name: "IceTests", dependencies: ["Icebox", "Rainbow"]),
+                .systemLibrary(name: "CZLib", pkgConfig: "pc", providers: [
+                    .apt(["hey"]),
+                ]),
             ]
         )
 

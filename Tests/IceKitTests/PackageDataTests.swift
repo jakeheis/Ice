@@ -39,8 +39,8 @@ class PackageDataTests: XCTestCase {
             products: [.init(name: "product", product_type: "type", targets: ["targ1"], type: "library")],
             dependencies: [.init(url: "https://github.com/jakeheis/SwiftCLI", requirement: .init(version: Version(5, 0, 0)))],
             targets: [
-                .init(name: "targ1", type: .regular, dependencies: [.init(name: "SwiftCLI")], path: nil, exclude: [], sources: nil, publicHeadersPath: nil),
-                .init(name: "targ1Tests", type: .test, dependencies: [.init(name: "targ1")], path: nil, exclude: [], sources: nil, publicHeadersPath: nil)
+                .init(name: "targ1", type: .regular, dependencies: [.init(name: "SwiftCLI")], path: nil, exclude: [], sources: nil, publicHeadersPath: nil, pkgConfig: nil, providers: nil),
+                .init(name: "targ1Tests", type: .test, dependencies: [.init(name: "targ1")], path: nil, exclude: [], sources: nil, publicHeadersPath: nil, pkgConfig: nil, providers: nil)
             ],
             swiftLanguageVersions: ["3", "4"],
             cLanguageStandard: "c-lang",

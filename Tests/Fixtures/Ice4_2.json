@@ -195,6 +195,28 @@
       "publicHeadersPath": null,
       "sources": null,
       "type": "test"
+    },
+    {
+      "dependencies": [
+
+      ],
+      "exclude": [
+
+      ],
+      "name": "CZLib",
+      "path": null,
+      "pkgConfig": "pc",
+      "providers": [
+        {
+          "name": "apt",
+          "values": [
+            "hey"
+          ]
+        }
+      ],
+      "publicHeadersPath": null,
+      "sources": null,
+      "type": "system"
     }
   ]
 }

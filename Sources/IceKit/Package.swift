@@ -138,7 +138,9 @@ public struct Package {
             path: nil,
             exclude: [],
             sources: nil,
-            publicHeadersPath: nil
+            publicHeadersPath: nil,
+            pkgConfig: nil,
+            providers: nil
         ))
     }
     

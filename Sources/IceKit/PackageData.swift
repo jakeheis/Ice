@@ -67,6 +67,7 @@ public struct PackageDataV4_2: Codable {
         public enum TargetType: String, Codable {
             case regular
             case test
+            case system
         }
         
         public let name: String
@@ -76,6 +77,8 @@ public struct PackageDataV4_2: Codable {
         public let exclude: [String]
         public let sources: [String]?
         public let publicHeadersPath: String?
+        public let pkgConfig: String?
+        public let providers: [Provider]?
     }
     
     public let name: String
@@ -141,7 +144,9 @@ public struct PackageDataV4_0: Codable {
                     path: oldTarget.path,
                     exclude: oldTarget.exclude,
                     sources: oldTarget.sources,
-                    publicHeadersPath: oldTarget.publicHeadersPath
+                    publicHeadersPath: oldTarget.publicHeadersPath,
+                    pkgConfig: nil,
+                    providers: nil
                 )
             },
             swiftLanguageVersions: newSwiftLanguageVersions,

@@ -91,7 +91,7 @@ class PackageTests: XCTestCase {
         package.addTarget(name: "CoreTests", type: .test, dependencies: ["Core"])
         
         let expectedTargets = Fixtures.targets + [
-            .init(name: "CoreTests", type: .test, dependencies: [.init(name: "Core")], path: nil, exclude: [], sources: nil, publicHeadersPath: nil)
+            .init(name: "CoreTests", type: .test, dependencies: [.init(name: "Core")], path: nil, exclude: [], sources: nil, publicHeadersPath: nil, pkgConfig: nil, providers: nil)
         ]
         assertEqualCodings(package.targets, expectedTargets)
     }

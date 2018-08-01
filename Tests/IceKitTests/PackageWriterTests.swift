@@ -115,7 +115,8 @@ class PackageWriterTests: XCTestCase {
     }
     
     func testProducts() {
-        let result = with4_0 { $0.addProducts(Fixtures.products, to: $1) }
+        
+        let result = with4_0 { $0.addProducts(Fixtures.products, to: &$1) }
         XCTAssertEqual(result, """
             products: [
                 .executable(name: "exec", targets: ["MyLib"]),
@@ -123,12 +124,11 @@ class PackageWriterTests: XCTestCase {
                 .library(name: "Static", type: .static, targets: ["MyLib"]),
                 .library(name: "Dynamic", type: .dynamic, targets: ["Core"]),
             ]
-
         """)
     }
     
     func testDependencies() throws {
-        let result = try with4_0 { try $0.addDependencies(Fixtures.dependencies, to: $1) }
+        let result = try with4_0 { try $0.addDependencies(Fixtures.dependencies, to: &$1) }
         XCTAssertEqual(result, """
             dependencies: [
                 .package(url: "https://github.com/jakeheis/SwiftCLI", .branch("swift4")),
@@ -138,13 +138,12 @@ class PackageWriterTests: XCTestCase {
                 .package(url: "https://github.com/jakeheis/FileKit", .upToNextMinor(from: "2.1.3")),
                 .package(url: "https://github.com/jakeheis/Shout", "0.6.4"..<"0.6.8"),
             ]
-
         """)
         
         let depsWithLocal = Fixtures.dependencies + [
             .init(url: "/Projects/PathKit", requirement: .init(type: .localPackage, lowerBound: nil, upperBound: nil, identifier: nil))
         ]
-        let result2 = try with4_2 { try $0.addDependencies(depsWithLocal, to: $1) }
+        let result2 = try with4_2 { try $0.addDependencies(depsWithLocal, to: &$1) }
         XCTAssertEqual(result2, """
             dependencies: [
                 .package(url: "https://github.com/jakeheis/SwiftCLI", .branch("swift4")),
@@ -155,14 +154,13 @@ class PackageWriterTests: XCTestCase {
                 .package(url: "https://github.com/jakeheis/Shout", "0.6.4"..<"0.6.8"),
                 .package(path: "/Projects/PathKit"),
             ]
-
         """)
         
-        XCTAssertThrowsError(try with4_0 { try $0.addDependencies(depsWithLocal, to: $1) })
+        XCTAssertThrowsError(try with4_0 { try $0.addDependencies(depsWithLocal, to: &$1) })
     }
     
-    func testTargets() {
-        let result = with4_0 { $0.addTargets(Fixtures.targets, to: $1) }
+    func testTargets() throws {
+        let result = try with4_0 { try $0.addTargets(Fixtures.targets, to: &$1) }
         XCTAssertEqual(result, """
             targets: [
                 .target(name: "CLI", dependencies: ["Core", "FileKit"]),
@@ -170,82 +168,94 @@ class PackageWriterTests: XCTestCase {
                 .target(name: "Core", dependencies: [], path: "Sources/Diff", exclude: ["ignore.swift"]),
                 .target(name: "Exclusive", dependencies: ["Core", "Flock"], sources: ["only.swift"], publicHeadersPath: "headers.h"),
             ]
-
         """)
+        
+        let targetsWithSystem = Fixtures.targets + [
+            .init(name: "Clibssh2", type: .system, dependencies: [], path: "aPath", exclude: [], sources: nil, publicHeadersPath: nil, pkgConfig: "pc", providers: Fixtures.providers)
+        ]
+        let result2 = try with4_2 { try $0.addTargets(targetsWithSystem, to: &$1) }
+        XCTAssertEqual(result2, """
+            targets: [
+                .target(name: "CLI", dependencies: ["Core", "FileKit"]),
+                .testTarget(name: "CLITests", dependencies: ["CLI", "Core"]),
+                .target(name: "Core", dependencies: [], path: "Sources/Diff", exclude: ["ignore.swift"]),
+                .target(name: "Exclusive", dependencies: ["Core", "Flock"], sources: ["only.swift"], publicHeadersPath: "headers.h"),
+                .systemLibrary(name: "Clibssh2", path: "aPath", pkgConfig: "pc", providers: [
+                    .brew(["libssh2"]),
+                    .apt(["libssh2-1-dev", "libssh2-2-dev"]),
+                ]),
+            ]
+        """)
+        
+        XCTAssertThrowsError(try with4_0 { try $0.addTargets(targetsWithSystem, to: &$1) })
     }
     
     func testProviders() {
-        let result = with4_0 { $0.addProviders(Fixtures.providers, to: $1) }
+        let result = with4_0 { $0.addProviders(Fixtures.providers, to: &$1) }
         XCTAssertEqual(result, """
             providers: [
                 .brew(["libssh2"]),
                 .apt(["libssh2-1-dev", "libssh2-2-dev"]),
             ]
-
         """)
     }
     
     func testSwiftLanguageVersions() throws {
         let result40 = try with4_0 {
-            try $0.addSwiftLanguageVersions(Fixtures.package.swiftLanguageVersions, to: $1)
+            try $0.addSwiftLanguageVersions(Fixtures.package.swiftLanguageVersions, to: &$1)
         }
         XCTAssertEqual(result40, """
             swiftLanguageVersions: [3, 4]
-
         """)
         
-        let result42 = with4_2 { $0.addSwiftLanguageVersions(Fixtures.package.swiftLanguageVersions, to: $1) }
+        let result42 = try with4_2 { try $0.addSwiftLanguageVersions(Fixtures.package.swiftLanguageVersions, to: &$1) }
         XCTAssertEqual(result42, """
             swiftLanguageVersions: [.v3, .v4]
-
         """)
         
-        XCTAssertThrowsError(try with4_0 { try $0.addSwiftLanguageVersions(["4.2"], to: $1) })
+        XCTAssertThrowsError(try with4_0 { try $0.addSwiftLanguageVersions(["4.2"], to: &$1) })
     }
     
     func testCLanguageStandard() {
         let result = with4_0 {
-            $0.addCLangaugeStandard("c90", to: $1)
-            $0.addCLangaugeStandard("iso9899:199409", to: $1)
+            $0.addCLangaugeStandard("c90", to: &$1)
+            $0.addCLangaugeStandard("iso9899:199409", to: &$1)
         }
         XCTAssertEqual(result, """
             cLanguageStandard: .c90,
             cLanguageStandard: .iso9899_199409
-
         """)
     }
     
     func testCxxLanguageStandard() {
         let result = with4_0 {
-            $0.addCxxLangaugeStandard("c++03", to: $1)
-            $0.addCxxLangaugeStandard("gnu++1z", to: $1)
+            $0.addCxxLangaugeStandard("c++03", to: &$1)
+            $0.addCxxLangaugeStandard("gnu++1z", to: &$1)
         }
         XCTAssertEqual(result, """
             cxxLanguageStandard: .cxx03,
             cxxLanguageStandard: .gnucxx1z
-
         """)
     }
     
     // MARK: -
     
-    private func withWriter<T: PackageWriterImpl>(_ toolsVersion: SwiftToolsVersion, _ run: (T, PackageArguments) throws -> ()) rethrows -> String {
-        let arguments = PackageArguments()
+    private func withWriter<T: PackageWriterImpl>(_ toolsVersion: SwiftToolsVersion, _ run: (T, inout FunctionCallComponent) throws -> ()) rethrows -> String {
+        var function = FunctionCallComponent(name: "Package")
         let writer = T(package: Fixtures.package, toolsVersion: toolsVersion)
-        try run(writer, arguments)
+        try run(writer, &function)
         
-        let capture = CaptureStream()
-        arguments.write(to: capture)
-        capture.closeWrite()
-        
-        return capture.readAll()
+        var renderedLines = function.render().components(separatedBy: "\n")
+        renderedLines.removeFirst()
+        renderedLines.removeLast()
+        return renderedLines.joined(separator: "\n")
     }
     
-    private func with4_0(_ run: (Version4_0Writer, PackageArguments) throws -> ()) rethrows -> String {
+    private func with4_0(_ run: (Version4_0Writer, inout FunctionCallComponent) throws -> ()) rethrows -> String {
         return try withWriter(.v4, run)
     }
     
-    private func with4_2(_ run: (Version4_2Writer, PackageArguments) throws -> ()) rethrows -> String {
+    private func with4_2(_ run: (Version4_2Writer, inout FunctionCallComponent) throws -> ()) rethrows -> String {
         return try withWriter(.v4_2, run)
     }
     

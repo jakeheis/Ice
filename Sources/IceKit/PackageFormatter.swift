@@ -61,7 +61,9 @@ public class PackageFormatter {
             path: target.path,
             exclude: target.exclude.sorted(),
             sources: target.sources?.sorted(),
-            publicHeadersPath: target.publicHeadersPath
+            publicHeadersPath: target.publicHeadersPath,
+            pkgConfig: target.pkgConfig,
+            providers: target.providers
         )
     }
     
