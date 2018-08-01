@@ -125,6 +125,7 @@ class PackageLoaderTests: XCTestCase {
                 .package(url: "https://github.com/sharplet/Regex", from: "1.1.0"),
                 .package(url: "https://github.com/jakeheis/SwiftCLI", from: "5.1.3"),
                 .package(url: "https://github.com/scottrhoyt/SwiftyTextTable", from: "0.8.0"),
+                .package(path: "/Projects/FakeLocal"),
             ],
             targets: [
                 .target(name: "Ice", dependencies: ["IceCLI"]),

@@ -49,6 +49,12 @@
         "upperBound": "1.0.0"
       },
       "url": "https://github.com/scottrhoyt/SwiftyTextTable"
+    },
+    {
+      "requirement": {
+        "type": "localPackage"
+      },
+      "url": "/Projects/FakeLocal"
     }
   ],
   "name": "Ice",

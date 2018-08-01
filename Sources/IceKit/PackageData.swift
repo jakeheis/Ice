@@ -32,6 +32,7 @@ public struct PackageDataV4_2: Codable {
                 case branch
                 case exact
                 case revision
+                case localPackage
             }
             public let type: RequirementType
             public let lowerBound: String?

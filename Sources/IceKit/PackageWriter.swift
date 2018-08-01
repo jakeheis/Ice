@@ -38,6 +38,7 @@ protocol PackageWriterImpl {
     
     init(package: ModernPackageData, toolsVersion: SwiftToolsVersion)
     
+    func addDependencies(_ dependencies: [Package.Dependency], to arguments: PackageArguments) throws
     func addSwiftLanguageVersions(_ versions: [String]?, to arguments: PackageArguments) throws
 }
 
@@ -61,7 +62,7 @@ extension PackageWriterImpl {
         addPkgConfig(package.pkgConfig, to: arguments)
         addProviders(package.providers, to: arguments)
         addProducts(package.products, to: arguments)
-        addDependencies(package.dependencies, to: arguments)
+        try addDependencies(package.dependencies, to: arguments)
         addTargets(package.targets, to: arguments)
         try addSwiftLanguageVersions(package.swiftLanguageVersions, to: arguments)
         addCLangaugeStandard(package.cLanguageStandard, to: arguments)
@@ -108,44 +109,6 @@ extension PackageWriterImpl {
                 typePortion = ""
             }
             return ".\(product.product_type)(name: \(product.name.quoted)\(typePortion), targets: [\(targetsPortion)])"
-        })
-    }
-    
-    func addDependencies(_ dependencies: [Package.Dependency], to arguments: PackageArguments) {
-        if dependencies.isEmpty {
-            return
-        }
-        
-        arguments.addArray(key: "dependencies", children: dependencies.map { (dependency) in
-            let versionPortion: String
-            
-            if dependency.requirement.type == .range {
-                guard let lowerBoundString = dependency.requirement.lowerBound, let lowerBound = Version(lowerBoundString),
-                    let upperBoundString = dependency.requirement.upperBound, let upperBound = Version(upperBoundString) else {
-                        niceFatalError("Impossible dependency requirement; invalid range specified")
-                }
-                if upperBound == Version(lowerBound.major + 1, 0, 0) {
-                    versionPortion = "from: \(lowerBoundString.quoted)"
-                } else if upperBound == Version(lowerBound.major, lowerBound.minor + 1, 0) {
-                    versionPortion = ".upToNextMinor(from: \(lowerBoundString.quoted))"
-                } else {
-                    versionPortion = "\(lowerBoundString.quoted)..<\(upperBoundString.quoted)"
-                }
-            } else {
-                guard let identifier = dependency.requirement.identifier else {
-                    niceFatalError("Impossible dependency requirement; \(dependency.requirement.type) specified, but no identifier given")
-                }
-                let function: String
-                switch dependency.requirement.type {
-                case .branch: function = "branch"
-                case .exact: function = "exact"
-                case .revision: function = "revision"
-                default: fatalError()
-                }
-                versionPortion = ".\(function)(\(identifier.quoted))"
-            }
-            
-            return ".package(url: \(dependency.url.quoted), \(versionPortion))"
         })
     }
     
@@ -211,6 +174,39 @@ final class Version4_0Writer: PackageWriterImpl {
         self.toolsVersion = toolsVersion
     }
     
+    func addDependencies(_ dependencies: [Package.Dependency], to arguments: PackageArguments) throws {
+        if dependencies.isEmpty {
+            return
+        }
+        arguments.addArray(key: "dependencies", children: try dependencies.map { (dependency) in
+            let versionPortion: String
+            
+            switch dependency.requirement.type {
+            case .range:
+                guard let lowerBoundString = dependency.requirement.lowerBound, let lowerBound = Version(lowerBoundString),
+                    let upperBoundString = dependency.requirement.upperBound, let upperBound = Version(upperBoundString) else {
+                        throw IceError(message: "impossible dependency requirement; invalid range specified")
+                }
+                if upperBound == Version(lowerBound.major + 1, 0, 0) {
+                    versionPortion = "from: \(lowerBoundString.quoted)"
+                } else if upperBound == Version(lowerBound.major, lowerBound.minor + 1, 0) {
+                    versionPortion = ".upToNextMinor(from: \(lowerBoundString.quoted))"
+                } else {
+                    versionPortion = "\(lowerBoundString.quoted)..<\(upperBoundString.quoted)"
+                }
+            case .branch, .exact, .revision:
+                guard let identifier = dependency.requirement.identifier else {
+                    throw IceError(message: "impossible dependency requirement; \(dependency.requirement.type) specified, but no identifier given")
+                }
+                versionPortion = ".\(dependency.requirement.type.rawValue)(\(identifier.quoted))"
+            case .localPackage:
+                throw createVersionError()
+            }
+            
+            return ".package(url: \(dependency.url.quoted), \(versionPortion))"
+        })
+    }
+    
     func addSwiftLanguageVersions(_ versions: [String]?, to arguments: PackageArguments) throws {
         if let versions = versions {
             guard !versions.map(Int.init).contains(nil) else {
@@ -231,6 +227,40 @@ final class Version4_2Writer: PackageWriterImpl {
     init(package: ModernPackageData, toolsVersion: SwiftToolsVersion) {
         self.package = package
         self.toolsVersion = toolsVersion
+    }
+    
+    func addDependencies(_ dependencies: [Package.Dependency], to arguments: PackageArguments) throws {
+        if dependencies.isEmpty {
+            return
+        }
+        
+        arguments.addArray(key: "dependencies", children: try dependencies.map { (dependency) in
+            let versionPortion: String
+            
+            switch dependency.requirement.type {
+            case .range:
+                guard let lowerBoundString = dependency.requirement.lowerBound, let lowerBound = Version(lowerBoundString),
+                    let upperBoundString = dependency.requirement.upperBound, let upperBound = Version(upperBoundString) else {
+                        throw IceError(message: "impossible dependency requirement; invalid range specified")
+                }
+                if upperBound == Version(lowerBound.major + 1, 0, 0) {
+                    versionPortion = "from: \(lowerBoundString.quoted)"
+                } else if upperBound == Version(lowerBound.major, lowerBound.minor + 1, 0) {
+                    versionPortion = ".upToNextMinor(from: \(lowerBoundString.quoted))"
+                } else {
+                    versionPortion = "\(lowerBoundString.quoted)..<\(upperBoundString.quoted)"
+                }
+            case .branch, .exact, .revision:
+                guard let identifier = dependency.requirement.identifier else {
+                    throw IceError(message: "impossible dependency requirement; \(dependency.requirement.type) specified, but no identifier given")
+                }
+                versionPortion = ".\(dependency.requirement.type.rawValue)(\(identifier.quoted))"
+            case .localPackage:
+                return ".package(path: \(dependency.url.quoted))"
+            }
+            
+            return ".package(url: \(dependency.url.quoted), \(versionPortion))"
+        })
     }
     
     func addSwiftLanguageVersions(_ versions: [String]?, to arguments: PackageArguments) {

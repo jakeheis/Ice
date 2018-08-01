@@ -127,8 +127,8 @@ class PackageWriterTests: XCTestCase {
         """)
     }
     
-    func testDependencies() {
-        let result = with4_0 { $0.addDependencies(Fixtures.dependencies, to: $1) }
+    func testDependencies() throws {
+        let result = try with4_0 { try $0.addDependencies(Fixtures.dependencies, to: $1) }
         XCTAssertEqual(result, """
             dependencies: [
                 .package(url: "https://github.com/jakeheis/SwiftCLI", .branch("swift4")),
@@ -140,6 +140,25 @@ class PackageWriterTests: XCTestCase {
             ]
 
         """)
+        
+        let depsWithLocal = Fixtures.dependencies + [
+            .init(url: "/Projects/PathKit", requirement: .init(type: .localPackage, lowerBound: nil, upperBound: nil, identifier: nil))
+        ]
+        let result2 = try with4_2 { try $0.addDependencies(depsWithLocal, to: $1) }
+        XCTAssertEqual(result2, """
+            dependencies: [
+                .package(url: "https://github.com/jakeheis/SwiftCLI", .branch("swift4")),
+                .package(url: "https://github.com/jakeheis/Spawn", .exact("0.0.4")),
+                .package(url: "https://github.com/jakeheis/Flock", .revision("c57454ce053821d2fef8ad25d8918ae83506810c")),
+                .package(url: "https://github.com/jakeheis/FlockCLI", from: "4.1.0"),
+                .package(url: "https://github.com/jakeheis/FileKit", .upToNextMinor(from: "2.1.3")),
+                .package(url: "https://github.com/jakeheis/Shout", "0.6.4"..<"0.6.8"),
+                .package(path: "/Projects/PathKit"),
+            ]
+
+        """)
+        
+        XCTAssertThrowsError(try with4_0 { try $0.addDependencies(depsWithLocal, to: $1) })
     }
     
     func testTargets() {

@@ -63,23 +63,13 @@ import SwiftCLI
  
 */
 
-class InitCommand: Command {
+class InitCommand: CreateProjectCommand, Command {
     
     let name = "init"
     let shortDescription = "Initializes a new package in the current directory"
     
-    let library = InitializerOptions.library
-    let executable = InitializerOptions.executable
-    let optionGroups = [InitializerOptions.typeGroup]
-    
     func execute() throws {
-        var type: SPM.InitType?
-        if library.value {
-            type = .library
-        } else if executable.value {
-            type = .executable
-        }
-        try SPM().initPackage(type: type)
+        try createProject()
         
         stdout <<< ""
         stdout <<< "Run: ".blue.bold + "ice build"
