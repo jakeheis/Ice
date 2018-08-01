@@ -32,9 +32,9 @@ struct GlobalOptions {
 }
 
 struct InitializerOptions {
-    static let library = Flag("-l", "--lib", description: "Create a new library project; default")
+    static let library = Flag("-l", "--lib", description: "Create a new library project (default)")
     static let executable = Flag("-e", "--exec", description: "Create a new executable project")
-    static let typeGroup =  OptionGroup(options: [library, executable], restriction: .atMostOne)
+    static let typeGroup =  OptionGroup.atMostOne(library, executable)
     
     private init() {}
 }

@@ -39,7 +39,7 @@ struct PackageLoader {
         } else if let v4_0 = try? JSONDecoder().decode(PackageDataV4_0.self, from: payload) {
             data = v4_0.convertToModern()
         } else {
-            throw IceError(message: "couldn't parse Package.swift")
+            throw IceError(message: "can't parse Package.swift")
         }
         return Package(data: data, directory: directory, toolsVersion: toolsVersion)
     }

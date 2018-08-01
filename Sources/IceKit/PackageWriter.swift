@@ -137,7 +137,7 @@ extension PackageWriterImpl {
                 }
                 let function: String
                 switch dependency.requirement.type {
-                case .branch: function = "branchItem"
+                case .branch: function = "branch"
                 case .exact: function = "exact"
                 case .revision: function = "revision"
                 default: fatalError()
@@ -154,7 +154,11 @@ extension PackageWriterImpl {
             arguments.addSimple(key: "targets", value: "[]")
         } else {
             arguments.addArray(key: "targets", children: targets.map { (target) in
-                var line = target.isTest ? ".testTarget" : ".target"
+                var line: String = "."
+                switch target.type {
+                case .regular: line += "target"
+                case .test: line += "testTarget"
+                }
                 line += "(name: \(target.name.quoted)"
                 line += ", dependencies: [" + target.dependencies.map { $0.name.quoted }.joined(separator: ", ") + "]"
                 if let path = target.path {

@@ -56,7 +56,7 @@ public class PackageFormatter {
     func formatTarget(target: Package.Target) -> Package.Target {
         return .init(
             name: target.name,
-            isTest: target.isTest,
+            type: target.type,
             dependencies: target.dependencies.sorted { $0.name < $1.name },
             path: target.path,
             exclude: target.exclude.sorted(),
@@ -66,9 +66,11 @@ public class PackageFormatter {
     }
     
     func sortPackage(lhs: Package.Target, rhs: Package.Target) -> Bool {
-        if lhs.isTest && !rhs.isTest { return false }
-        if !lhs.isTest && rhs.isTest { return true }
-        return lhs.name < rhs.name
+        switch (lhs.type, rhs.type) {
+        case (.test, .regular): return false
+        case (.regular, .test): return true
+        default: return lhs.name < rhs.name
+        }
     }
     
 }

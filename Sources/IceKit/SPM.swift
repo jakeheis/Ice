@@ -80,8 +80,14 @@ public class SPM {
         try runSwift(args: args, transformer: .test)
     }
     
-    public func resolve() throws {
-        try runSwift(args: ["package", "-v", "resolve"], transformer: .resolve)
+    public func resolve(silent: Bool = false) throws {
+        let args = ["package", "-v", "resolve"]
+        if silent {
+            _ = try captureSwift(args: args)
+        } else {
+            try runSwift(args: args, transformer: .resolve)
+        }
+        
     }
     
     // MARK: -
@@ -117,7 +123,7 @@ public class SPM {
     public func dumpPackage() throws -> Data {
         let content = try captureSwift(args: ["package", "dump-package"]).stdout
         guard let jsonStart = content.index(of: "{"), let data = content[jsonStart...].data(using: .utf8) else {
-            throw IceError(message: "couldn't parse package")
+            throw IceError(message: "can't parse package")
         }
         return data
     }

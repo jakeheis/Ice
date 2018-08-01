@@ -88,10 +88,10 @@ class PackageTests: XCTestCase {
     func testAddTarget() {
         var package = Package(data: Fixtures.package, directory: Path.current, toolsVersion: .v4)
         
-        package.addTarget(name: "CoreTests", isTest: true, dependencies: ["Core"])
+        package.addTarget(name: "CoreTests", type: .test, dependencies: ["Core"])
         
         let expectedTargets = Fixtures.targets + [
-            .init(name: "CoreTests", isTest: true, dependencies: [.init(name: "Core")], path: nil, exclude: [], sources: nil, publicHeadersPath: nil)
+            .init(name: "CoreTests", type: .test, dependencies: [.init(name: "Core")], path: nil, exclude: [], sources: nil, publicHeadersPath: nil)
         ]
         assertEqualCodings(package.targets, expectedTargets)
     }

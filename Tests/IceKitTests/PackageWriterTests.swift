@@ -48,7 +48,7 @@ class PackageWriterTests: XCTestCase {
                 .library(name: "Dynamic", type: .dynamic, targets: ["Core"]),
             ],
             dependencies: [
-                .package(url: "https://github.com/jakeheis/SwiftCLI", .branchItem("swift4")),
+                .package(url: "https://github.com/jakeheis/SwiftCLI", .branch("swift4")),
                 .package(url: "https://github.com/jakeheis/Spawn", .exact("0.0.4")),
                 .package(url: "https://github.com/jakeheis/Flock", .revision("c57454ce053821d2fef8ad25d8918ae83506810c")),
                 .package(url: "https://github.com/jakeheis/FlockCLI", from: "4.1.0"),
@@ -93,7 +93,7 @@ class PackageWriterTests: XCTestCase {
                 .library(name: "Dynamic", type: .dynamic, targets: ["Core"]),
             ],
             dependencies: [
-                .package(url: "https://github.com/jakeheis/SwiftCLI", .branchItem("swift4")),
+                .package(url: "https://github.com/jakeheis/SwiftCLI", .branch("swift4")),
                 .package(url: "https://github.com/jakeheis/Spawn", .exact("0.0.4")),
                 .package(url: "https://github.com/jakeheis/Flock", .revision("c57454ce053821d2fef8ad25d8918ae83506810c")),
                 .package(url: "https://github.com/jakeheis/FlockCLI", from: "4.1.0"),
@@ -131,7 +131,7 @@ class PackageWriterTests: XCTestCase {
         let result = with4_0 { $0.addDependencies(Fixtures.dependencies, to: $1) }
         XCTAssertEqual(result, """
             dependencies: [
-                .package(url: "https://github.com/jakeheis/SwiftCLI", .branchItem("swift4")),
+                .package(url: "https://github.com/jakeheis/SwiftCLI", .branch("swift4")),
                 .package(url: "https://github.com/jakeheis/Spawn", .exact("0.0.4")),
                 .package(url: "https://github.com/jakeheis/Flock", .revision("c57454ce053821d2fef8ad25d8918ae83506810c")),
                 .package(url: "https://github.com/jakeheis/FlockCLI", from: "4.1.0"),

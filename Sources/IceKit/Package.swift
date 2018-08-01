@@ -129,11 +129,11 @@ public struct Package {
     
     // MARK: - Targets
     
-    public mutating func addTarget(name: String, isTest: Bool, dependencies: [String]) {
+    public mutating func addTarget(name: String, type: Package.Target.TargetType, dependencies: [String]) {
         let dependencies = dependencies.map { Package.Target.Dependency(name: $0) }
         data.targets.append(.init(
             name: name,
-            isTest: isTest,
+            type: type,
             dependencies: dependencies,
             path: nil,
             exclude: [],

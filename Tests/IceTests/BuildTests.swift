@@ -139,6 +139,55 @@ class BuildTests: XCTestCase {
         let result = icebox.run("build")
         XCTAssertEqual(result.exitStatus, 1)
         XCTAssertEqual(result.stderr, "")
+        
+        #if swift(>=4.1.3)
+        XCTAssertEqual(result.stdout, """
+        Fetch https://github.com/jakeheis/SwiftCLI
+        Clone https://github.com/jakeheis/SwiftCLI
+        Resolve https://github.com/jakeheis/SwiftCLI at 4.1.2
+        Compile SwiftCLI (23 sources)
+        Compile Exec (1 sources)
+
+          ● Warning: expression implicitly coerced from 'String?' to 'Any'
+
+            print(str)
+                  ^^^
+            at Sources/Exec/main.swift:2
+
+            Note: provide a default value to avoid this warning
+
+            print(str)
+                  ^^^
+                      ?? <#default value#>
+
+            at Sources/Exec/main.swift:2
+
+            Note: force-unwrap the value to avoid this warning
+
+            print(str)
+                  ^^^
+                     !
+
+            at Sources/Exec/main.swift:2
+
+            Note: explicitly cast to 'Any' with 'as Any' to silence this warning
+
+            print(str)
+                  ^^^
+                      as Any
+
+            at Sources/Exec/main.swift:2
+
+
+          ● Error: cannot convert value of type 'String' to specified type 'Int'
+
+            let int: Int = "hello world"
+                           ^^^^^^^^^^^^^
+            at Sources/Exec/main.swift:4
+        
+        
+        """)
+        #else
         XCTAssertEqual(result.stdout, """
         Fetch https://github.com/jakeheis/SwiftCLI
         Clone https://github.com/jakeheis/SwiftCLI
@@ -185,6 +234,7 @@ class BuildTests: XCTestCase {
         
         
         """)
+        #endif
     }
     
     func testBuildTarget() {

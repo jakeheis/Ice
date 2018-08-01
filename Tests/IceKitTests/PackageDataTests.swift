@@ -22,7 +22,10 @@ class PackageDataTests: XCTestCase {
             providers: [.init(name: "provider", values: ["provider-name"])],
             products: [.init(name: "product", product_type: "type", targets: ["targ1"], type: "library")],
             dependencies: [.init(url: "https://github.com/jakeheis/SwiftCLI", requirement: .init(version: Version(5, 0, 0)))],
-            targets: [.init(name: "targ1", isTest: false, dependencies: [.init(name: "SwiftCLI")], path: nil, exclude: [], sources: nil, publicHeadersPath: nil)],
+            targets: [
+                .init(name: "targ1", isTest: false, dependencies: [.init(name: "SwiftCLI")], path: nil, exclude: [], sources: nil, publicHeadersPath: nil),
+                .init(name: "targ1Tests", isTest: true, dependencies: [.init(name: "targ1")], path: nil, exclude: [], sources: nil, publicHeadersPath: nil)
+            ],
             swiftLanguageVersions: [3, 4],
             cLanguageStandard: "c-lang",
             cxxLanguageStandard: "c++-lang"
@@ -35,7 +38,10 @@ class PackageDataTests: XCTestCase {
             providers: [.init(name: "provider", values: ["provider-name"])],
             products: [.init(name: "product", product_type: "type", targets: ["targ1"], type: "library")],
             dependencies: [.init(url: "https://github.com/jakeheis/SwiftCLI", requirement: .init(version: Version(5, 0, 0)))],
-            targets: [.init(name: "targ1", isTest: false, dependencies: [.init(name: "SwiftCLI")], path: nil, exclude: [], sources: nil, publicHeadersPath: nil)],
+            targets: [
+                .init(name: "targ1", type: .regular, dependencies: [.init(name: "SwiftCLI")], path: nil, exclude: [], sources: nil, publicHeadersPath: nil),
+                .init(name: "targ1Tests", type: .test, dependencies: [.init(name: "targ1")], path: nil, exclude: [], sources: nil, publicHeadersPath: nil)
+            ],
             swiftLanguageVersions: ["3", "4"],
             cLanguageStandard: "c-lang",
             cxxLanguageStandard: "c++-lang"

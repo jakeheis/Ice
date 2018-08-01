@@ -85,16 +85,16 @@ struct Fixtures {
     ]
     
     static let targets: [PackageDataV4_2.Target] = [
-        .init(name: "CLI", isTest: false, dependencies: [
+        .init(name: "CLI", type: .regular, dependencies: [
             .init(name: "Core"),
             .init(name: "FileKit")
         ], path: nil, exclude: [], sources: nil, publicHeadersPath: nil),
-        .init(name: "CLITests", isTest: true, dependencies: [
+        .init(name: "CLITests", type: .test, dependencies: [
             .init(name: "CLI"),
             .init(name: "Core")
         ], path: nil, exclude: [], sources: nil, publicHeadersPath: nil),
-        .init(name: "Core", isTest: false, dependencies: [], path: "Sources/Diff", exclude: ["ignore.swift"], sources: nil, publicHeadersPath: nil),
-        .init(name: "Exclusive", isTest: false, dependencies: [
+        .init(name: "Core", type: .regular, dependencies: [], path: "Sources/Diff", exclude: ["ignore.swift"], sources: nil, publicHeadersPath: nil),
+        .init(name: "Exclusive", type: .regular, dependencies: [
             .init(name: "Core"),
             .init(name: "Flock")
         ], path: nil, exclude: [], sources: ["only.swift"], publicHeadersPath: "headers.h")

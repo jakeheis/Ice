@@ -63,8 +63,13 @@ public struct PackageDataV4_2: Codable {
             public let name: String
         }
         
+        public enum TargetType: String, Codable {
+            case regular
+            case test
+        }
+        
         public let name: String
-        public let isTest: Bool
+        public let type: TargetType
         public var dependencies: [Dependency]
         public let path: String?
         public let exclude: [String]
@@ -89,7 +94,20 @@ public struct PackageDataV4_0: Codable {
     public typealias Provider = PackageDataV4_2.Provider
     public typealias Product = PackageDataV4_2.Product
     public typealias Dependency = PackageDataV4_2.Dependency
-    public typealias Target = PackageDataV4_2.Target
+    
+    public struct Target: Codable {
+        public struct Dependency: Codable {
+            public let name: String
+        }
+        
+        public let name: String
+        public let isTest: Bool
+        public var dependencies: [Dependency]
+        public let path: String?
+        public let exclude: [String]
+        public let sources: [String]?
+        public let publicHeadersPath: String?
+    }
     
     public let name: String
     public let pkgConfig: String?
@@ -114,7 +132,17 @@ public struct PackageDataV4_0: Codable {
             providers: providers,
             products: products,
             dependencies: dependencies,
-            targets: targets,
+            targets: targets.map { (oldTarget) in
+                return .init(
+                    name: oldTarget.name,
+                    type: oldTarget.isTest ? .test : .regular,
+                    dependencies: oldTarget.dependencies.map({ .init(name: $0.name) }),
+                    path: oldTarget.path,
+                    exclude: oldTarget.exclude,
+                    sources: oldTarget.sources,
+                    publicHeadersPath: oldTarget.publicHeadersPath
+                )
+            },
             swiftLanguageVersions: newSwiftLanguageVersions,
             cLanguageStandard: cLanguageStandard,
             cxxLanguageStandard: cxxLanguageStandard

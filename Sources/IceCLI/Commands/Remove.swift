@@ -16,6 +16,9 @@ class RemoveCommand: Command {
     let package = Parameter()
 
     func execute() throws {
+        // Resolve first so that .build/checkouts is populated for use in Package.retrieveLibrariesOfDependency
+        try SPM().resolve(silent: true)
+        
         var project = try Package.load()
         try project.removeDependency(named: package.value)
         try project.sync()

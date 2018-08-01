@@ -22,6 +22,8 @@ class AddTests: XCTestCase {
     func testBasicAdd() {
         let icebox = IceBox(template: .lib)
         
+        let r = icebox.run("version")
+        print(r.stdout!)
         let result = icebox.run("add", "jakeheis/Spawn", "-n")
         XCTAssertEqual(result.exitStatus, 0)
         XCTAssertEqual(result.stderr, "")
@@ -134,7 +136,18 @@ class AddTests: XCTestCase {
         XCTAssertEqual(result.exitStatus, 0)
         XCTAssertEqual(result.stderr, "")
         
-        #if swift(>=4.1)
+        #if swift(>=4.1.3)
+        // Line order not deterministic
+        let lines = result.stdout?.components(separatedBy: "\n") ?? []
+        XCTAssertEqual(lines.count, 7)
+        XCTAssertEqual(lines[0], "Fetch https://github.com/jakeheis/SwiftCLI")
+        XCTAssertEqual(lines[1], "Fetch https://github.com/jakeheis/Spawn")
+        XCTAssertTrue(lines.contains("Clone https://github.com/jakeheis/Spawn"))
+        XCTAssertTrue(lines.contains("Resolve https://github.com/jakeheis/Spawn at 0.0.6"))
+        XCTAssertTrue(lines.contains("Clone https://github.com/jakeheis/SwiftCLI"))
+        XCTAssertTrue(lines.contains("Resolve https://github.com/jakeheis/SwiftCLI at 4.1.2"))
+        XCTAssertEqual(lines.last, "")
+        #elseif swift(>=4.1)
         XCTAssertEqual(result.stdout, """
         Update https://github.com/jakeheis/SwiftCLI
         Fetch https://github.com/jakeheis/Spawn
@@ -197,7 +210,7 @@ class AddTests: XCTestCase {
                 .library(name: "Lib", targets: ["Lib"]),
             ],
             dependencies: [
-                .package(url: "https://github.com/jakeheis/SwiftCLI", .branchItem("master")),
+                .package(url: "https://github.com/jakeheis/SwiftCLI", .branch("master")),
             ],
             targets: [
                 .target(name: "Lib", dependencies: []),
@@ -251,7 +264,18 @@ class AddTests: XCTestCase {
         XCTAssertEqual(result.exitStatus, 0)
         XCTAssertEqual(result.stderr, "")
         
-        #if swift(>=4.1)
+        #if swift(>=4.1.3)
+        // Line order not deterministic
+        let lines = result.stdout?.components(separatedBy: "\n") ?? []
+        XCTAssertEqual(lines.count, 7)
+        XCTAssertEqual(lines[0], "Fetch https://github.com/jakeheis/SwiftCLI")
+        XCTAssertEqual(lines[1], "Fetch https://github.com/jakeheis/IceLibTest")
+        XCTAssertTrue(lines.contains("Clone https://github.com/jakeheis/IceLibTest"))
+        XCTAssertTrue(lines.contains("Resolve https://github.com/jakeheis/IceLibTest at 1.0.0"))
+        XCTAssertTrue(lines.contains("Clone https://github.com/jakeheis/SwiftCLI"))
+        XCTAssertTrue(lines.contains("Resolve https://github.com/jakeheis/SwiftCLI at 4.1.2"))
+        XCTAssertEqual(lines.last, "")
+        #elseif swift(>=4.1)
         XCTAssertEqual(result.stdout, """
         Update https://github.com/jakeheis/SwiftCLI
         Fetch https://github.com/jakeheis/IceLibTest

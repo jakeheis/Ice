@@ -52,7 +52,7 @@ private class TargetAddCommand: Command {
         
         package.addTarget(
             name: targetName.value,
-            isTest: testTarget,
+            type: testTarget ? .test : .regular,
             dependencies: dependencies.value?.commaSeparated() ?? []
         )
         try package.sync()
