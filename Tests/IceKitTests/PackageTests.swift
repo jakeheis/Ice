@@ -21,9 +21,9 @@ class PackageTests: XCTestCase {
         ("testDepend", testDepend),
         ("testRemoveTarget", testRemoveTarget),
     ]
-
+    
     func testAddProduct() {
-        var package = Package(data: Fixtures.package, directory: Path.current, toolsVersion: .v4)
+        var package = createPackage()
         
         package.addProduct(name: "MyCLI", type: .executable, targets: ["Target3"])
         package.addProduct(name: "MyLib", type: .dynamicLibrary, targets: ["Target4"])
@@ -36,7 +36,7 @@ class PackageTests: XCTestCase {
     }
     
     func testRemoveProduct() throws {
-        var package = Package(data: Fixtures.package, directory: Path.current, toolsVersion: .v4)
+        var package = createPackage()
         
         try package.removeProduct(name: "Static")
         
@@ -48,7 +48,7 @@ class PackageTests: XCTestCase {
     }
     
     func testAddDependency() {
-        var package = Package(data: Fixtures.package, directory: Path.current, toolsVersion: .v4)
+        var package = createPackage()
         
         let ref = RepositoryReference(url: "https://github.com/jakeheis/SwiftCLI")
         package.addDependency(ref: ref, requirement: .init(version: Version(5, 2, 0)))
@@ -60,7 +60,7 @@ class PackageTests: XCTestCase {
     }
     
     func testUpdateDependency() throws {
-        var package = Package(data: Fixtures.package, directory: Path.current, toolsVersion: .v4)
+        var package = createPackage()
         
         try package.updateDependency(dependency: Fixtures.dependencies[3], to: .init(type: .branch, lowerBound: nil, upperBound: nil, identifier: "master"))
         
@@ -70,7 +70,7 @@ class PackageTests: XCTestCase {
     }
     
     func testRemoveDependency() throws {
-        var package = Package(data: Fixtures.package, directory: Path.current, toolsVersion: .v4)
+        var package = createPackage()
         
         try package.removeDependency(named: "Flock")
         
@@ -86,7 +86,7 @@ class PackageTests: XCTestCase {
     }
     
     func testAddTarget() {
-        var package = Package(data: Fixtures.package, directory: Path.current, toolsVersion: .v4)
+        var package = createPackage()
         
         package.addTarget(name: "CoreTests", type: .test, dependencies: ["Core"])
         
@@ -97,7 +97,7 @@ class PackageTests: XCTestCase {
     }
     
     func testDepend() throws {
-        var package = Package(data: Fixtures.package, directory: Path.current, toolsVersion: .v4)
+        var package = createPackage()
         
         try package.depend(target: "Core", on: "SwiftCLI")
         try package.depend(target: "Exclusive", on: "CLI")
@@ -111,7 +111,7 @@ class PackageTests: XCTestCase {
     }
     
     func testRemoveTarget() throws {
-        var package = Package(data: Fixtures.package, directory: Path.current, toolsVersion: .v4)
+        var package = createPackage()
         
         try package.removeTarget(named: "Core")
         
@@ -123,6 +123,10 @@ class PackageTests: XCTestCase {
         assertEqualCodings(package.targets, expectedTargets)
         
         XCTAssertThrowsError(try package.removeTarget(named: "not-real"))
+    }
+    
+    private func createPackage() -> Package {
+        return Package(data: Fixtures.package, toolsVersion: .v4, config: MockConfig())
     }
 
 }

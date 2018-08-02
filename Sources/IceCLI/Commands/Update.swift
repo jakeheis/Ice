@@ -8,7 +8,7 @@
 import IceKit
 import SwiftCLI
 
-class UpdateCommand: Command {
+class UpdateCommand: IceObject, Command {
     
     let name = "update"
     let shortDescription = "Update package dependencies"
@@ -32,7 +32,7 @@ class UpdateCommand: Command {
             return
         }
         
-        var package = try Package.load()
+        var package = try loadPackage()
         guard let dep = package.dependencies.first(where: { RepositoryReference(url: $0.url).name == dependency }) else {
             throw IceError(message: "No dependency found with that name")
         }

@@ -63,8 +63,8 @@ class PackageWriterTests: XCTestCase {
                 .target(name: "Exclusive", dependencies: ["Core", "Flock"], sources: ["only.swift"], publicHeadersPath: "headers.h"),
             ],
             swiftLanguageVersions: [3, 4],
-            cLanguageStandard: .c90,
-            cxxLanguageStandard: .cxx03
+            cLanguageStandard: .iso9899_199409,
+            cxxLanguageStandard: .gnucxx1z
         )
 
         """)
@@ -108,8 +108,8 @@ class PackageWriterTests: XCTestCase {
                 .target(name: "Exclusive", dependencies: ["Core", "Flock"], sources: ["only.swift"], publicHeadersPath: "headers.h"),
             ],
             swiftLanguageVersions: [.v3, .v4],
-            cLanguageStandard: .c90,
-            cxxLanguageStandard: .cxx03
+            cLanguageStandard: .iso9899_199409,
+            cxxLanguageStandard: .gnucxx1z
         )
 
         """)

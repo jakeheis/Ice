@@ -9,16 +9,16 @@ import IceKit
 import PathKit
 import SwiftCLI
 
-class TargetGroup: CommandGroup {
+class TargetGroup: IceObject, CommandGroup {
     let name = "target"
     let shortDescription = "Manage the package targets"
-    let children: [Routable] = [
-        TargetAddCommand(),
-        TargetRemoveCommand()
+    lazy var children: [Routable] = [
+        TargetAddCommand(ice: ice),
+        TargetRemoveCommand(ice: ice)
     ]
 }
 
-private class TargetAddCommand: Command {
+private class TargetAddCommand: IceObject, Command {
     
     let name = "add"
     let shortDescription = "Add a new target"
@@ -29,7 +29,7 @@ private class TargetAddCommand: Command {
     let dependencies = Key<String>("-d", "--dependencies", description: "Creates the new target with the given dependencies; comma-separated")
     
     func execute() throws {
-        var package = try Package.load()
+        var package = try loadPackage()
         
         if package.targets.contains(where: { $0.name == targetName.value }) {
             throw IceError(message: "target \(targetName.value) already exists")
@@ -60,7 +60,7 @@ private class TargetAddCommand: Command {
     
 }
 
-private class TargetRemoveCommand: Command {
+private class TargetRemoveCommand: IceObject, Command {
     
     let name = "remove"
     let shortDescription = "Remove the given target"
@@ -68,7 +68,7 @@ private class TargetRemoveCommand: Command {
     let target = Parameter()
     
     func execute() throws {
-        var project = try Package.load()
+        var project = try loadPackage()
         try project.removeTarget(named: target.value)
         try project.sync()
     }

@@ -34,7 +34,7 @@ class ConfigTests: XCTestCase {
         }
         """)
         
-        let config = Config(globalPath: globalPath, directory: directory)
+        let config = Config(globalPath: globalPath, localDirectory: directory)
         XCTAssertEqual(config.get(\.reformat), true)
         XCTAssertEqual(config.get(.reformat), "true")
         
@@ -44,7 +44,7 @@ class ConfigTests: XCTestCase {
         }
         """)
         
-        let config2 = Config(globalPath: globalPath, directory: directory)
+        let config2 = Config(globalPath: globalPath, localDirectory: directory)
         XCTAssertEqual(config2.get(\.reformat), false)
         XCTAssertEqual(config2.get(.reformat), "false")
     }
@@ -56,7 +56,7 @@ class ConfigTests: XCTestCase {
         }
         """)
 
-        let config = Config(globalPath: globalPath, directory: directory)
+        let config = Config(globalPath: globalPath, localDirectory: directory)
         XCTAssertEqual(config.get(\.reformat), true)
         
         try! config.set(\.reformat, value: false, global: true)

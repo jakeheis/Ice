@@ -11,8 +11,8 @@ public class PackageWriter {
     
     private let writer: PackageWriterImpl
     
-    public convenience init(package: Package, format: Bool = false) throws {
-        let data = format ? PackageFormatter(package: package.data).format() : package.data
+    public convenience init(package: Package) throws {
+        let data = package.config.get(\.reformat) ? PackageFormatter(package: package.data).format() : package.data
         try self.init(package: data, toolsVersion: package.toolsVersion)
     }
     

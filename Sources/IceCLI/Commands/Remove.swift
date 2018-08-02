@@ -8,7 +8,7 @@
 import IceKit
 import SwiftCLI
 
-class RemoveCommand: Command {
+class RemoveCommand: IceObject, Command {
     
     let name = "remove"
     let shortDescription = "Removes a dependency from the current package"
@@ -19,7 +19,7 @@ class RemoveCommand: Command {
         // Resolve first so that .build/checkouts is populated for use in Package.retrieveLibrariesOfDependency
         try SPM().resolve(silent: true)
         
-        var project = try Package.load()
+        var project = try loadPackage()
         try project.removeDependency(named: package.value)
         try project.sync()
     }

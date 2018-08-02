@@ -20,8 +20,8 @@ public struct Package {
     public static let fileName = Path("Package.swift")
     private static let libRegex = Regex("\\.library\\( *name: *\"([^\"]*)\"")
     
-    public static func load(in directory: Path = ".") throws -> Package {
-        return try PackageLoader.load(in: directory)
+    public static func load(config: Config) throws -> Package {
+        return try PackageLoader.load(config: config)
     }
     
     public var name: String {
@@ -46,7 +46,7 @@ public struct Package {
         }
     }
     
-    public let directory: Path
+    public let config: ConfigType
     public var toolsVersion: SwiftToolsVersion {
         didSet {
             dirty = true
@@ -54,10 +54,10 @@ public struct Package {
     }
     public var dirty = false
     
-    init(data: ModernPackageData, directory: Path, toolsVersion: SwiftToolsVersion) {
+    init(data: ModernPackageData, toolsVersion: SwiftToolsVersion, config: ConfigType) {
         self.data = data
-        self.directory = directory
         self.toolsVersion = toolsVersion
+        self.config = config
     }
     
     // MARK: - Products
@@ -182,7 +182,7 @@ public struct Package {
     // MARK: -
     
     public func retrieveLibrariesOfDependency(named dependency: String) -> [String] {
-        let glob = (directory + ".build" + "checkouts").glob("\(dependency)*")
+        let glob = (config.localDirectory + ".build" + "checkouts").glob("\(dependency)*")
         guard let path = glob.first,
             let contents: String = try? (path + Package.fileName).read().replacingOccurrences(of: "\n", with: " ") else {
                 return []
@@ -200,7 +200,7 @@ public struct Package {
             return
         }
         
-        let path = directory + Package.fileName
+        let path = config.localDirectory + Package.fileName
         try path.write(Data())
         guard let fileStream = WriteStream(path: path.string) else  {
             throw IceError(message: "couldn't write to \(path)")
@@ -210,9 +210,8 @@ public struct Package {
         dirty = false
     }
     
-    public func write(to stream: WritableStream, format: Bool = false) throws {
-//        let format = Ice.config.get(\.reformat, directory: directory)
-        let writer = try PackageWriter(package: self, format: format)
+    public func write(to stream: WritableStream) throws {
+        let writer = try PackageWriter(package: self)
         try writer.write(to: stream)
     }
     

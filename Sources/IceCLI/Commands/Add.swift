@@ -49,7 +49,7 @@ class AddCommand: IceObject, Command {
         
         verboseOut <<< "Resolving at version: \(requirement)"
         
-        var package = try Package.load()
+        var package = try loadPackage()
         
         if package.dependencies.contains(where: { $0.url == ref.url }) {
             throw IceError(message: "package already depends on \(ref.url)")

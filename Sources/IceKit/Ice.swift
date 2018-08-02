@@ -32,7 +32,7 @@ public class Ice {
     }
     
     public func config(for directory: Path) -> Config {
-        return Config(globalPath: root + "config.json", directory: directory)
+        return Config(globalPath: root + "config.json", localDirectory: directory)
     }
     
 }

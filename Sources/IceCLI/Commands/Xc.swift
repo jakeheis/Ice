@@ -22,7 +22,7 @@ class XcCommand: IceObject, Command {
             return
         }
         
-        let package = try Package.load()
+        let package = try loadPackage()
         do {
             try run("open", "\(package.name).xcodeproj")
         } catch {}

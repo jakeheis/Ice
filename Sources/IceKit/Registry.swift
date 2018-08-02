@@ -8,7 +8,11 @@
 import Foundation
 import PathKit
 
-public class Registry {
+public protocol RegistryType {
+    func get(_ name: String) -> RegistryEntry?
+}
+
+public class Registry: RegistryType {
     
     private static let url = "https://github.com/jakeheis/IceRegistry"
     

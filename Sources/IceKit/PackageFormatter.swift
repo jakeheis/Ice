@@ -20,7 +20,7 @@ public class PackageFormatter {
             providers: package.providers?.map(formatProvider),
             products: package.products.map(formatProduct).sorted(by: sortProduct),
             dependencies: package.dependencies.sorted(by: sortDependency),
-            targets: package.targets.map(formatTarget).sorted(by: sortPackage),
+            targets: package.targets.map(formatTarget).sorted(by: sortTarget),
             swiftLanguageVersions: package.swiftLanguageVersions?.sorted(),
             cLanguageStandard: package.cLanguageStandard,
             cxxLanguageStandard: package.cxxLanguageStandard
@@ -67,10 +67,16 @@ public class PackageFormatter {
         )
     }
     
-    func sortPackage(lhs: Package.Target, rhs: Package.Target) -> Bool {
+    func sortTarget(lhs: Package.Target, rhs: Package.Target) -> Bool {
+        if lhs.type == rhs.type {
+            return lhs.name < rhs.name
+        }
+        
         switch (lhs.type, rhs.type) {
-        case (.test, .regular): return false
-        case (.regular, .test): return true
+        case (.system, _): return true
+        case (_, .system): return false
+        case (.regular, _): return true
+        case (_, .regular): return false
         default: return lhs.name < rhs.name
         }
     }

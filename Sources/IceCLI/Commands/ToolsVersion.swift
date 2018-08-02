@@ -8,28 +8,28 @@
 import IceKit
 import SwiftCLI
 
-class ToolsVersionGroup: CommandGroup {
+class ToolsVersionGroup: IceObject, CommandGroup {
     let name = "tools-version"
     let shortDescription = "Manage the current project's Swift tools version"
-    let children: [Routable] = [
-        GetToolsVersion(),
-        UpdateToolsVersion()
+    lazy var children: [Routable] = [
+        GetToolsVersion(ice: ice),
+        UpdateToolsVersion(ice: ice)
     ]
 }
 
-class GetToolsVersion: Command {
+class GetToolsVersion: IceObject, Command {
     
     let name = "get"
     let shortDescription = "Get the current project's Swift tools version"
     
     func execute() throws {
-        let package = try Package.load()
+        let package = try loadPackage()
         stdout <<< "Swift tools version: \(package.toolsVersion)"
     }
     
 }
 
-class UpdateToolsVersion: Command {
+class UpdateToolsVersion: IceObject, Command {
     
     let name = "update"
     let shortDescription = "Update the current project's Swift tools version"
@@ -41,7 +41,7 @@ class UpdateToolsVersion: Command {
             throw IceError(message: "invalid tools version")
         }
         
-        var package = try Package.load()
+        var package = try loadPackage()
         package.toolsVersion = toolsVersion
         try package.sync()
     }

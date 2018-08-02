@@ -8,7 +8,15 @@
 import Foundation
 import PathKit
 
-public class Config {
+public protocol ConfigType {
+    var localDirectory: Path { get }
+    
+    func get(_ key: Config.Keys) -> String
+    func get<T>(_ keyPath: KeyPath<Config.File, T?>) -> T
+    func set<T>(_ path: WritableKeyPath<Config.File, T?>, value: T, global setGlobal: Bool) throws
+}
+
+public class Config: ConfigType {
     
     public enum Keys: String {
         case reformat
@@ -42,14 +50,16 @@ public class Config {
     private static let decoder = JSONDecoder()
     
     public let globalPath: Path
+    public let localDirectory: Path
     public let localPath: Path
     
     public private(set) var global: File
     public private(set) var local: File
     
-    init(globalPath: Path, directory: Path) {
+    init(globalPath: Path, localDirectory: Path) {
         self.globalPath = globalPath
-        self.localPath = directory + "ice.json"
+        self.localDirectory = localDirectory
+        self.localPath = localDirectory + "ice.json"
         
         self.global = File.from(path: globalPath) ?? Config.defaultConfig
         self.local = File.from(path: localPath) ?? File(reformat: nil, openAfterXc: nil)

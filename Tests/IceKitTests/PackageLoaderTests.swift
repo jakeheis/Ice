@@ -23,9 +23,8 @@ class PackageLoaderTests: XCTestCase {
     
     func testBasic() throws {
         let data: Data = try (fixturesPath + "SwiftCLI.json").read()
-        let package = try PackageLoader.load(from: data, directory: Path.current, toolsVersion: SwiftToolsVersion.v4)
+        let package = try PackageLoader.load(from: data, toolsVersion: .v4, config: MockConfig())
         
-        XCTAssertEqual(package.directory, Path.current)
         XCTAssertEqual(package.toolsVersion, .v4)
         XCTAssertEqual(package.dirty, false)
         
@@ -55,9 +54,8 @@ class PackageLoaderTests: XCTestCase {
     
     func testComplex() throws {
         let data: Data = try (fixturesPath + "Ice.json").read()
-        let package = try PackageLoader.load(from: data, directory: Path.current, toolsVersion: SwiftToolsVersion(major: 4, minor: 1, patch: 0))
+        let package = try PackageLoader.load(from: data, toolsVersion: SwiftToolsVersion(major: 4, minor: 1, patch: 0), config: MockConfig())
         
-        XCTAssertEqual(package.directory, Path.current)
         XCTAssertEqual(package.toolsVersion, SwiftToolsVersion(major: 4, minor: 1, patch: 0))
         XCTAssertEqual(package.dirty, false)
         
@@ -96,9 +94,8 @@ class PackageLoaderTests: XCTestCase {
     
     func testComplex4_2() throws {
         let data: Data = try (fixturesPath + "Ice4_2.json").read()
-        let package = try PackageLoader.load(from: data, directory: Path.current, toolsVersion: SwiftToolsVersion(major: 4, minor: 2, patch: 0))
+        let package = try PackageLoader.load(from: data, toolsVersion: SwiftToolsVersion(major: 4, minor: 2, patch: 0), config: MockConfig())
         
-        XCTAssertEqual(package.directory, Path.current)
         XCTAssertEqual(package.toolsVersion, SwiftToolsVersion(major: 4, minor: 2, patch: 0))
         XCTAssertEqual(package.dirty, false)
         

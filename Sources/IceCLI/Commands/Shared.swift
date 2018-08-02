@@ -12,15 +12,21 @@ import SwiftCLI
 class IceObject {
     
     let ice: Ice
-    let config: Config
     
     var registry: Registry {
         return ice.registry
     }
     
+    var config: Config {
+        return ice.config(for: Path.current)
+    }
+    
     init(ice: Ice) {
         self.ice = ice
-        self.config = ice.config(for: Path.current)
+    }
+    
+    func loadPackage() throws -> Package {
+        return try Package.load(config: config)
     }
     
 }
@@ -43,7 +49,7 @@ extension Command {
     
 }
 
-class CreateProjectCommand {
+class CreateProjectCommand: IceObject {
     
     let library = Flag("-l", "--lib", description: "Create a new library project (default)")
     let executable = Flag("-e", "--exec", description: "Create a new executable project")
@@ -62,7 +68,7 @@ class CreateProjectCommand {
         try SPM().initPackage(type: type)
         
         // Reformat
-        var package = try Package.load()
+        var package = try loadPackage()
         package.dirty = true
         try package.sync()
     }

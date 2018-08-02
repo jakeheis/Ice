@@ -9,13 +9,13 @@ import IceKit
 import SwiftCLI
 import SwiftyTextTable
 
-class OutdatedCommand: Command {
+class OutdatedCommand: IceObject, Command {
     
     let name = "outdated"
     let shortDescription = "List the dependencies which have newer versions"
     
     func execute() throws {
-        let package = try Package.load()
+        let package = try loadPackage()
         guard !package.dependencies.isEmpty else {
             return
         }
