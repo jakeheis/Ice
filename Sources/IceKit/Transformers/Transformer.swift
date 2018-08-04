@@ -48,7 +48,7 @@ class TransformerPair {
         let pipe = PipeStream()
         
         DispatchQueue.global().async { [weak self] in
-            let stream = TransformStream(stream: pipe.readStream)
+            let stream = TransformStream(stream: pipe)
             while stream.isOpen() {
                 transformer.go(stream: stream)
             }

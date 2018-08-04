@@ -43,7 +43,7 @@ extension Command {
         return GlobalOptions.verbose
     }
     
-    var verboseOut: WriteStream {
+    var verboseOut: WritableStream {
         return verbose.value ? WriteStream.stdout : WriteStream.null
     }
     

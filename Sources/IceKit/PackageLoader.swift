@@ -22,7 +22,7 @@ struct PackageLoader {
     static func load(config: ConfigType) throws -> Package {
         let data = try SPM(directory: config.localDirectory).dumpPackage()
         
-        guard let file = ReadStream(path: (config.localDirectory + Package.fileName).string),
+        guard let file = ReadStream.for(path: (config.localDirectory + Package.fileName).string),
             let line = file.readLine(),
             let match = ToolsVersionLine.findMatch(in: line),
             let toolsVersion = SwiftToolsVersion(match.toolsVersion) else {

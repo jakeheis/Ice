@@ -38,8 +38,8 @@ class Git {
     }
     
     private static func runGit(args: [String], silent: Bool, timeout: Int? = nil) throws {
-        let stdout: WriteStream = silent ? .null : .stdout
-        let stderr: WriteStream = silent ? .null : .stderr
+        let stdout: WritableStream = silent ? WriteStream.null : WriteStream.stdout
+        let stderr: WritableStream = silent ? WriteStream.null : WriteStream.stderr
         let task = Task(executable: "git", arguments: args, stdout: stdout, stderr: stderr)
         
         let interruptItem = createInterruptItem(task: task, timeout: timeout)

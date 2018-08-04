@@ -201,12 +201,11 @@ public struct Package {
         }
         
         let path = config.localDirectory + Package.fileName
-        try path.write(Data())
-        guard let fileStream = WriteStream(path: path.string) else  {
+        guard let fileStream = WriteStream.for(path: path.string, appending: false) else  {
             throw IceError(message: "couldn't write to \(path)")
         }
-        
         try write(to: fileStream)
+        fileStream.truncateRemaining()
         dirty = false
     }
     

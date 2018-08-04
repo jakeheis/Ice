@@ -22,9 +22,10 @@ class AddCommand: IceObject, Command {
     let version = Key<Version>("-w", "--version", description: "The version of the dependency to depend on")
     let branch = Key<String>("-b", "--branch", description: "The branch of the dependency to depend on")
     let sha = Key<String>("-s", "--sha", description: "The commit hash of the dependency to depend on")
+    let local = Flag("-l", "--local", description: "Add this dependency as a local dependency")
     
     var optionGroups: [OptionGroup] {
-        return [.atMostOne(version, branch, sha)]
+        return [.atMostOne(version, branch, sha, local)]
     }
     
     func execute() throws {
@@ -41,6 +42,8 @@ class AddCommand: IceObject, Command {
             requirement = .init(type: .branch, lowerBound: nil, upperBound: nil, identifier: branch)
         } else if let sha = sha.value {
             requirement = .init(type: .revision, lowerBound: nil, upperBound: nil, identifier: sha)
+        } else if local.value {
+            requirement = .init(type: .localPackage, lowerBound: nil, upperBound: nil, identifier: nil)
         } else if let latestVersion = try ref.latestVersion() {
             requirement = .init(version: latestVersion)
         } else {
