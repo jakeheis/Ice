@@ -58,6 +58,7 @@ class ConfigTests: XCTestCase {
         Valid keys:
         
           reformat      whether Ice should organize your Package.swift (alphabetize, etc.); defaults to false
+          openAfterXc   whether Ice should open Xcode the generated project after running `ice xc`; defaults to true
 
         
         """)
