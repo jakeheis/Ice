@@ -131,9 +131,8 @@ public class SPM {
     // MARK: - Helpers
     
     private func runSwift(args: [String], transformer: TransformerPair? = nil) throws {
-        let stdout: WritableStream = transformer?.createStdout() ?? WriteStream.stdout
-        let stderr: WritableStream = transformer?.createStderr() ?? WriteStream.stderr
-        
+        let stdout: WritableStream = transformer?.stdout ?? WriteStream.stdout
+        let stderr: WritableStream = transformer?.stderr ?? WriteStream.stderr
         let task = Task(executable: "swift", arguments: args, directory: directory.string, stdout: stdout, stderr: stderr)
         let result = task.runSync()
         transformer?.wait()

@@ -20,6 +20,7 @@ import XCTest
             testCase(OutdatedTests.allTests),
             testCase(ProductTests.allTests),
             testCase(RegistryTests.allTests),
+            testCase(ResolveTests.allTests),
             testCase(RemoveTests.allTests),
             testCase(RunTests.allTests),
             testCase(SearchTests.allTests),

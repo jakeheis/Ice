@@ -16,7 +16,12 @@ class LineTests: XCTestCase {
     ]
     
     func testAssertionFailureLine() {
-        let match = AssertionFailureLine.findMatch(in: "/Ice/Tests/CoreTests/ConfigTests.swift:52: error: -[CoreTests.ConfigTests testSet] : XCTAssertEqual failed: (\"value with a : is bad\") is not equal to (\"hello\") - ")
+        #if os(macOS)
+        let text = "/Ice/Tests/CoreTests/ConfigTests.swift:52: error: -[CoreTests.ConfigTests testSet] : XCTAssertEqual failed: (\"value with a : is bad\") is not equal to (\"hello\") - "
+        #else
+        let text = "/Ice/Tests/CoreTests/ConfigTests.swift:52: error: ConfigTests.testSet : XCTAssertEqual failed: (\"value with a : is bad\") is not equal to (\"hello\") - "
+        #endif
+        let match = AssertionFailureLine.findMatch(in: text)
         XCTAssertEqual(match?.file, "/Ice/Tests/CoreTests/ConfigTests.swift")
         XCTAssertEqual(match?.lineNumber, 52)
         XCTAssertEqual(match?.assertion, "XCTAssertEqual failed: (\"value with a : is bad\") is not equal to (\"hello\") - ")

@@ -96,14 +96,14 @@ public class Registry: RegistryType {
         var localEntries: [RegistryEntry] = filterOnName(entries: localRegistry.entries)
         all.formUnion(localEntries.map { $0.name })
         
-        var entries: [RegistryEntry] = []
+        var highEntries: [RegistryEntry] = []
+        var middleEntries: [RegistryEntry] = []
+        var bottomEntries: [RegistryEntry] = []
         forEachShared { (file, fileName) in
-            let results = filterOnName(entries: file.entries)
-            if fileName == String(query.uppercased()[query.startIndex]) {
-                entries = results + entries // Rank results with the starting letter higher
-            } else {
-                entries += results
-            }
+            var results = filterOnName(entries: file.entries)
+            let prioritySplit = results.partition(by: { $0.name.lowercased().hasPrefix(query.lowercased()) })
+            middleEntries += results.prefix(upTo: prioritySplit)
+            highEntries += results.suffix(from: prioritySplit)
             all.formUnion(results.map { $0.name })
         }
         
@@ -114,12 +114,21 @@ public class Registry: RegistryType {
             localEntries += filterOnDescription(entries: localRegistry.entries)
             all.formUnion(localEntries.map { $0.name })
             forEachShared { (file, _) in
-                let results = filterOnDescription(entries: file.entries)
-                entries += results
+                var results = filterOnDescription(entries: file.entries)
+                let startChar = String(query.lowercased().prefix(upTo: query.index(after: query.startIndex)))
+                let prioritySplit = results.partition(by: { $0.name.lowercased().hasPrefix(startChar) })
+                bottomEntries += results.prefix(upTo: prioritySplit)
+                middleEntries += results.suffix(from: prioritySplit)
             }
         }
         
-        return localEntries + entries
+        var combined = localEntries + highEntries + middleEntries + bottomEntries
+        if let index = combined.index(where: { $0.name.lowercased() == query.lowercased() } ) {
+            let perfectMatch = combined.remove(at: index)
+            combined.insert(perfectMatch, at: 0)
+        }
+        
+        return combined
     }
     
     private func forEachShared(block: (_ file: SharedRegistryFile, _ fileName: String) -> ()) {

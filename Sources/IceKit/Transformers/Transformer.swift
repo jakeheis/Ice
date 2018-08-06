@@ -33,45 +33,17 @@ protocol BaseTransformer: Transformer {}
 
 class TransformerPair {
     
-    let out: BaseTransformer?
-    let err: BaseTransformer?
-    private let semaphore: DispatchSemaphore
-    private var runningCount = 0
+    let stdout: TransformStream?
+    let stderr: TransformStream?
     
     init(out: BaseTransformer?, err: BaseTransformer?) {
-        self.out = out
-        self.err = err
-        self.semaphore = DispatchSemaphore(value: 0)
-    }
-    
-    private func createStream(transformer: BaseTransformer) -> WritableStream {
-        let pipe = PipeStream()
-        
-        DispatchQueue.global().async { [weak self] in
-            let stream = TransformStream(stream: pipe)
-            while stream.isOpen() {
-                transformer.go(stream: stream)
-            }
-            self?.semaphore.signal()
-        }
-        
-        runningCount += 1
-        
-        return pipe
-    }
-    
-    func createStdout() -> WritableStream? {
-        return out.flatMap(createStream)
-    }
-    
-    func createStderr() -> WritableStream? {
-        return err.flatMap(createStream)
+        self.stdout = out.map({ TransformStream(transformer: $0) })
+        self.stderr = err.map({ TransformStream(transformer: $0) })
     }
     
     func wait() {
-        for _ in 0..<runningCount {
-            semaphore.wait()
-        }
+        stdout?.wait()
+        stderr?.wait()
     }
     
     deinit {

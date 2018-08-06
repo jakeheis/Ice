@@ -12,14 +12,12 @@ import Rainbow
 
 class TransformerTest {
     
-    let transformer: Transformer
-    let feeder: PipeStream
+    let transformStream: TransformStream
     let primaryCapture: PipeStream
     let secondaryCapture: PipeStream
     
     init(transformer: Transformer, isStdout: Bool) {
-        self.transformer = transformer
-        self.feeder = PipeStream()
+        self.transformStream = TransformStream(transformer: transformer)
         self.primaryCapture = PipeStream()
         self.secondaryCapture = PipeStream()
         
@@ -35,16 +33,12 @@ class TransformerTest {
     }
     
     func send(_ contents: String) {
-        feeder <<< contents
+        transformStream <<< contents
     }
     
     func expect(_ content: String, file: StaticString = #file, line: UInt = #line) {
-        feeder.closeWrite()
-        
-        let stream = TransformStream(stream: feeder)
-        while stream.isOpen() {
-            transformer.go(stream: stream)
-        }
+        transformStream.closeWrite()
+        transformStream.wait()
         
         primaryCapture.closeWrite()
         secondaryCapture.closeWrite()

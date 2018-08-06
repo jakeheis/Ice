@@ -7,9 +7,10 @@
 
 import XCTest
 import Foundation
+import Icebox
+@testable import IceKit
 import PathKit
 import SwiftCLI
-@testable import IceKit
 
 class PackageLoaderTests: XCTestCase {
     
@@ -19,10 +20,10 @@ class PackageLoaderTests: XCTestCase {
         ("testComplex4_2", testComplex4_2),
     ]
     
-    private let fixturesPath = Path("Tests/Fixtures")
-    
     func testBasic() throws {
-        let data: Data = try (fixturesPath + "SwiftCLI.json").read()
+        let icebox = IceBox(template: .json)
+        
+        let data: Data = icebox.fileContents("SwiftCLI.json")!
         let package = try PackageLoader.load(from: data, toolsVersion: .v4, config: MockConfig())
         
         XCTAssertEqual(package.toolsVersion, .v4)
@@ -53,7 +54,9 @@ class PackageLoaderTests: XCTestCase {
     }
     
     func testComplex() throws {
-        let data: Data = try (fixturesPath + "Ice.json").read()
+        let icebox = IceBox(template: .json)
+        
+        let data: Data = icebox.fileContents("Ice.json")!
         let package = try PackageLoader.load(from: data, toolsVersion: SwiftToolsVersion(major: 4, minor: 1, patch: 0), config: MockConfig())
         
         XCTAssertEqual(package.toolsVersion, SwiftToolsVersion(major: 4, minor: 1, patch: 0))
@@ -93,7 +96,9 @@ class PackageLoaderTests: XCTestCase {
     }
     
     func testComplex4_2() throws {
-        let data: Data = try (fixturesPath + "Ice4_2.json").read()
+        let icebox = IceBox(template: .json)
+        
+        let data: Data = icebox.fileContents("Ice4_2.json")!
         let package = try PackageLoader.load(from: data, toolsVersion: SwiftToolsVersion(major: 4, minor: 2, patch: 0), config: MockConfig())
         
         XCTAssertEqual(package.toolsVersion, SwiftToolsVersion(major: 4, minor: 2, patch: 0))

@@ -22,8 +22,8 @@ class AddTests: XCTestCase {
     func testBasicAdd() {
         let icebox = IceBox(template: .lib)
         
-        let r = icebox.run("version")
-        print(r.stdout!)
+        icebox.execute(with: "version")
+        
         let result = icebox.run("add", "jakeheis/Spawn", "-n")
         XCTAssertEqual(result.exitStatus, 0)
         XCTAssertEqual(result.stderr, "")
