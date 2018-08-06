@@ -6,6 +6,7 @@
 //
 
 import PathKit
+import TestingUtilities
 import XCTest
 
 class RegistryTests: XCTestCase {

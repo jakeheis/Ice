@@ -5,6 +5,7 @@
 //  Created by Jake Heiser on 9/14/17.
 //
 
+import TestingUtilities
 import XCTest
 
 class DumpTests: XCTestCase {
@@ -18,9 +19,7 @@ class DumpTests: XCTestCase {
         XCTAssertEqual(result.exitStatus, 0)
         XCTAssertEqual(result.stderr, "")
         
-        // TODO: swift(>=4.2) doesn't work here for some reason, so using 4.1.3 even though that version doesn't exist
-        #if swift(>=4.1.3)
-        XCTAssertEqual(result.stdout, """
+        differentiatedAssertEquality(result.stdout, swift4_2AndAbove: """
         {
           "cLanguageStandard": null,
           "cxxLanguageStandard": null,
@@ -57,9 +56,7 @@ class DumpTests: XCTestCase {
             }
           ]
         }
-        """)
-        #else
-        XCTAssertEqual(result.stdout, """
+        """, swift4_0AndAbove: """
         {
           "cLanguageStandard": null,
           "cxxLanguageStandard": null,
@@ -97,7 +94,6 @@ class DumpTests: XCTestCase {
           ]
         }
         """)
-        #endif
     }
     
 }

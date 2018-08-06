@@ -5,8 +5,9 @@
 //  Created by Jake Heiser on 9/13/17.
 //
 
-import XCTest
 import Foundation
+import TestingUtilities
+import XCTest
 
 class InitTests: XCTestCase {
     
@@ -23,8 +24,7 @@ class InitTests: XCTestCase {
         XCTAssertEqual(result.exitStatus, 0)
         XCTAssertEqual(result.stderr, "")
         
-        #if swift(>=4.1)
-        XCTAssertEqual(result.stdout, """
+        differentiatedAssertEquality(result.stdout, swift4_1AndAbove: """
         
         Creating library package: MyNewLib
 
@@ -42,9 +42,7 @@ class InitTests: XCTestCase {
         Run: ice build
         
         
-        """)
-        #else
-        XCTAssertEqual(result.stdout, """
+        """, swift4_0AndAbove: """
         
         Creating library package: MyNewLib
 
@@ -62,7 +60,6 @@ class InitTests: XCTestCase {
         
         
         """)
-        #endif
         
         XCTAssertTrue(icebox.fileExists("MyNewLib/Package.swift"))
     }
@@ -75,8 +72,7 @@ class InitTests: XCTestCase {
         XCTAssertEqual(result.exitStatus, 0)
         XCTAssertEqual(result.stderr, "")
         
-        #if swift(>=4.1.3)
-        XCTAssertEqual(result.stdout, """
+        differentiatedAssertEquality(result.stdout, swift4_2AndAbove: """
         
         Creating executable package: MyNewExec
 
@@ -94,9 +90,7 @@ class InitTests: XCTestCase {
         Run: ice build
         
         
-        """)
-        #else
-        XCTAssertEqual(result.stdout, """
+        """, swift4_0AndAbove: """
         
         Creating executable package: MyNewExec
 
@@ -111,7 +105,6 @@ class InitTests: XCTestCase {
         
         
         """)
-        #endif
         
         XCTAssertTrue(icebox.fileExists("MyNewExec/Package.swift"))
     }

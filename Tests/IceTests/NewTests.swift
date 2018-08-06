@@ -5,6 +5,7 @@
 //  Created by Jake Heiser on 9/13/17.
 //
 
+import TestingUtilities
 import XCTest
 
 class NewTests: XCTestCase {
@@ -21,8 +22,7 @@ class NewTests: XCTestCase {
         XCTAssertEqual(result.exitStatus, 0)
         XCTAssertEqual(result.stderr, "")
 
-        #if swift(>=4.1)
-        XCTAssertEqual(result.stdout, """
+        differentiatedAssertEquality(result.stdout, swift4_1AndAbove: """
         
         Creating library package: MyNewLib
 
@@ -40,9 +40,7 @@ class NewTests: XCTestCase {
         Run: cd MyNewLib && ice build
         
         
-        """)
-        #else
-        XCTAssertEqual(result.stdout, """
+        """, swift4_0AndAbove: """
         
         Creating library package: MyNewLib
         
@@ -60,7 +58,6 @@ class NewTests: XCTestCase {
         
         
         """)
-        #endif
         
         XCTAssertTrue(icebox.fileExists("MyNewLib"))
         XCTAssertTrue(icebox.fileExists("MyNewLib/Package.swift"))
@@ -73,8 +70,7 @@ class NewTests: XCTestCase {
         XCTAssertEqual(result.exitStatus, 0)
         XCTAssertEqual(result.stderr, "")
         
-        #if swift(>=4.1.3)
-        XCTAssertEqual(result.stdout, """
+        differentiatedAssertEquality(result.stdout, swift4_2AndAbove: """
         
         Creating executable package: MyNewExec
 
@@ -92,9 +88,7 @@ class NewTests: XCTestCase {
         Run: cd MyNewExec && ice build
         
         
-        """)
-        #else
-        XCTAssertEqual(result.stdout, """
+        """, swift4_0AndAbove: """
         
         Creating executable package: MyNewExec
         
@@ -110,7 +104,6 @@ class NewTests: XCTestCase {
         
         """)
         
-        #endif
         XCTAssertTrue(icebox.fileExists("MyNewExec"))
         XCTAssertTrue(icebox.fileExists("MyNewExec/Package.swift"))
     }

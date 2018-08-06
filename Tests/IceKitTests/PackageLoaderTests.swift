@@ -11,6 +11,7 @@ import Icebox
 @testable import IceKit
 import PathKit
 import SwiftCLI
+import TestingUtilities
 
 class PackageLoaderTests: XCTestCase {
     

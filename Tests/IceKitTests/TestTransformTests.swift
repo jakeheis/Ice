@@ -12,6 +12,11 @@ class TestTransformTests: XCTestCase {
     
     static var allTests = [
         ("testSuitePass", testSuitePass),
+        ("testAllTests", testAllTests),
+        ("testSelectedTests", testSelectedTests),
+        ("testInterleavedOutput", testInterleavedOutput),
+        ("testNoTests", testNoTests),
+        ("testNoFilterMatch", testNoFilterMatch),
         ("testXCTFail", testXCTFail),
         ("testXCTEquals", testXCTEquals),
         ("testXCTEqualWithAccuracy", testXCTEqualWithAccuracy),
@@ -29,532 +34,44 @@ class TestTransformTests: XCTestCase {
         ("testXCTLessThan", testXCTLessThan),
         ("testXCTLessThanOrEqual", testXCTLessThanOrEqual),
         ("testMultilineEquality", testMultilineEquality),
-        ("testAllTests", testAllTests),
-        ("testSelectedTests", testSelectedTests),
-        ("testInterleavedOutput", testInterleavedOutput),
-        ("testNoTests", testNoTests),
-        ("testNoFilterMatch", testNoFilterMatch),
     ]
+    
+    // MARK: - General
     
     func testSuitePass() {
         let test = createTest(TestSuite(mode: .all))
 
+        #if os(macOS)
+        let testCase = "-[CLITests.AddTests testBasicAdd]"
         test.send("""
         Test Suite 'AddTests' started at 2017-09-18 10:18:14.163
-        \(genTestCaseStarted(package: "CLITests", suite: "AddTests", test: "testBasicAdd"))
-        \(genTestCasePassed(package: "CLITests", suite: "AddTests", test: "testBasicAdd"))
+        Test Case '\(testCase)' started.
+        Test Case '\(testCase)' passed (0.716 seconds)
         Test Suite 'AddTests' passed at 2017-09-18 10:18:15.728.
              Executed 3 tests, with 0 failures (0 unexpected) in 1.564 (1.564) seconds
         """)
         
         test.expect("""
-         RUNS  \(getSuite(package: "CLITests", suite: "AddTests"))
-         PASS  \(getSuite(package: "CLITests", suite: "AddTests"))
+         RUNS  CLITests.AddTests
+         PASS  CLITests.AddTests
         
         """)
-    }
-    
-    func testXCTFail() {
-        let test = createTest(TestSuite(mode: .all))
+        #else
+        let testCase = "AddTests.testBasicAdd"
         test.send("""
-        Test Suite 'AddTests' started at 2017-09-18 10:18:14.163
-        \(genTestCaseStarted(package: "CLITests", suite: "AddTests", test: "testBasicAdd"))
-        """)
-        test.send("/IceIce/Tests/IceTests/IceTests.swift:9: error: \(genTestCase(package: "CLITests", suite: "AddTests", test: "testBasicAdd")) : failed - ")
-        test.send("""
-        \(genTestCaseFailed(package: "CLITests", suite: "AddTests", test: "testBasicAdd"))
-        Test Suite 'AddTests' passed at 2017-09-18 10:18:15.728.
-             Executed 3 tests, with 0 failures (0 unexpected) in 1.564 (1.564) seconds
-        """)
+            Test Suite 'AddTests' started at 2017-09-18 10:18:14.163
+            Test Case '\(testCase)' started at 2018-08-05 15:56:37.983
+            Test Case '\(testCase)' passed (0.716 seconds)
+            Test Suite 'AddTests' passed at 2017-09-18 10:18:15.728.
+            Executed 3 tests, with 0 failures (0 unexpected) in 1.564 (1.564) seconds
+            """)
+        
         test.expect("""
-         RUNS  \(getSuite(package: "CLITests", suite: "AddTests"))
-         FAIL  \(getSuite(package: "CLITests", suite: "AddTests"))
-        
-         ● testBasicAdd
-
-        \tXCTFail
-
-        \tat /IceIce/Tests/IceTests/IceTests.swift:9
-        
+         RUNS  AddTests
+         PASS  AddTests
         
         """)
-    }
-    
-    func testXCTEquals() {
-        let test = createTest(TestSuite(mode: .all))
-        test.send("""
-        Test Suite 'AddTests' started at 2017-09-18 10:18:14.163
-        \(genTestCaseStarted(package: "CLITests", suite: "AddTests", test: "testBasicAdd"))
-        """)
-        test.send("/IceIce/Tests/IceTests/IceTests.swift:9: error: \(genTestCase(package: "CLITests", suite: "AddTests", test: "testBasicAdd")) : XCTAssertEqual failed: (\"Hello, World!\") is not equal to (\"Hello, Worldddd!\") - ")
-        test.send("""
-        \(genTestCaseStarted(package: "CLITests", suite: "AddTests", test: "testBasicAdd"))
-        Test Suite 'AddTests' passed at 2017-09-18 10:18:15.728.
-             Executed 3 tests, with 0 failures (0 unexpected) in 1.564 (1.564) seconds
-        """)
-        test.expect("""
-         RUNS  \(getSuite(package: "CLITests", suite: "AddTests"))
-         FAIL  \(getSuite(package: "CLITests", suite: "AddTests"))
-        
-         ● testBasicAdd
-
-        \tExpected:
-        \tHello, Worldddd!
-        \tReceived:
-        \tHello, World!
-
-        \tat /IceIce/Tests/IceTests/IceTests.swift:9
-        
-        
-        """)
-    }
-    
-    func testXCTEqualWithAccuracy() {
-        let test = createTest(TestSuite(mode: .all))
-        test.send("""
-        Test Suite 'AddTests' started at 2017-09-18 10:18:14.163
-        \(genTestCaseStarted(package: "CLITests", suite: "AddTests", test: "testBasicAdd"))
-        """)
-        test.send("/IceIce/Tests/IceTests/IceTests.swift:23: error: \(genTestCase(package: "CLITests", suite: "AddTests", test: "testBasicAdd")) : XCTAssertEqualWithAccuracy failed: (\"4.0\") is not equal to (\"5.0\") +/- (\"0.5\") - ")
-        test.send("""
-        \(genTestCaseFailed(package: "CLITests", suite: "AddTests", test: "testBasicAdd"))
-        Test Suite 'AddTests' passed at 2017-09-18 10:18:15.728.
-             Executed 3 tests, with 0 failures (0 unexpected) in 1.564 (1.564) seconds
-        """)
-        test.expect("""
-         RUNS  \(getSuite(package: "CLITests", suite: "AddTests"))
-         FAIL  \(getSuite(package: "CLITests", suite: "AddTests"))
-        
-         ● testBasicAdd
-
-        \tExpected:
-        \t5.0 (+/- 0.5)
-        \tReceived:
-        \t4.0
-
-        \tat /IceIce/Tests/IceTests/IceTests.swift:23
-        
-        
-        """)
-    }
-    
-    func testXCTNotEquals() {
-        let test = createTest(TestSuite(mode: .all))
-        test.send("""
-        Test Suite 'AddTests' started at 2017-09-18 10:18:14.163
-        \(genTestCaseStarted(package: "CLITests", suite: "AddTests", test: "testBasicAdd"))
-        """)
-        test.send("/IceIce/Tests/IceTests/IceTests.swift:9: error: \(genTestCase(package: "CLITests", suite: "AddTests", test: "testBasicAdd")) : XCTAssertNotEqual failed: (\"hello world\") is equal to (\"hello world\") - ")
-        test.send("""
-        \(genTestCaseFailed(package: "CLITests", suite: "AddTests", test: "testBasicAdd"))
-        Test Suite 'AddTests' passed at 2017-09-18 10:18:15.728.
-             Executed 3 tests, with 0 failures (0 unexpected) in 1.564 (1.564) seconds
-        """)
-        test.expect("""
-         RUNS  \(getSuite(package: "CLITests", suite: "AddTests"))
-         FAIL  \(getSuite(package: "CLITests", suite: "AddTests"))
-        
-         ● testBasicAdd
-
-        \tExpected anything but:
-        \thello world
-        \tReceived:
-        \thello world
-
-        \tat /IceIce/Tests/IceTests/IceTests.swift:9
-        
-        
-        """)
-    }
-    
-    func testXCTNotEqualWithAccuracy() {
-        let test = createTest(TestSuite(mode: .all))
-        test.send("""
-        Test Suite 'AddTests' started at 2017-09-18 10:18:14.163
-        \(genTestCaseStarted(package: "CLITests", suite: "AddTests", test: "testBasicAdd"))
-        """)
-        test.send("/IceIce/Tests/IceTests/IceTests.swift:23: error: \(genTestCase(package: "CLITests", suite: "AddTests", test: "testBasicAdd")) : XCTAssertNotEqualWithAccuracy failed: (\"4.0\") is equal to (\"4.5\") +/- (\"0.5\") - ")
-        test.send("""
-        \(genTestCaseFailed(package: "CLITests", suite: "AddTests", test: "testBasicAdd"))
-        Test Suite 'AddTests' passed at 2017-09-18 10:18:15.728.
-             Executed 3 tests, with 0 failures (0 unexpected) in 1.564 (1.564) seconds
-        """)
-        test.expect("""
-         RUNS  \(getSuite(package: "CLITests", suite: "AddTests"))
-         FAIL  \(getSuite(package: "CLITests", suite: "AddTests"))
-        
-         ● testBasicAdd
-
-        \tExpected anything but:
-        \t4.5 (+/- 0.5)
-        \tReceived:
-        \t4.0
-
-        \tat /IceIce/Tests/IceTests/IceTests.swift:23
-        
-        
-        """)
-    }
-    
-    func testXCTNil() {
-        let test = createTest(TestSuite(mode: .all))
-        test.send("""
-        Test Suite 'AddTests' started at 2017-09-18 10:18:14.163
-        \(genTestCaseStarted(package: "CLITests", suite: "AddTests", test: "testBasicAdd"))
-        """)
-        test.send("/IceIce/Tests/IceTests/IceTests.swift:9: error: \(genTestCase(package: "CLITests", suite: "AddTests", test: "testBasicAdd")) : XCTAssertNil failed: \"hello world\" - The value should be nil")
-        test.send("""
-        \(genTestCaseFailed(package: "CLITests", suite: "AddTests", test: "testBasicAdd"))
-        Test Suite 'AddTests' passed at 2017-09-18 10:18:15.728.
-             Executed 3 tests, with 0 failures (0 unexpected) in 1.564 (1.564) seconds
-        """)
-        test.expect("""
-         RUNS  \(getSuite(package: "CLITests", suite: "AddTests"))
-         FAIL  \(getSuite(package: "CLITests", suite: "AddTests"))
-        
-         ● testBasicAdd
-
-        \tExpected:
-        \tnil
-        \tReceived:
-        \thello world
-
-        \tNote: The value should be nil
-
-        \tat /IceIce/Tests/IceTests/IceTests.swift:9
-        
-        
-        """)
-    }
-    
-    func testXCTNotNil() {
-        let test = createTest(TestSuite(mode: .all))
-        test.send("""
-        Test Suite 'AddTests' started at 2017-09-18 10:18:14.163
-        \(genTestCaseStarted(package: "CLITests", suite: "AddTests", test: "testBasicAdd"))
-        """)
-        test.send("/IceIce/Tests/IceTests/IceTests.swift:9: error: \(genTestCase(package: "CLITests", suite: "AddTests", test: "testBasicAdd")) : XCTAssertNotNil failed - The value should not be nil")
-        test.send("""
-        \(genTestCaseFailed(package: "CLITests", suite: "AddTests", test: "testBasicAdd"))
-        Test Suite 'AddTests' passed at 2017-09-18 10:18:15.728.
-             Executed 3 tests, with 0 failures (0 unexpected) in 1.564 (1.564) seconds
-        """)
-        test.expect("""
-         RUNS  \(getSuite(package: "CLITests", suite: "AddTests"))
-         FAIL  \(getSuite(package: "CLITests", suite: "AddTests"))
-        
-         ● testBasicAdd
-
-        \tExpected:
-        \tnon-nil
-        \tReceived:
-        \tnil
-
-        \tNote: The value should not be nil
-
-        \tat /IceIce/Tests/IceTests/IceTests.swift:9
-        
-        
-        """)
-    }
-    
-    func testXCTThrow() {
-        let test = createTest(TestSuite(mode: .all))
-        test.send("""
-        Test Suite 'AddTests' started at 2017-09-18 10:18:14.163
-        \(genTestCaseStarted(package: "CLITests", suite: "AddTests", test: "testBasicAdd"))
-        """)
-        test.send("/IceIce/Tests/IceTests/IceTests.swift:9: error: \(genTestCase(package: "CLITests", suite: "AddTests", test: "testBasicAdd")) : XCTAssertThrowsError failed: did not throw an error - ")
-        test.send("""
-        \(genTestCaseFailed(package: "CLITests", suite: "AddTests", test: "testBasicAdd"))
-        Test Suite 'AddTests' passed at 2017-09-18 10:18:15.728.
-             Executed 3 tests, with 0 failures (0 unexpected) in 1.564 (1.564) seconds
-        """)
-        test.expect("""
-         RUNS  \(getSuite(package: "CLITests", suite: "AddTests"))
-         FAIL  \(getSuite(package: "CLITests", suite: "AddTests"))
-        
-         ● testBasicAdd
-
-        \tExpected:
-        \terror thrown
-        \tReceived:
-        \tno error
-
-        \tat /IceIce/Tests/IceTests/IceTests.swift:9
-        
-        
-        """)
-    }
-    
-    func testXCTNoThrow() {
-        let test = createTest(TestSuite(mode: .all))
-        test.send("""
-        Test Suite 'AddTests' started at 2017-09-18 10:18:14.163
-        \(genTestCaseStarted(package: "CLITests", suite: "AddTests", test: "testBasicAdd"))
-        """)
-        test.send("/IceIce/Tests/IceTests/IceTests.swift:9: error: \(genTestCase(package: "CLITests", suite: "AddTests", test: "testBasicAdd")) : XCTAssertNoThrow failed: threw error \"Error Domain=ice Code=1 \"(null)\"\" - ")
-        test.send("""
-        \(genTestCaseFailed(package: "CLITests", suite: "AddTests", test: "testBasicAdd"))
-        Test Suite 'AddTests' passed at 2017-09-18 10:18:15.728.
-             Executed 3 tests, with 0 failures (0 unexpected) in 1.564 (1.564) seconds
-        """)
-        test.expect("""
-         RUNS  \(getSuite(package: "CLITests", suite: "AddTests"))
-         FAIL  \(getSuite(package: "CLITests", suite: "AddTests"))
-        
-         ● testBasicAdd
-
-        \tExpected:
-        \tno error
-        \tReceived:
-        \tError Domain=ice Code=1 "(null)"
-
-        \tat /IceIce/Tests/IceTests/IceTests.swift:9
-        
-        
-        """)
-    }
-    
-    func testXCTAssert() {
-        let test = createTest(TestSuite(mode: .all))
-        test.send("""
-        Test Suite 'AddTests' started at 2017-09-18 10:18:14.163
-        \(genTestCaseStarted(package: "CLITests", suite: "AddTests", test: "testBasicAdd"))
-        """)
-        test.send("/IceIce/Tests/IceTests/IceTests.swift:9: error: \(genTestCase(package: "CLITests", suite: "AddTests", test: "testBasicAdd")) : XCTAssert failed - ")
-        test.send("""
-        \(genTestCaseFailed(package: "CLITests", suite: "AddTests", test: "testBasicAdd"))
-        Test Suite 'AddTests' passed at 2017-09-18 10:18:15.728.
-             Executed 3 tests, with 0 failures (0 unexpected) in 1.564 (1.564) seconds
-        """)
-        test.expect("""
-         RUNS  \(getSuite(package: "CLITests", suite: "AddTests"))
-         FAIL  \(getSuite(package: "CLITests", suite: "AddTests"))
-        
-         ● testBasicAdd
-
-        \tExpected:
-        \ttrue
-        \tReceived:
-        \tfalse
-
-        \tat /IceIce/Tests/IceTests/IceTests.swift:9
-        
-        
-        """)
-    }
-    
-    func testXCTTrue() {
-        let test = createTest(TestSuite(mode: .all))
-        test.send("""
-        Test Suite 'AddTests' started at 2017-09-18 10:18:14.163
-        \(genTestCaseStarted(package: "CLITests", suite: "AddTests", test: "testBasicAdd"))
-        """)
-        test.send("/IceIce/Tests/IceTests/IceTests.swift:9: error: \(genTestCase(package: "CLITests", suite: "AddTests", test: "testBasicAdd")) : XCTAssertTrue failed - ")
-        test.send("""
-        \(genTestCaseFailed(package: "CLITests", suite: "AddTests", test: "testBasicAdd"))
-        Test Suite 'AddTests' passed at 2017-09-18 10:18:15.728.
-             Executed 3 tests, with 0 failures (0 unexpected) in 1.564 (1.564) seconds
-        """)
-        test.expect("""
-         RUNS  \(getSuite(package: "CLITests", suite: "AddTests"))
-         FAIL  \(getSuite(package: "CLITests", suite: "AddTests"))
-        
-         ● testBasicAdd
-
-        \tExpected:
-        \ttrue
-        \tReceived:
-        \tfalse
-
-        \tat /IceIce/Tests/IceTests/IceTests.swift:9
-        
-        
-        """)
-    }
-    
-    func testXCTFalse() {
-        let test = createTest(TestSuite(mode: .all))
-        test.send("""
-        Test Suite 'AddTests' started at 2017-09-18 10:18:14.163
-        \(genTestCaseStarted(package: "CLITests", suite: "AddTests", test: "testBasicAdd"))
-        """)
-        test.send("/IceIce/Tests/IceTests/IceTests.swift:9: error: \(genTestCase(package: "CLITests", suite: "AddTests", test: "testBasicAdd")) : XCTAssertFalse failed - ")
-        test.send("""
-        \(genTestCaseFailed(package: "CLITests", suite: "AddTests", test: "testBasicAdd"))
-        Test Suite 'AddTests' passed at 2017-09-18 10:18:15.728.
-             Executed 3 tests, with 0 failures (0 unexpected) in 1.564 (1.564) seconds
-        """)
-        test.expect("""
-         RUNS  \(getSuite(package: "CLITests", suite: "AddTests"))
-         FAIL  \(getSuite(package: "CLITests", suite: "AddTests"))
-        
-         ● testBasicAdd
-
-        \tExpected:
-        \tfalse
-        \tReceived:
-        \ttrue
-
-        \tat /IceIce/Tests/IceTests/IceTests.swift:9
-        
-        
-        """)
-    }
-    
-    func testXCTGreaterThan() {
-        let test = createTest(TestSuite(mode: .all))
-        test.send("""
-        Test Suite 'AddTests' started at 2017-09-18 10:18:14.163
-        \(genTestCaseStarted(package: "CLITests", suite: "AddTests", test: "testBasicAdd"))
-        """)
-        test.send("/IceIce/Tests/IceTests/IceTests.swift:9: error: \(genTestCase(package: "CLITests", suite: "AddTests", test: "testBasicAdd")) : XCTAssertGreaterThan failed: (\"1\") is not greater than (\"4\") - one should be greater than four")
-        test.send("""
-        \(genTestCaseFailed(package: "CLITests", suite: "AddTests", test: "testBasicAdd"))
-        Test Suite 'AddTests' passed at 2017-09-18 10:18:15.728.
-             Executed 3 tests, with 0 failures (0 unexpected) in 1.564 (1.564) seconds
-        """)
-        test.expect("""
-         RUNS  \(getSuite(package: "CLITests", suite: "AddTests"))
-         FAIL  \(getSuite(package: "CLITests", suite: "AddTests"))
-        
-         ● testBasicAdd
-
-        \tExpected value greater than:
-        \t4
-        \tReceived:
-        \t1
-
-        \tNote: one should be greater than four
-
-        \tat /IceIce/Tests/IceTests/IceTests.swift:9
-        
-        
-        """)
-    }
-    
-    func testXCTGreaterThanOrEqual() {
-        let test = createTest(TestSuite(mode: .all))
-        test.send("""
-        Test Suite 'AddTests' started at 2017-09-18 10:18:14.163
-        \(genTestCaseStarted(package: "CLITests", suite: "AddTests", test: "testBasicAdd"))
-        """)
-        test.send("/IceIce/Tests/IceTests/IceTests.swift:9: error: \(genTestCase(package: "CLITests", suite: "AddTests", test: "testBasicAdd")) : XCTAssertGreaterThanOrEqual failed: (\"1\") is less than (\"4\") - one should be greater than or equal to four")
-        test.send("""
-        \(genTestCaseFailed(package: "CLITests", suite: "AddTests", test: "testBasicAdd"))
-        Test Suite 'AddTests' passed at 2017-09-18 10:18:15.728.
-             Executed 3 tests, with 0 failures (0 unexpected) in 1.564 (1.564) seconds
-        """)
-        test.expect("""
-         RUNS  \(getSuite(package: "CLITests", suite: "AddTests"))
-         FAIL  \(getSuite(package: "CLITests", suite: "AddTests"))
-        
-         ● testBasicAdd
-
-        \tExpected value greater than or equal to:
-        \t4
-        \tReceived:
-        \t1
-
-        \tNote: one should be greater than or equal to four
-
-        \tat /IceIce/Tests/IceTests/IceTests.swift:9
-        
-        
-        """)
-    }
-    
-    func testXCTLessThan() {
-        let test = createTest(TestSuite(mode: .all))
-        test.send("""
-        Test Suite 'AddTests' started at 2017-09-18 10:18:14.163
-        \(genTestCaseStarted(package: "CLITests", suite: "AddTests", test: "testBasicAdd"))
-        """)
-        test.send("/IceIce/Tests/IceTests/IceTests.swift:9: error: \(genTestCase(package: "CLITests", suite: "AddTests", test: "testBasicAdd")) : XCTAssertLessThan failed: (\"4\") is not less than (\"1\") - ")
-        test.send("""
-        \(genTestCaseFailed(package: "CLITests", suite: "AddTests", test: "testBasicAdd"))
-        Test Suite 'AddTests' passed at 2017-09-18 10:18:15.728.
-             Executed 3 tests, with 0 failures (0 unexpected) in 1.564 (1.564) seconds
-        """)
-        test.expect("""
-         RUNS  \(getSuite(package: "CLITests", suite: "AddTests"))
-         FAIL  \(getSuite(package: "CLITests", suite: "AddTests"))
-        
-         ● testBasicAdd
-
-        \tExpected value less than:
-        \t1
-        \tReceived:
-        \t4
-
-        \tat /IceIce/Tests/IceTests/IceTests.swift:9
-        
-        
-        """)
-    }
-    
-    func testXCTLessThanOrEqual() {
-        let test = createTest(TestSuite(mode: .all))
-        test.send("""
-        Test Suite 'AddTests' started at 2017-09-18 10:18:14.163
-        \(genTestCaseStarted(package: "CLITests", suite: "AddTests", test: "testBasicAdd"))
-        """)
-        test.send("/IceIce/Tests/IceTests/IceTests.swift:9: error: \(genTestCase(package: "CLITests", suite: "AddTests", test: "testBasicAdd")) : XCTAssertLessThanOrEqual failed: (\"4\") is greater than (\"1\") - ")
-        test.send("""
-        \(genTestCaseFailed(package: "CLITests", suite: "AddTests", test: "testBasicAdd"))
-        Test Suite 'AddTests' passed at 2017-09-18 10:18:15.728.
-             Executed 3 tests, with 0 failures (0 unexpected) in 1.564 (1.564) seconds
-        """)
-        test.expect("""
-         RUNS  \(getSuite(package: "CLITests", suite: "AddTests"))
-         FAIL  \(getSuite(package: "CLITests", suite: "AddTests"))
-        
-         ● testBasicAdd
-
-        \tExpected value less than or equal to:
-        \t1
-        \tReceived:
-        \t4
-
-        \tat /IceIce/Tests/IceTests/IceTests.swift:9
-        
-        
-        """)
-    }
-    
-    func testMultilineEquality() {
-        let test = createTest(TestSuite(mode: .all))
-        test.send("""
-        Test Suite 'AddTests' started at 2017-09-18 10:18:14.163
-        \(genTestCaseStarted(package: "CLITests", suite: "AddTests", test: "testBasicAdd"))
-        /IceIce/Tests/IceTests/IceTests.swift:9: error: \(genTestCase(package: "CLITests", suite: "AddTests", test: "testBasicAdd")) : XCTAssertEqual failed: ("first line
-        second line") is not equal to ("first line
-        """)
-        test.send("third line\") - ")
-        test.send("""
-        \(genTestCaseFailed(package: "CLITests", suite: "AddTests", test: "testBasicAdd"))
-        Test Suite 'AddTests' passed at 2017-09-18 10:18:15.728.
-             Executed 3 tests, with 0 failures (0 unexpected) in 1.564 (1.564) seconds
-        """)
-        test.expect("""
-         RUNS  \(getSuite(package: "CLITests", suite: "AddTests"))
-         FAIL  \(getSuite(package: "CLITests", suite: "AddTests"))
-        
-         ● testBasicAdd
-
-        \tExpected:
-        \tfirst line
-        \tthird line
-        \tReceived:
-        \tfirst line
-        \tsecond line
-        \t(end)
-
-        \tat /IceIce/Tests/IceTests/IceTests.swift:9
-        
-        
-        """)
+        #endif
     }
     
     func testAllTests() {
@@ -574,10 +91,8 @@ class TestTransformTests: XCTestCase {
         Test Case '-[IceTests.SomeTests testOne]' started.
         Test Case '-[IceTests.SomeTests testOne]' passed (0.000 seconds).
         Test Case '-[IceTests.SomeTests testTwo]' started.
-        """)
-        test.send("/IceIce/Tests/IceTests/IceTests.swift:11: error: -[IceTests.SomeTests testTwo] : failed - ")
-        test.send("/IceIce/Tests/IceTests/IceTests.swift:12: error: -[IceTests.SomeTests testTwo] : failed - ")
-        test.send("""
+        /IceIce/Tests/IceTests/IceTests.swift:11: error: -[IceTests.SomeTests testTwo] : failed - \n\
+        /IceIce/Tests/IceTests/IceTests.swift:12: error: -[IceTests.SomeTests testTwo] : failed - \n\
         Test Case '-[IceTests.SomeTests testTwo]' failed (0.001 seconds).
         Test Suite 'SomeTests' failed at 2017-09-18 21:46:20.488.
              Executed 2 tests, with 2 failures (0 unexpected) in 0.001 (0.001) seconds
@@ -627,10 +142,8 @@ class TestTransformTests: XCTestCase {
         Test Case 'SomeTests.testOne' started at 2018-08-05 15:56:37.983
         Test Case 'SomeTests.testOne' passed (0.000 seconds).
         Test Case 'SomeTests.testTwo' started at 2018-08-05 15:56:37.983
-        """)
-        test.send("/IceIce/Tests/IceTests/IceTests.swift:11: error: SomeTests.testTwo : failed - ")
-        test.send("/IceIce/Tests/IceTests/IceTests.swift:12: error: SomeTests.testTwo : failed - ")
-        test.send("""
+        /IceIce/Tests/IceTests/IceTests.swift:11: error: SomeTests.testTwo : failed - \n\
+        /IceIce/Tests/IceTests/IceTests.swift:12: error: SomeTests.testTwo : failed - \n\
         Test Case 'SomeTests.testTwo' failed (0.001 seconds).
         Test Suite 'SomeTests' failed at 2017-09-18 21:46:20.488.
              Executed 2 tests, with 2 failures (0 unexpected) in 0.001 (0.001) seconds
@@ -707,10 +220,8 @@ class TestTransformTests: XCTestCase {
         Test Suite 'IcePackageTests.xctest' started at 2017-09-18 21:53:48.859
         Test Suite 'SomeTests' started at 2017-09-18 21:53:48.859
         Test Case '-[IceTests.SomeTests testTwo]' started.
-        """)
-        test.send("/IceIce/Tests/IceTests/IceTests.swift:11: error: -[IceTests.SomeTests testTwo] : failed - ") // Needs space at end; in mulitline quote, gets trimmed
-        test.send("/IceIce/Tests/IceTests/IceTests.swift:12: error: -[IceTests.SomeTests testTwo] : failed - ")
-        test.send("""
+        /IceIce/Tests/IceTests/IceTests.swift:11: error: -[IceTests.SomeTests testTwo] : failed - \n\
+        /IceIce/Tests/IceTests/IceTests.swift:12: error: -[IceTests.SomeTests testTwo] : failed - \n\
         Test Case '-[IceTests.SomeTests testTwo]' failed (0.077 seconds).
         Test Suite 'SomeTests' failed at 2017-09-18 21:53:48.936.
              Executed 1 test, with 2 failures (0 unexpected) in 0.077 (0.077) seconds
@@ -790,10 +301,8 @@ class TestTransformTests: XCTestCase {
         Test Suite 'Selected tests' started at 2017-09-18 21:53:48.859
         Test Suite 'SomeTests' started at 2017-09-18 21:53:48.859
         Test Case 'SomeTests.testTwo' started at 2018-08-05 15:56:37.983
-        """)
-        test.send("/IceIce/Tests/IceTests/IceTests.swift:11: error: SomeTests.testTwo : failed - ") // Needs space at end; in mulitline quote, gets trimmed
-        test.send("/IceIce/Tests/IceTests/IceTests.swift:12: error: SomeTests.testTwo : failed - ")
-        test.send("""
+        /IceIce/Tests/IceTests/IceTests.swift:11: error: SomeTests.testTwo : failed - \n\
+        /IceIce/Tests/IceTests/IceTests.swift:12: error: SomeTests.testTwo : failed - \n\
         Test Case 'SomeTests.testTwo' failed (0.077 seconds).
         Test Suite 'SomeTests' failed at 2017-09-18 21:53:48.936.
              Executed 1 test, with 2 failures (0 unexpected) in 0.077 (0.077) seconds
@@ -897,6 +406,8 @@ class TestTransformTests: XCTestCase {
         #endif
     }
     
+    // MARK: - Special cases
+    
     func testNoTests() {
         let test = createTest(TestMain())
         test.send("error: no tests found; create a target in the 'Tests' directory")
@@ -919,40 +430,272 @@ class TestTransformTests: XCTestCase {
         """)
     }
     
+    // MARK: - Assertion tests
+    
+    func testXCTFail() {
+        let test = createTest(TestSuite(mode: .all))
+        test.send(assertionFailure(assertion: "failed - "))
+        test.expect(failedTest(failure: """
+        \tXCTFail
+        """))
+    }
+    
+    func testXCTEquals() {
+        let test = createTest(TestSuite(mode: .all))
+        test.send(assertionFailure(assertion: "XCTAssertEqual failed: (\"Hello, World!\") is not equal to (\"Hello, Worldddd!\") - "))
+        test.expect(failedTest(failure: """
+        \tExpected:
+        \tHello, Worldddd!
+        \tReceived:
+        \tHello, World!
+        """))
+    }
+    
+    func testXCTEqualWithAccuracy() {
+        let test = createTest(TestSuite(mode: .all))
+        test.send(assertionFailure(assertion: "XCTAssertEqualWithAccuracy failed: (\"4.0\") is not equal to (\"5.0\") +/- (\"0.5\") - "))
+        test.expect(failedTest(failure: """
+        \tExpected:
+        \t5.0 (+/- 0.5)
+        \tReceived:
+        \t4.0
+        """))
+    }
+    
+    func testXCTNotEquals() {
+        let test = createTest(TestSuite(mode: .all))
+        test.send(assertionFailure(assertion: "XCTAssertNotEqual failed: (\"hello world\") is equal to (\"hello world\") - "))
+        test.expect(failedTest(failure: """
+        \tExpected anything but:
+        \thello world
+        \tReceived:
+        \thello world
+        """))
+    }
+    
+    func testXCTNotEqualWithAccuracy() {
+        let test = createTest(TestSuite(mode: .all))
+        test.send(assertionFailure(assertion: "XCTAssertNotEqualWithAccuracy failed: (\"4.0\") is equal to (\"4.5\") +/- (\"0.5\") - "))
+        test.expect(failedTest(failure: """
+        \tExpected anything but:
+        \t4.5 (+/- 0.5)
+        \tReceived:
+        \t4.0
+        """))
+    }
+    
+    func testXCTNil() {
+        let test = createTest(TestSuite(mode: .all))
+        test.send(assertionFailure(assertion: "XCTAssertNil failed: \"hello world\" - The value should be nil"))
+        test.expect(failedTest(failure: """
+        \tExpected:
+        \tnil
+        \tReceived:
+        \thello world
+
+        \tNote: The value should be nil
+        """))
+    }
+    
+    func testXCTNotNil() {
+        let test = createTest(TestSuite(mode: .all))
+        test.send(assertionFailure(assertion: "XCTAssertNotNil failed - The value should not be nil"))
+        test.expect(failedTest(failure: """
+        \tExpected:
+        \tnon-nil
+        \tReceived:
+        \tnil
+
+        \tNote: The value should not be nil
+        """))
+    }
+    
+    func testXCTThrow() {
+        let test = createTest(TestSuite(mode: .all))
+        test.send(assertionFailure(assertion: "XCTAssertThrowsError failed: did not throw an error - "))
+        test.expect(failedTest(failure: """
+        \tExpected:
+        \terror thrown
+        \tReceived:
+        \tno error
+        """))
+    }
+    
+    func testXCTNoThrow() {
+        let test = createTest(TestSuite(mode: .all))
+        test.send(assertionFailure(assertion: "XCTAssertNoThrow failed: threw error \"Error Domain=ice Code=1 \"(null)\"\" - "))
+        test.expect(failedTest(failure: """
+        \tExpected:
+        \tno error
+        \tReceived:
+        \tError Domain=ice Code=1 "(null)"
+        """))
+    }
+    
+    func testXCTAssert() {
+        let test = createTest(TestSuite(mode: .all))
+        test.send(assertionFailure(assertion: "XCTAssert failed - "))
+        test.expect(failedTest(failure: """
+        \tExpected:
+        \ttrue
+        \tReceived:
+        \tfalse
+        """))
+    }
+    
+    func testXCTTrue() {
+        let test = createTest(TestSuite(mode: .all))
+        test.send(assertionFailure(assertion: "XCTAssertTrue failed - "))
+        test.expect(failedTest(failure: """
+        \tExpected:
+        \ttrue
+        \tReceived:
+        \tfalse
+        """))
+    }
+    
+    func testXCTFalse() {
+        let test = createTest(TestSuite(mode: .all))
+        test.send(assertionFailure(assertion: "XCTAssertFalse failed - "))
+        test.expect(failedTest(failure: """
+        \tExpected:
+        \tfalse
+        \tReceived:
+        \ttrue
+        """))
+    }
+    
+    func testXCTGreaterThan() {
+        let test = createTest(TestSuite(mode: .all))
+        test.send(assertionFailure(assertion: "XCTAssertGreaterThan failed: (\"1\") is not greater than (\"4\") - one should be greater than four"))
+        test.expect(failedTest(failure: """
+        \tExpected value greater than:
+        \t4
+        \tReceived:
+        \t1
+
+        \tNote: one should be greater than four
+        """))
+    }
+    
+    func testXCTGreaterThanOrEqual() {
+        let test = createTest(TestSuite(mode: .all))
+        test.send(assertionFailure(assertion: "XCTAssertGreaterThanOrEqual failed: (\"1\") is less than (\"4\") - one should be greater than or equal to four"))
+        test.expect(failedTest(failure: """
+        \tExpected value greater than or equal to:
+        \t4
+        \tReceived:
+        \t1
+
+        \tNote: one should be greater than or equal to four
+        """))
+    }
+    
+    func testXCTLessThan() {
+        let test = createTest(TestSuite(mode: .all))
+        test.send(assertionFailure(assertion: "XCTAssertLessThan failed: (\"4\") is not less than (\"1\") - "))
+        test.expect(failedTest(failure: """
+        \tExpected value less than:
+        \t1
+        \tReceived:
+        \t4
+        """))
+    }
+    
+    func testXCTLessThanOrEqual() {
+        let test = createTest(TestSuite(mode: .all))
+        test.send(assertionFailure(assertion: "XCTAssertLessThanOrEqual failed: (\"4\") is greater than (\"1\") - "))
+        test.expect(failedTest(failure: """
+        \tExpected value less than or equal to:
+        \t1
+        \tReceived:
+        \t4
+        """))
+    }
+    
+    func testMultilineEquality() {
+        let test = createTest(TestSuite(mode: .all))
+        test.send(assertionFailure(assertion: """
+        XCTAssertEqual failed: ("first line
+        second line") is not equal to ("first line
+        third line\") -
+        """ + " "))
+        test.expect(failedTest(failure: """
+        \tExpected:
+        \tfirst line
+        \tthird line
+        \tReceived:
+        \tfirst line
+        \tsecond line
+        \t(end)
+        """))
+    }
+    
+    // MARK: - Helpers
+    
     private func createTest(_ transformer: Transformer) -> TransformerTest {
         return TransformerTest(transformer: transformer, isStdout: false)
     }
     
-    private func genTestCase(package: String, suite: String, test: String) -> String {
+    private func assertionFailure(assertion: String) -> String {
+        let package = "IceKitTests"
+        let suite = "AddTests"
+        let test = "testBasicAdd"
+        
         #if os(macOS)
-        return "-[\(package).\(suite) \(test)]"
+        let testCase = "-[\(package).\(suite) \(test)]"
+        return """
+        Test Suite '\(suite)' started at 2017-09-18 10:18:14.163
+        Test Case '\(testCase)' started.
+        /IceIce/Tests/IceTests/IceTests.swift:9: error: \(testCase) : \(assertion)
+        Test Case '\(testCase)' failed (0.716 seconds).
+        Test Suite '\(suite)' passed at 2017-09-18 10:18:15.728.
+             Executed 3 tests, with 0 failures (0 unexpected) in 1.564 (1.564) seconds
+        """
         #else
-        return "\(suite).\(test)"
+        let testCase = "\(suite).\(test)"
+        return """
+        Test Suite '\(suite)' started at 2017-09-18 10:18:14.163
+        Test Case '\(testCase)' started at 2018-08-05 15:56:37.983
+        /IceIce/Tests/IceTests/IceTests.swift:9: error: \(testCase) : \(assertion)
+        Test Case '\(testCase)' failed (0.716 seconds)
+        Test Suite '\(suite)' passed at 2017-09-18 10:18:15.728
+             Executed 3 tests, with 0 failures (0 unexpected) in 1.564 (1.564) seconds
+        """
         #endif
     }
     
-    private func genTestCaseStarted(package: String, suite: String, test: String) -> String {
+    private func failedTest(failure: String) -> String {
+        let package = "IceKitTests"
+        let suite = "AddTests"
+        let test = "testBasicAdd"
+        
         #if os(macOS)
-        return "Test Case '\(genTestCase(package: package, suite: suite, test: test))' started."
+        return """
+         RUNS  \(package).\(suite)
+         FAIL  \(package).\(suite)
+        
+         ● \(test)
+        
+        \(failure)
+        
+        \tat /IceIce/Tests/IceTests/IceTests.swift:9
+        
+        
+        """
         #else
-        return "Test Case '\(genTestCase(package: package, suite: suite, test: test))' started at 2018-08-05 15:56:37.983"
-        #endif
-    }
-    
-    
-    private func genTestCasePassed(package: String, suite: String, test: String) -> String {
-        return "Test Case '\(genTestCase(package: package, suite: suite, test: test))' failed (0.716 seconds)."
-    }
-    
-    private func genTestCaseFailed(package: String, suite: String, test: String) -> String {
-        return "Test Case '\(genTestCase(package: package, suite: suite, test: test))' failed (0.716 seconds)."
-    }
-    
-    private func getSuite(package: String, suite: String) -> String {
-        #if os(macOS)
-        return "\(package).\(suite)"
-        #else
-        return suite
+        return """
+         RUNS  \(suite)
+         FAIL  \(suite)
+        
+         ● \(test)
+        
+        \(failure)
+        
+        \tat /IceIce/Tests/IceTests/IceTests.swift:9
+        
+        
+        """
         #endif
     }
     

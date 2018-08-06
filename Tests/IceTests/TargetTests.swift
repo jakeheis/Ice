@@ -5,6 +5,7 @@
 //  Created by Jake Heiser on 9/14/17.
 //
 
+import TestingUtilities
 import XCTest
 
 class TargetTests: XCTestCase {

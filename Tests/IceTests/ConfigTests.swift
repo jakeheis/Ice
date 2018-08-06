@@ -5,6 +5,8 @@
 //  Created by Jake Heiser on 9/13/17.
 //
 
+import Foundation
+import TestingUtilities
 import XCTest
 
 class ConfigTests: XCTestCase {
@@ -44,7 +46,11 @@ class ConfigTests: XCTestCase {
         XCTAssertEqual(reformatResult.stderr, "")
         XCTAssertEqual(reformatResult.stdout, "")
         
-        XCTAssertEqual(icebox.fileContents("global/config.json"), "{\n  \"openAfterXc\" : true,\n  \"reformat\" : true\n}")
+        let object = try! JSONSerialization.jsonObject(with: icebox.fileContents("global/config.json")!, options: []) as! [String: Bool]
+        XCTAssertEqual(object, [
+            "openAfterXc": true,
+            "reformat": true,
+        ])
     }
     
     func testSetInvalid() {

@@ -36,6 +36,10 @@ class TransformerTest {
         transformStream <<< contents
     }
     
+    func send(mac macContents: String, linux linuxContents: String) {
+        transformStream <<< macContents
+    }
+    
     func expect(_ content: String, file: StaticString = #file, line: UInt = #line) {
         transformStream.closeWrite()
         transformStream.wait()

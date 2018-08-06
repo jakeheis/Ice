@@ -40,7 +40,7 @@ public struct Package {
         return data.targets
     }
     
-    private(set) var data: ModernPackageData {
+    public private(set) var data: ModernPackageData {
         didSet {
             dirty = true
         }
@@ -188,14 +188,10 @@ public struct Package {
                 return []
         }
         let matches = Package.libRegex.allMatches(in: contents)
-        #if swift(>=4.1)
         return matches.compactMap { $0.captures[0] }
-        #else
-        return matches.flatMap { $0.captures[0] }
-        #endif
     }
     
-    public mutating func sync() throws {
+    public mutating func sync(format: Bool? = nil) throws {
         if !dirty {
             return
         }
@@ -209,8 +205,10 @@ public struct Package {
         dirty = false
     }
     
-    public func write(to stream: WritableStream) throws {
-        let writer = try PackageWriter(package: self)
+    public func write(to stream: WritableStream, format: Bool? = nil) throws {
+        let shouldFormat = format ?? config.get(\.reformat)
+        let packageData = shouldFormat ? PackageFormatter(package: data).format() : data
+        let writer = try PackageWriter(package: packageData, toolsVersion: toolsVersion)
         try writer.write(to: stream)
     }
     

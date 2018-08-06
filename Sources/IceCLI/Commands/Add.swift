@@ -92,11 +92,7 @@ class AddCommand: IceObject, Command {
                     let allowed = CharacterSet(charactersIn: ids + ", ")
                     return input.rangeOfCharacter(from: allowed.inverted) == nil
                 })
-                #if swift(>=4.1)
                 let distances = targetString.compactMap { ids.index(of: $0) }
-                #else
-                let distances = targetString.flatMap { ids.index(of: $0) }
-                #endif
                 let targets = distances.map { package.targets[ids.distance(from: ids.startIndex, to: $0)] }
                 try targets.forEach { try package.depend(target: $0.name, on: lib) }
             }

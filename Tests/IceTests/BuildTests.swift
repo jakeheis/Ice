@@ -5,6 +5,7 @@
 //  Created by Jake Heiser on 9/14/17.
 //
 
+import TestingUtilities
 import XCTest
 
 class BuildTests: XCTestCase {
@@ -80,7 +81,7 @@ class BuildTests: XCTestCase {
     func testWatchBuild() {
         let icebox = IceBox(template: .lib)
         
-        #if !os(Linux) && !os(Android)
+        #if os(macOS)
         
         DispatchQueue.global().asyncAfter(deadline: .now() + 4) {
             icebox.createFile(path: "Sources/Lib/Lib.swift", contents: "\nprint(\"hey world\")\n")
@@ -140,8 +141,7 @@ class BuildTests: XCTestCase {
         XCTAssertEqual(result.exitStatus, 1)
         XCTAssertEqual(result.stderr, "")
         
-        #if swift(>=4.1.3)
-        XCTAssertEqual(result.stdout, """
+        differentiatedAssertEquality(result.stdout, swift4_2AndAbove: """
         Fetch https://github.com/jakeheis/SwiftCLI
         Clone https://github.com/jakeheis/SwiftCLI
         Resolve https://github.com/jakeheis/SwiftCLI at 4.1.2
@@ -186,9 +186,7 @@ class BuildTests: XCTestCase {
             at Sources/Exec/main.swift:4
         
         
-        """)
-        #else
-        XCTAssertEqual(result.stdout, """
+        """, swift4_0AndAbove: """
         Fetch https://github.com/jakeheis/SwiftCLI
         Clone https://github.com/jakeheis/SwiftCLI
         Resolve https://github.com/jakeheis/SwiftCLI at 4.1.2
@@ -234,7 +232,6 @@ class BuildTests: XCTestCase {
         
         
         """)
-        #endif
     }
     
     func testBuildTarget() {

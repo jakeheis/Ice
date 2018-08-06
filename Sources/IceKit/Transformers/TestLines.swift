@@ -34,6 +34,7 @@ final class TestSuiteLine: Matcher, Matchable {
 }
 
 #if os(macOS)
+
 final class TestCaseLine: Matcher, Matchable {
     enum Status: String, ConvertibleFromString {
         case started
@@ -46,7 +47,16 @@ final class TestCaseLine: Matcher, Matchable {
     var caseName: String { return captures[2] }
     var status: Status { return captures[3] }
 }
+
+final class AssertionFailureLine: Matcher, Matchable {
+    static let regex = Regex("^(.*):([0-9]+): error: -\\[\\w+\\.\\w+ \\w+\\] : (.*)$")
+    var file: String { return captures[0] }
+    var lineNumber: Int { return captures[1] }
+    var assertion: String { return captures[2] }
+}
+
 #else
+
 final class TestCaseLine: Matcher, Matchable {
     enum Status: String, ConvertibleFromString {
         case started
@@ -58,28 +68,20 @@ final class TestCaseLine: Matcher, Matchable {
     var caseName: String { return captures[1] }
     var status: Status { return captures[2] }
 }
-#endif
 
-final class FatalErrorLine: Matcher, Matchable {
-    static let regex = Regex("^fatal error: (.*)$")
-    var message: String { return captures[0] }
-}
-
-#if os(macOS)
-final class AssertionFailureLine: Matcher, Matchable {
-    static let regex = Regex("^(.*):([0-9]+): error: -\\[\\w+\\.\\w+ \\w+\\] : (.*)$")
-    var file: String { return captures[0] }
-    var lineNumber: Int { return captures[1] }
-    var assertion: String { return captures[2] }
-}
-#else
 final class AssertionFailureLine: Matcher, Matchable {
     static let regex = Regex("^(.*):([0-9]+): error: \\w+\\.\\w+ : (.*)$")
     var file: String { return captures[0] }
     var lineNumber: Int { return captures[1] }
     var assertion: String { return captures[2] }
 }
+
 #endif
+
+final class FatalErrorLine: Matcher, Matchable {
+    static let regex = Regex("^fatal error: (.*)$")
+    var message: String { return captures[0] }
+}
 
 final class AllTestsEndLine: Matcher, Matchable {
     static let regex = Regex("Test Suite '(All tests|Selected tests|.*\\.xctest)' (passed|failed)")
