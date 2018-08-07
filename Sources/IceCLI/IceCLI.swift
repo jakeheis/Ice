@@ -24,8 +24,7 @@ public class IceCLI {
         
         let ice = createIce()
         
-        let cli = CLI(
-            name: IceCLI.name, version: IceCLI.version, description: IceCLI.description)
+        let cli = CLI(name: IceCLI.name, version: IceCLI.version, description: IceCLI.description)
         cli.commands = [
             AddCommand(ice: ice),
             BuildCommand(),
@@ -52,6 +51,7 @@ public class IceCLI {
             VersionCommand(ice: ice),
             XcCommand(ice: ice)
         ]
+        cli.aliases.removeValue(forKey: "-v") // Reserve -v for verbose flag, not alias to version cmd
         cli.globalOptions = [GlobalOptions.verbose]
         cli.versionCommand = nil
         cli.goAndExit()

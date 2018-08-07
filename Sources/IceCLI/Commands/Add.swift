@@ -12,7 +12,7 @@ import SwiftCLI
 class AddCommand: IceObject, Command {
     
     let name = "add"
-    let shortDescription = "Adds the given package"
+    let shortDescription = "Adds the given package as a dependency"
     
     let dependency = Parameter()
     
