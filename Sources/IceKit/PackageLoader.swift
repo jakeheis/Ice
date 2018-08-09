@@ -12,7 +12,7 @@ import SwiftCLI
 
 struct PackageLoader {
     
-    private final class ToolsVersionLine: Matcher & Matchable {
+    private final class ToolsVersionLine: Matcher, Matchable {
         // Spec at: https://github.com/apple/swift-package-manager/blob/master/Sources/PackageLoading/ToolsVersionLoader.swift#L97
         static let regex = Regex("^// swift-tools-version:(.*?)(?:;.*|$)", options: [.ignoreCase])
         

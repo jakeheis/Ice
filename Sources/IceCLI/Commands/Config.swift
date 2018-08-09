@@ -28,6 +28,7 @@ Valid keys:
   reformat      whether Ice should organize your Package.swift (alphabetize, etc.); defaults to false
   openAfterXc   whether Ice should open Xcode the generated project after running `ice xc`; defaults to true
 """)
+private let configCompletions = Config.Keys.all.map { ($0.rawValue, "") }
 
 class ShowConfigCommand: IceObject, Command {
     
@@ -72,7 +73,7 @@ class GetConfigCommand: IceObject, Command {
     let name = "get"
     let shortDescription = "Gets the config for the given key"
     
-    let key = Parameter()
+    let key = Parameter(completion: .values(configCompletions))
     
     func execute() throws {
         guard let key = Config.Keys(rawValue: key.value) else {
@@ -88,8 +89,8 @@ class SetConfigCommand: IceObject, Command {
     let name = "set"
     let shortDescription = "Sets the config for the given key"
     
-    let key = Parameter()
-    let value = Parameter()
+    let key = Parameter(completion: .values(configCompletions))
+    let value = Parameter(completion: .none)
     
     let global = Flag("-g", "--global", description: "Update the global configuation; default")
     let local = Flag("-l", "--local", description: "Update the local configuation")

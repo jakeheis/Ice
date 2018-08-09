@@ -22,7 +22,7 @@ private class ProductAddCommand: IceObject, Command {
     let name = "add"
     let shortDescription = "Add a new product"
     
-    let productName = Parameter()
+    let productName = Parameter(completion: .none)
     
     let executable = Flag("-e", "--exec", description: "Make an executable product")
     let library = Flag("-l", "--lib", description: "Make a library product (default)")

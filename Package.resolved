@@ -6,8 +6,8 @@
         "repositoryURL": "https://github.com/jakeheis/Icebox",
         "state": {
           "branch": null,
-          "revision": "b9532a062e571e90bb227ada184fa5f978da3e1c",
-          "version": "0.0.5"
+          "revision": "d25a8a000546d737b1bc121ddfb750e6b2363b5f",
+          "version": "0.0.6"
         }
       },
       {
@@ -51,7 +51,7 @@
         "repositoryURL": "https://github.com/jakeheis/SwiftCLI",
         "state": {
           "branch": "master",
-          "revision": "6c15a5e4b00d3e18ef2c3b4923aae53e6baa5aa9",
+          "revision": "d55ac1e6ddf30a31897f1a7024d3e7b549c700ae",
           "version": null
         }
       },

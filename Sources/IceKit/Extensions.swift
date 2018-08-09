@@ -21,7 +21,7 @@ public extension String {
 
 public extension Sequence {
     
-    func compactMap<U>(_ transform: (Element) -> U) -> [Element] {
+    func compactMap<U>(_ transform: (Element) -> U?) -> [U] {
         return flatMap(transform)
     }
     

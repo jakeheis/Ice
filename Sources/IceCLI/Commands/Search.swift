@@ -15,7 +15,7 @@ class SearchCommand: IceObject, Command {
     let name = "search"
     let shortDescription = "Searches for the given package"
     
-    let query = Parameter()
+    let query = Parameter(completion: .none)
     
     let onlyName = Flag("-n", "--name-only", description: "Only search for packages matching the name")
     

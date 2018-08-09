@@ -23,7 +23,7 @@ private class TargetAddCommand: IceObject, Command {
     let name = "add"
     let shortDescription = "Add a new target"
     
-    let targetName = Parameter()
+    let targetName = Parameter(completion: .none)
 
     let isTest = Flag("-t", "--test", description: "Marks this target as a test target")
     let dependencies = Key<String>("-d", "--dependencies", description: "Creates the new target with the given dependencies; comma-separated")
@@ -65,7 +65,7 @@ private class TargetRemoveCommand: IceObject, Command {
     let name = "remove"
     let shortDescription = "Remove the given target"
     
-    let target = Parameter()
+    let target = Parameter(completion: .function(.listTargets))
     
     func execute() throws {
         var project = try loadPackage()

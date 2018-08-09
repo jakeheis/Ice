@@ -34,7 +34,10 @@ class UpdateToolsVersion: IceObject, Command {
     let name = "update"
     let shortDescription = "Update the current project's Swift tools version"
     
-    let version = Parameter()
+    let version = Parameter(completion: .values([
+        ("4.0", ""),
+        ("4.2", "")
+    ]))
     
     func execute() throws {
         guard let toolsVersion = SwiftToolsVersion(version.value) else {

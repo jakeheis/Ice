@@ -1,7 +1,9 @@
 os:
+- linux
 - osx
 language: generic
 sudo: required
+dist: trusty
 osx_image: xcode9
 env:
 - SWIFT_VERSION=4.0
@@ -12,6 +14,6 @@ install:
 - export PATH="$SWIFTENV_ROOT/bin:$PATH"
 - eval "$(swiftenv init -)"
 - swiftenv install "$SWIFT_VERSION" || true
+- swift --version
 script:
-- swift build
 - swift test

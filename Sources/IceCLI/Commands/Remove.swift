@@ -13,7 +13,7 @@ class RemoveCommand: IceObject, Command {
     let name = "remove"
     let shortDescription = "Removes a dependency from the current package"
     
-    let package = Parameter()
+    let package = Parameter(completion: .function(.listDependencies))
 
     func execute() throws {
         // Resolve first so that .build/checkouts is populated for use in Package.retrieveLibrariesOfDependency

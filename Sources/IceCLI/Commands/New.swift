@@ -14,7 +14,7 @@ class NewCommand: CreateProjectCommand, Command {
     let name = "new"
     let shortDescription = "Creates a new package in the given directory"
     
-    let projectName = Parameter()
+    let projectName = Parameter(completion: .none)
 
     func execute() throws {
         let path = Path.current + projectName.value

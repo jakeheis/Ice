@@ -14,7 +14,7 @@ class DescribeCommand: IceObject, Command {
     let name = "describe"
     let shortDescription = "Describes the given package"
 
-    let package = Parameter()
+    let package = Parameter(completion: .function(.listRegistry))
     
     func execute() throws {
         if let entry = registry.get(package.value) {

@@ -14,7 +14,7 @@ class AddCommand: IceObject, Command {
     let name = "add"
     let shortDescription = "Adds the given package as a dependency"
     
-    let dependency = Parameter()
+    let dependency = Parameter(completion: .function(.listRegistry))
     
     let targets = Key<String>("-t", "--targets", description: "List of targets which should depend on this dependency")
     let noInteractive = Flag("-n", "--no-interactive", description: "Do not prompt for targets if none are supplied")

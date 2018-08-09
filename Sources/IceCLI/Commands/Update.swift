@@ -13,7 +13,7 @@ class UpdateCommand: IceObject, Command {
     let name = "update"
     let shortDescription = "Update package dependencies"
     
-    let dependency = OptionalParameter()
+    let dependency = OptionalParameter(completion: .function(.listDependencies))
     
     let version = Key<Version>("--version", description: "The new version of the dependency to depend on")
     let branch = Key<String>("--branch", description: "The new branch of the dependency to depend on")

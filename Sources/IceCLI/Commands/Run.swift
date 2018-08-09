@@ -14,7 +14,7 @@ class RunCommand: Command {
     let name = "run"
     let shortDescription = "Runs the executable of the current package"
     
-    let executable = OptionalParameter()
+    let executable = OptionalParameter(completion: .none)
     let args = OptionalCollectedParameter()
     
     let release = Flag("-r", "--release", description: "Run the executable built with the release configuration")

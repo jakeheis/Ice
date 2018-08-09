@@ -24,8 +24,8 @@ private class AddEntryCommand: IceObject, Command {
     let name = "add"
     let shortDescription = "Add the given entry to your local registry"
     
-    let ref = Parameter()
-    let shortName = Parameter()
+    let ref = Parameter(completion: .none)
+    let shortName = Parameter(completion: .none)
 
     func execute() throws {
         guard let ref = RepositoryReference(blob: ref.value, registry: registry) else {
@@ -42,7 +42,7 @@ private class RemoveEntryCommand: IceObject, Command {
     let name = "remove"
     let shortDescription = "Remove the given entry from your local registry"
     
-    let from = Parameter()
+    let from = Parameter(completion: .none)
     
     func execute() throws {
         try registry.remove(from.value)
@@ -55,7 +55,7 @@ private class LookupEntryCommand: IceObject, Command {
     let name = "lookup"
     let shortDescription = "Lookup an entry in the registry"
     
-    let from = Parameter()
+    let from = Parameter(completion: .function(.listRegistry))
     
     func execute() throws {
         guard let value = registry.get(from.value) else {

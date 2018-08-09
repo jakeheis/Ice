@@ -21,6 +21,8 @@ public class Config: ConfigType {
     public enum Keys: String {
         case reformat
         case openAfterXc
+        
+        public static var all: [Keys] = [.reformat, openAfterXc]
     }
     
     public struct File: Codable {
