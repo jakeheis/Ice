@@ -61,20 +61,14 @@ class ConfigTests: XCTestCase {
         
         try! config.set(\.reformat, value: false, global: true)
         
-        XCTAssertEqual(try? globalPath.read(), """
-        {
-          "reformat" : false
-        }
-        """)
+        let object = try! JSONSerialization.jsonObject(with: globalPath.read(), options: []) as! [String: Bool]
+        XCTAssertEqual(object["reformat"], false)
         XCTAssertEqual(config.get(\.reformat), false)
         
         try! config.set(\.reformat, value: true, global: false)
         
-        XCTAssertEqual(try? localPath.read(), """
-        {
-          "reformat" : true
-        }
-        """)
+        let object2 = try! JSONSerialization.jsonObject(with: localPath.read(), options: []) as! [String: Bool]
+        XCTAssertEqual(object2["reformat"], true)
         XCTAssertEqual(config.get(\.reformat), true)
     }
     

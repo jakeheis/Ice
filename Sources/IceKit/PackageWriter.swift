@@ -342,10 +342,6 @@ struct FunctionCallComponent: Component {
         arguments.append(.init(key: key, value: ArrayComponent(elements: children, multiline: true)))
     }
     
-    mutating func addMultilineArray(key: String?, children: [Any]) {
-        arguments.append(.init(key: key, value: ArrayComponent(elements: children.map({ ValueComponent(value: $0) }), multiline: true)))
-    }
-    
     mutating func addSingleLineArray(key: String?, children: [Component]) {
         arguments.append(.init(key: key, value: ArrayComponent(elements: children, multiline: false)))
     }

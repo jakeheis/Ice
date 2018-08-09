@@ -5,6 +5,7 @@
 //  Created by Jake Heiser on 3/12/18.
 //
 
+import Dispatch
 import Foundation
 import Rainbow
 import SwiftCLI

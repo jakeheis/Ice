@@ -119,10 +119,10 @@ public class SPM {
         }
         return path.trimmingCharacters(in: .whitespacesAndNewlines)
     }
-
+    
     public func dumpPackage() throws -> Data {
         let content = try captureSwift(args: ["package", "dump-package"]).stdout
-        guard let jsonStart = content.index(of: "{"), let data = content[jsonStart...].data(using: .utf8) else {
+        guard let jsonStart = content.index(of: "{"), let data = String(content[jsonStart...]).data(using: .utf8) else {
             throw IceError(message: "can't parse package")
         }
         return data

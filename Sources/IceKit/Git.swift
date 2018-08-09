@@ -20,7 +20,7 @@ class Git {
     
     static func lsRemote(url: String) throws -> [Version] {
         var versions: [Version] = []
-        let out = LineStream { (line) in
+        let versionStream = LineStream { (line) in
             guard let index = line.index(of: "\t") else {
                 return
             }
@@ -29,10 +29,12 @@ class Git {
                 versions.append(version)
             }
         }
-        let task = Task(executable: "git", arguments: ["ls-remote", "--tags", url], stdout: out, stderr: WriteStream.null)
+        let err = CaptureStream()
+        let task = Task(executable: "git", arguments: ["ls-remote", "--tags", url], stdout: versionStream, stderr: err)
         let exitStatus = task.runSync()
+        versionStream.wait()
         guard exitStatus == 0 else {
-            throw IceError(message: "couldn't retrieve versions at \(url)", exitStatus: exitStatus)
+            throw IceError(message: "couldn't retrieve versions at \(url)\nGit output: \(err.readAll())", exitStatus: exitStatus)
         }
         return versions
     }
