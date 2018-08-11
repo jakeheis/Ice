@@ -32,7 +32,7 @@ class GetToolsVersion: IceObject, Command {
 class UpdateToolsVersion: IceObject, Command {
     
     let name = "update"
-    let shortDescription = "Update the current project's Swift tools version"
+    let shortDescription = "Update the current project's Swift tools version and migrate Package.swift to the new version"
     
     let version = Parameter(completion: .values([
         ("4.0", ""),

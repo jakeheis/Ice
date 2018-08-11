@@ -32,7 +32,7 @@ class IceObject {
 }
 
 struct GlobalOptions {
-    static let verbose = Flag("-v", "--verbose")
+    static let verbose = Flag("-v", "--verbose", description: "Increase verbosity of informational output")
     
     private init() {}
 }
