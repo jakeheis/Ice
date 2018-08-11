@@ -13,7 +13,6 @@ public class IceCLI {
     
     public static let name = "ice"
     public static let description = "ice package manager"
-    public static let version = "0.6.2"
     
     private static let globalRootKey = "ICE_GLOBAL_ROOT"
     
@@ -24,7 +23,7 @@ public class IceCLI {
         
         let ice = createIce()
         
-        let cli = CLI(name: IceCLI.name, version: IceCLI.version, description: IceCLI.description)
+        let cli = CLI(name: IceCLI.name, version: Ice.version.string, description: IceCLI.description)
         cli.commands = [
             AddCommand(ice: ice),
             BuildCommand(),
@@ -48,7 +47,7 @@ public class IceCLI {
             TestCommand(),
             ToolsVersionGroup(ice: ice),
             UpdateCommand(ice: ice),
-            VersionCommand(ice: ice),
+            VersionCommand(),
             XcCommand(ice: ice)
         ]
         cli.aliases.removeValue(forKey: "-v") // Reserve -v for verbose flag, not alias to version cmd

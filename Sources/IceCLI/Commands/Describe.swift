@@ -34,7 +34,7 @@ class DescribeCommand: IceObject, Command {
         
         do {
             if let version = try ref.latestVersion() {
-                printDetail(title: "Latest", value: version.raw)
+                printDetail(title: "Latest", value: version.string)
                 return
             }
         } catch {}

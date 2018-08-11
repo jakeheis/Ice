@@ -46,8 +46,8 @@ public struct PackageDataV4_2: Codable {
                 self.identifier = identifier
             }
             
-            public init(version: Version){
-                self.init(type: .range, lowerBound: version.raw, upperBound: Version(version.major + 1, 0, 0).raw, identifier: nil)
+            public init(version: Version) {
+                self.init(type: .range, lowerBound: version.string, upperBound: Version(version.major + 1, 0, 0).string, identifier: nil)
             }
         }
         
