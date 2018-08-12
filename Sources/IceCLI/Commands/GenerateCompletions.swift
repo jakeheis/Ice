@@ -23,6 +23,10 @@ class GenerateCompletionsCommand: Command {
     
     let name = "generate-completions"
     let shortDescription = "Generates zsh completions"
+    let longDescription = """
+    Generates zsh completions. You should run this command by sending the output to a file named `_ice`
+    on your $fpath (e.g. `ice generate-completions > ~/.oh-my-zsh/completions/_ice`)
+    """
     
     let cli: CLI
     
@@ -39,7 +43,7 @@ class GenerateCompletionsCommand: Command {
         return [
             CompletionFunctions.listRegistry.rawValue: """
             local packages
-            packages=( $(grep name ~/.icebox/Registry/shared/Registry/*.json | grep -o '"[^"]*"' | grep -v "name" | cut -c 2- | rev | cut -c 2- | rev) )
+            packages=( $(grep name ~/.icebox/Registry/local.json ~/.icebox/Registry/shared/Registry/*.json | grep -o '"[^"]*"' | grep -v "name" | cut -c 2- | rev | cut -c 2- | rev) )
             _describe '' packages
             """,
             CompletionFunctions.listDependencies.rawValue: """

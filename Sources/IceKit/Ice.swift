@@ -28,7 +28,8 @@ public class Ice {
         }
         
         let versionFile = root + "version"
-        if let versionString: String = try? versionFile.read(), let oldVersion = Version(versionString) {
+        if let versionString: String = try? versionFile.read().trimmingCharacters(in: .whitespacesAndNewlines),
+            let oldVersion = Version(versionString) {
             if oldVersion != Ice.version {
                 try migrate(from: oldVersion)
                 try versionFile.write(Ice.version.string)
@@ -43,7 +44,10 @@ public class Ice {
     }
     
     public func migrate(from: Version) throws {
-        
+        if from < Version(0, 7, 0) {
+            // Starting in 0.7.0, the local registry is pretty printed so that it can be grepped in completion generator
+            try registry.write()
+        }
     }
     
 }
