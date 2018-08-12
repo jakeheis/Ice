@@ -32,7 +32,6 @@ class Git {
         let err = CaptureStream()
         let task = Task(executable: "git", arguments: ["ls-remote", "--tags", url], stdout: versionStream, stderr: err)
         let exitStatus = task.runSync()
-        versionStream.wait()
         guard exitStatus == 0 else {
             throw IceError(message: "couldn't retrieve versions at \(url)\nGit output: \(err.readAll())", exitStatus: exitStatus)
         }
