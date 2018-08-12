@@ -103,6 +103,7 @@ class TargetTests: XCTestCase {
     }
     
     func testSystemAdd() {
+        #if swift(>=4.2)
         let icebox = IceBox(template: .lib)
         
         icebox.execute(with: "tools-version", "update", "4.2")
@@ -131,6 +132,7 @@ class TargetTests: XCTestCase {
         )
 
         """)
+        #endif
     }
     
 }
