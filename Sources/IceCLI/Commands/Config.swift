@@ -20,13 +20,19 @@ class ConfigGroup: IceObject, CommandGroup {
     ]
 }
 
+private let allKeys: String = {
+    let length = Config.Keys.all.reduce(0) { $1.rawValue.count > $0 ? $1.rawValue.count : $0 }
+    return Config.Keys.all.map {
+        let padding = String(repeating: " ", count: length - $0.rawValue.count + 2)
+        return "  \($0.rawValue)\(padding)\($0.shortDescription)"
+    }.joined(separator: "\n")
+}()
 private let unrecognizedKeyError = IceError(message: """
 unrecognized config key
 
 Valid keys:
 
-  reformat      whether Ice should organize your Package.swift (alphabetize, etc.); defaults to false
-  openAfterXc   whether Ice should open Xcode the generated project after running `ice xc`; defaults to true
+\(allKeys)
 """)
 private let configCompletions = Config.Keys.all.map { ($0.rawValue, "") }
 
@@ -42,28 +48,26 @@ class ShowConfigCommand: IceObject, Command {
         let resolvedCol = TextTableColumn(header: "Resolved")
         var table = TextTable(columns: [keyCol, localCol, globalCol, resolvedCol])
         
-        table.addRow(values: createRow(key: .reformat, value: { $0.reformat?.description }))
-        table.addRow(values: createRow(key: .openAfterXc, value: { $0.openAfterXc?.description }))
+        Config.Keys.all.forEach { table.addRow(values: createRow(key: $0)) }
         stdout <<< table.render()
     }
     
-    func createRow(key: Config.Keys, value retrieveValue: (Config.File) -> String?) -> [String] {
-        var values: [String] = [key.rawValue]
-        
-        if let value = retrieveValue(config.local) {
-            values.append(value)
-        } else {
-            values.append("(none)")
+    func createRow(key: Config.Keys) -> [String] {
+        var row = [key.rawValue]
+        switch key {
+        case .reformat:
+            row += [box(config.local.reformat), box(config.global.reformat), box(config.reformat)]
+        case .openAfterXc:
+            row += [box(config.local.openAfterXc), box(config.global.openAfterXc), box(config.openAfterXc)]
         }
-        if let value = retrieveValue(config.global) {
-            values.append(value)
-        } else {
-            let value = retrieveValue(Config.defaultConfig)!
-            values.append(value)
+        return row
+    }
+    
+    func box<T>(_ item: T?) -> String {
+        if let item = item {
+            return String(describing: item)
         }
-        values.append(config.get(key))
-        
-        return values
+        return "(none)"
     }
     
 }
@@ -79,7 +83,12 @@ class GetConfigCommand: IceObject, Command {
         guard let key = Config.Keys(rawValue: key.value) else {
             throw unrecognizedKeyError
         }
-        stdout <<< config.get(key)
+        let value: Any
+        switch key {
+        case .reformat: value = config.reformat
+        case .openAfterXc: value = config.openAfterXc
+        }
+        stdout <<< String(describing: value)
     }
     
 }
@@ -95,6 +104,10 @@ class SetConfigCommand: IceObject, Command {
     let global = Flag("-g", "--global", description: "Update the global configuation; default")
     let local = Flag("-l", "--local", description: "Update the local configuation")
     
+    var configScope: Config.UpdateScope {
+        return (local.value ? .local : .global)
+    }
+    
     var optionGroups: [OptionGroup] {
         return [.atMostOne(global, local)]
     }
@@ -108,12 +121,12 @@ class SetConfigCommand: IceObject, Command {
             guard let val = Bool.convert(from: value.value) else {
                 throw IceError(message: "invalid value (must be true/false)")
             }
-            try config.set(\.reformat, value: val, global: !local.value)
+            try config.update(scope: configScope) { $0.reformat = val }
         case .openAfterXc:
             guard let val = Bool.convert(from: value.value) else {
                 throw IceError(message: "invalid value (must be true/false)")
             }
-            try config.set(\.openAfterXc, value: val, global: !local.value)
+            try config.update(scope: configScope) { $0.openAfterXc = val }
         }
     }
     

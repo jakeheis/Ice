@@ -139,28 +139,11 @@ struct Fixtures {
 
 class MockConfig: ConfigType {
     
-    var file: Config.File
-    var localDirectory: Path
+    let localDirectory = Path.current
     
-    init(file: Config.File = Config.defaultConfig) {
-        self.file = file
-        self.localDirectory = Path.current
-    }
-    
-    func get(_ key: Config.Keys) -> String {
-        switch key {
-        case .reformat: return get(\.reformat).description
-        case .openAfterXc: return get(\.openAfterXc).description
-        }
-    }
-    
-    func get<T>(_ keyPath: KeyPath<Config.File, T?>) -> T {
-        return file[keyPath: keyPath]!
-    }
-    
-    func set<T>(_ path: WritableKeyPath<Config.File, T?>, value: T, global setGlobal: Bool) throws {
-        file[keyPath: path] = value
-    }
+    var reformat = false
+    var openAfterXc = false
+    var zshCompletions: String? = nil
     
 }
 

@@ -11,9 +11,8 @@ import PathKit
 public protocol ConfigType {
     var localDirectory: Path { get }
     
-    func get(_ key: Config.Keys) -> String
-    func get<T>(_ keyPath: KeyPath<Config.File, T?>) -> T
-    func set<T>(_ path: WritableKeyPath<Config.File, T?>, value: T, global setGlobal: Bool) throws
+    var reformat: Bool { get }
+    var openAfterXc: Bool { get }
 }
 
 public class Config: ConfigType {
@@ -21,6 +20,13 @@ public class Config: ConfigType {
     public enum Keys: String {
         case reformat
         case openAfterXc
+        
+        public var shortDescription: String {
+            switch self {
+            case .reformat: return "whether Ice should organize your Package.swift (alphabetize, etc.); defaults to false"
+            case .openAfterXc: return "whether Ice should open Xcode the generated project after running `ice xc`; defaults to true"
+            }
+        }
         
         public static var all: [Keys] = [.reformat, openAfterXc]
     }
@@ -58,6 +64,14 @@ public class Config: ConfigType {
     public private(set) var global: File
     public private(set) var local: File
     
+    public var reformat: Bool {
+        return local.reformat ?? global.reformat ?? false
+    }
+    
+    public var openAfterXc: Bool {
+        return local.openAfterXc ?? global.openAfterXc ?? true
+    }
+    
     init(globalPath: Path, localDirectory: Path) {
         self.globalPath = globalPath
         self.localDirectory = localDirectory
@@ -67,32 +81,19 @@ public class Config: ConfigType {
         self.local = File.from(path: localPath) ?? File(reformat: nil, openAfterXc: nil)
     }
     
-    public func get(_ key: Keys) -> String {
-        let val: Any
-        switch key {
-        case .reformat: val = get(\.reformat)
-        case .openAfterXc: val = get(\.openAfterXc)
-        }
-        return String(describing: val)
+    public enum UpdateScope {
+        case local
+        case global
     }
     
-    public func get<T>(_ keyPath: KeyPath<File, T?>) -> T {
-        if let value = local[keyPath: keyPath] {
-            return value
-        }
-        if let value = global[keyPath: keyPath] {
-            return value
-        }
-        return Config.defaultConfig[keyPath: keyPath]!
-    }
-    
-    public func set<T>(_ path: WritableKeyPath<File, T?>, value: T, global setGlobal: Bool) throws {
-        if setGlobal {
-            global[keyPath: path] = value
-            try globalPath.write(Config.encoder.encode(global))
-        } else {
-            local[keyPath: path] = value
+    public func update(scope: UpdateScope, _ go: (inout File) -> ()) throws {
+        switch scope {
+        case .local:
+            go(&local)
             try localPath.write(Config.encoder.encode(local))
+        case .global:
+            go(&global)
+            try globalPath.write(Config.encoder.encode(global))
         }
     }
 

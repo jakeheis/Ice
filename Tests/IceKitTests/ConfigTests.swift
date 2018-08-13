@@ -35,8 +35,7 @@ class ConfigTests: XCTestCase {
         """)
         
         let config = Config(globalPath: globalPath, localDirectory: directory)
-        XCTAssertEqual(config.get(\.reformat), true)
-        XCTAssertEqual(config.get(.reformat), "true")
+        XCTAssertEqual(config.reformat, true)
         
         try! localPath.write("""
         {
@@ -45,11 +44,10 @@ class ConfigTests: XCTestCase {
         """)
         
         let config2 = Config(globalPath: globalPath, localDirectory: directory)
-        XCTAssertEqual(config2.get(\.reformat), false)
-        XCTAssertEqual(config2.get(.reformat), "false")
+        XCTAssertEqual(config2.reformat, false)
     }
     
-    func testSet() {
+    func testSet() throws {
         try! globalPath.write("""
         {
           "reformat" : true
@@ -57,19 +55,19 @@ class ConfigTests: XCTestCase {
         """)
 
         let config = Config(globalPath: globalPath, localDirectory: directory)
-        XCTAssertEqual(config.get(\.reformat), true)
+        XCTAssertEqual(config.reformat, true)
         
-        try! config.set(\.reformat, value: false, global: true)
+        try config.update(scope: .global) { $0.reformat = false }
         
         let object = try! JSONSerialization.jsonObject(with: globalPath.read(), options: []) as! [String: Bool]
         XCTAssertEqual(object["reformat"], false)
-        XCTAssertEqual(config.get(\.reformat), false)
+        XCTAssertEqual(config.reformat, false)
         
-        try! config.set(\.reformat, value: true, global: false)
+        try config.update(scope: .local) { $0.reformat = true }
         
         let object2 = try! JSONSerialization.jsonObject(with: localPath.read(), options: []) as! [String: Bool]
         XCTAssertEqual(object2["reformat"], true)
-        XCTAssertEqual(config.get(\.reformat), true)
+        XCTAssertEqual(config.reformat, true)
     }
     
 }

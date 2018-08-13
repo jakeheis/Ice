@@ -18,7 +18,7 @@ class XcCommand: IceObject, Command {
     func execute() throws {
         try SPM().generateXcodeProject()
         
-        if noOpen.value || config.get(\.openAfterXc) == false {
+        if noOpen.value || config.openAfterXc == false {
             return
         }
         

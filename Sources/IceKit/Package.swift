@@ -206,7 +206,7 @@ public struct Package {
     }
     
     public func write(to stream: WritableStream, format: Bool? = nil) throws {
-        let shouldFormat = format ?? config.get(\.reformat)
+        let shouldFormat = format ?? config.reformat
         let packageData = shouldFormat ? PackageFormatter(package: data).format() : data
         let writer = try PackageWriter(package: packageData, toolsVersion: toolsVersion)
         try writer.write(to: stream)
