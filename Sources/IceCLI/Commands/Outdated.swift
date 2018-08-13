@@ -37,7 +37,16 @@ class OutdatedCommand: IceObject, Command {
             let pin = resolved.findPin(url: dep.url)
             
             let name = ref.name
-            let wanted = dep.requirement.type == .range ? "\(dep.requirement.lowerBound!) ..< \(dep.requirement.upperBound!)" : dep.requirement.identifier!
+            let wanted: String
+            switch dep.requirement.type {
+            case .range:
+                wanted = "\(dep.requirement.lowerBound!) ..< \(dep.requirement.upperBound!)"
+            case .branch, .exact, .revision:
+                wanted = dep.requirement.identifier!
+            case .localPackage:
+                table.addRow(values: [name, "(local)", "(local)", "(local)"])
+                continue
+            }
             let resolved = pin?.state.version ?? pin?.state.branch ?? pin?.state.revision ?? "(none)"
             let latest = try ref.latestVersion()?.description ?? "(unknown)"
             

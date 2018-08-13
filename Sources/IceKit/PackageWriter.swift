@@ -107,9 +107,10 @@ extension PackageWriterImpl {
         
         function.addMultilineArray(key: "dependencies", children: package.dependencies.map { (dependency) in
             var depFunction = FunctionCallComponent(staticMember: "package")
-            if dependency.requirement.type == .localPackage {
+            switch dependency.requirement.type {
+            case .localPackage:
                 depFunction.addQuoted(key: "path", value: dependency.url)
-            } else {
+            case .range, .branch, .exact, .revision:
                 depFunction.addQuoted(key: "url", value: dependency.url)
             }
             
@@ -156,20 +157,23 @@ extension PackageWriterImpl {
                 
                 var functionCall = FunctionCallComponent(staticMember: functionName)
                 functionCall.addQuoted(key: "name", value: target.name)
-                if target.type == .regular || target.type == .test {
+                switch target.type {
+                case .regular, .test:
                     functionCall.addSingleLineArray(key: "dependencies", children: target.dependencies.map({ $0.name.quoted }))
+                case .system: break
                 }
                 if let path = target.path {
                     functionCall.addQuoted(key: "path", value: path)
                 }
-                if target.type == .system {
+                switch target.type {
+                case .system:
                     if let pkgConfig = target.pkgConfig {
                         functionCall.addQuoted(key: "pkgConfig", value: pkgConfig)
                     }
                     if let providers = target.providers {
                         functionCall.addMultilineArray(key: "providers", children: providers.map(providerComponent))
                     }
-                } else {
+                case .regular, .test:
                     if !target.exclude.isEmpty {
                         functionCall.addSingleLineArray(key: "exclude", children: target.exclude.quoted())
                     }
