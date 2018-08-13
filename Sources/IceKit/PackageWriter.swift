@@ -269,7 +269,7 @@ final class Version4_2Writer: PackageWriterImpl {
                 } else if version == "4.2" {
                     enumVersions.append(".v4_2")
                 } else {
-                    enumVersions.append(".version(\(version))")
+                    enumVersions.append(".version(\"\(version)\")")
                 }
             }
             function.addSingleLineArray(key: "swiftLanguageVersions", children: enumVersions)
