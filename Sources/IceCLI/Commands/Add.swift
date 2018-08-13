@@ -83,17 +83,21 @@ class AddCommand: IceObject, Command {
                 stdout <<< ""
                 stdout <<< "Which targets depend on \(lib)?"
                 stdout <<< ""
-                let ids = "123456789abcdefghijklmnopqrstuvwxyz".prefix(package.targets.count)
-                for (index, target) in package.targets.enumerated() {
+                
+                let possibleTargets = package.targets.filter({ $0.type != .system })
+                
+                let ids = "123456789abcdefghijklmnopqrstuvwxyz".prefix(possibleTargets.count)
+                for (index, target) in possibleTargets.enumerated() {
                     stdout <<< "  " + String(ids[ids.index(ids.startIndex, offsetBy: index)]) + "  " + target.name
                 }
                 stdout <<< ""
+                
                 let targetString = Input.readLine(prompt: "> ", validation: { (input) -> Bool in
                     let allowed = CharacterSet(charactersIn: ids + ", ")
                     return input.rangeOfCharacter(from: allowed.inverted) == nil
                 })
                 let distances = targetString.compactMap { ids.index(of: $0) }
-                let targets = distances.map { package.targets[ids.distance(from: ids.startIndex, to: $0)] }
+                let targets = distances.map { possibleTargets[ids.distance(from: ids.startIndex, to: $0)] }
                 try targets.forEach { try package.depend(target: $0.name, on: lib) }
             }
         }
