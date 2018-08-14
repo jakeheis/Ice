@@ -18,7 +18,7 @@ class IceObject {
     }
     
     var config: Config {
-        return ice.config(for: Path.current)
+        return ice.config(for: .current)
     }
     
     init(ice: Ice) {
@@ -26,7 +26,7 @@ class IceObject {
     }
     
     func loadPackage() throws -> Package {
-        return try Package.load(config: config)
+        return try Package.load(directory: .current, config: config)
     }
     
 }

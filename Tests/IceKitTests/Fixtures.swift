@@ -138,12 +138,8 @@ struct Fixtures {
 }
 
 class MockConfig: ConfigType {
-    
-    let localDirectory = Path.current
-    
     var reformat = false
     var openAfterXc = false
-    var zshCompletions: String? = nil
     
 }
 

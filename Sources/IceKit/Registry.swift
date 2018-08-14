@@ -141,9 +141,7 @@ public class Registry: RegistryType {
     }
     
     func write() throws {
-        let encoder = JSONEncoder()
-        encoder.outputFormatting = .prettyPrinted
-        try localPath.write(encoder.encode(localRegistry))
+        try localPath.write(JSON.encoder.encode(localRegistry))
     }
     
 }

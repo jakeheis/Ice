@@ -9,8 +9,6 @@ import Foundation
 import PathKit
 
 public protocol ConfigType {
-    var localDirectory: Path { get }
-    
     var reformat: Bool { get }
     var openAfterXc: Bool { get }
 }
@@ -32,53 +30,46 @@ public class Config: ConfigType {
     }
     
     public struct File: Codable {
-        
         public var reformat: Bool?
         public var openAfterXc: Bool?
         
         static func from(path: Path) -> File? {
             guard let data = try? path.read(),
-                let file = try? decoder.decode(File.self, from: data) else {
+                let file = try? JSON.decoder.decode(File.self, from: data) else {
                     return nil
             }
             return file
         }
     }
     
-    public static let defaultConfig = File(
-        reformat: false,
-        openAfterXc: true
-    )
-    
-    private static let encoder: JSONEncoder = {
-        let encoder = JSONEncoder()
-        encoder.outputFormatting = .prettyPrinted
-        return encoder
-    }()
-    private static let decoder = JSONDecoder()
+    public static let `default`: ConfigType = DefaultConfig()
     
     public let globalPath: Path
-    public let localDirectory: Path
     public let localPath: Path
     
     public private(set) var global: File
     public private(set) var local: File
     
     public var reformat: Bool {
-        return local.reformat ?? global.reformat ?? false
+        return local.reformat ?? global.reformat ?? Config.default.reformat
     }
     
     public var openAfterXc: Bool {
-        return local.openAfterXc ?? global.openAfterXc ?? true
+        return local.openAfterXc ?? global.openAfterXc ?? Config.default.openAfterXc
     }
     
-    init(globalPath: Path, localDirectory: Path) {
+    public init(globalPath: Path, localDirectory: Path) {
         self.globalPath = globalPath
-        self.localDirectory = localDirectory
         self.localPath = localDirectory + "ice.json"
         
-        self.global = File.from(path: globalPath) ?? Config.defaultConfig
-        self.local = File.from(path: localPath) ?? File(reformat: nil, openAfterXc: nil)
+        self.global = File.from(path: globalPath) ?? File(
+            reformat: Config.default.reformat,
+            openAfterXc: Config.default.openAfterXc
+        )
+        self.local = File.from(path: localPath) ?? File(
+            reformat: nil,
+            openAfterXc: nil
+        )
     }
     
     public enum UpdateScope {
@@ -90,11 +81,16 @@ public class Config: ConfigType {
         switch scope {
         case .local:
             go(&local)
-            try localPath.write(Config.encoder.encode(local))
+            try localPath.write(JSON.encoder.encode(local))
         case .global:
             go(&global)
-            try globalPath.write(Config.encoder.encode(global))
+            try globalPath.write(JSON.encoder.encode(global))
         }
     }
 
+}
+
+private class DefaultConfig: ConfigType {
+    let reformat = false
+    let openAfterXc = true
 }

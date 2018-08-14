@@ -166,9 +166,7 @@ class TransformStreamRecord {
     }
     
     static func dump() {
-        let encoder = JSONEncoder()
-        encoder.outputFormatting = .prettyPrinted
-        let data = try! encoder.encode(actions)
+        let data = try! JSON.encoder.encode(actions)
         print(String(data: data, encoding: .utf8)!)
     }
     

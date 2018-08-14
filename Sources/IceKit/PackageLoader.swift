@@ -19,20 +19,20 @@ struct PackageLoader {
         var toolsVersion: String { return captures[0] }
     }
     
-    static func load(config: ConfigType) throws -> Package {
-        let data = try SPM(directory: config.localDirectory).dumpPackage()
+    static func load(directory: Path, config: ConfigType?) throws -> Package {
+        let data = try SPM(directory: directory).dumpPackage()
         
-        guard let file = ReadStream.for(path: (config.localDirectory + Package.fileName).string),
+        guard let file = ReadStream.for(path: (directory + Package.fileName).string),
             let line = file.readLine(),
             let match = ToolsVersionLine.findMatch(in: line),
             let toolsVersion = SwiftToolsVersion(match.toolsVersion) else {
                 throw IceError(message: "couldn't read Package.swift")
         }
         
-        return try load(from: data, toolsVersion: toolsVersion, config: config)
+        return try load(from: data, toolsVersion: toolsVersion, directory: directory, config: config)
     }
     
-    static func load(from payload: Data, toolsVersion: SwiftToolsVersion, config: ConfigType) throws -> Package {
+    static func load(from payload: Data, toolsVersion: SwiftToolsVersion, directory: Path, config: ConfigType?) throws -> Package {
         let data: ModernPackageData
         if let v4_2 = try? JSONDecoder().decode(PackageDataV4_2.self, from: payload) {
             data = v4_2
@@ -41,7 +41,7 @@ struct PackageLoader {
         } else {
             throw IceError(message: "can't parse Package.swift")
         }
-        return Package(data: data, toolsVersion: toolsVersion, config: config)
+        return Package(data: data, toolsVersion: toolsVersion, directory: directory, config: config)
     }
     
     private init() {}

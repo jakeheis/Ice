@@ -20,8 +20,8 @@ public struct Package {
     public static let fileName = Path("Package.swift")
     private static let libRegex = Regex("\\.library\\( *name: *\"([^\"]*)\"")
     
-    public static func load(config: Config) throws -> Package {
-        return try PackageLoader.load(config: config)
+    public static func load(directory: Path, config: ConfigType? = nil) throws -> Package {
+        return try PackageLoader.load(directory: directory, config: config)
     }
     
     public var name: String {
@@ -45,19 +45,21 @@ public struct Package {
             dirty = true
         }
     }
-    
-    public let config: ConfigType
     public var toolsVersion: SwiftToolsVersion {
         didSet {
             dirty = true
         }
     }
+    public let directory: Path
+    public let config: ConfigType
+    
     public var dirty = false
     
-    init(data: ModernPackageData, toolsVersion: SwiftToolsVersion, config: ConfigType) {
+    public init(data: ModernPackageData, toolsVersion: SwiftToolsVersion, directory: Path, config: ConfigType? = nil) {
         self.data = data
         self.toolsVersion = toolsVersion
-        self.config = config
+        self.directory = directory
+        self.config = config ?? Config.default
     }
     
     // MARK: - Products
@@ -182,7 +184,7 @@ public struct Package {
     // MARK: -
     
     public func retrieveLibrariesOfDependency(named dependency: String) -> [String] {
-        let glob = (config.localDirectory + ".build" + "checkouts").glob("\(dependency)*")
+        let glob = (directory + ".build" + "checkouts").glob("\(dependency)*")
         guard let path = glob.first,
             let contents: String = try? (path + Package.fileName).read().replacingOccurrences(of: "\n", with: " ") else {
                 return []
@@ -196,7 +198,7 @@ public struct Package {
             return
         }
         
-        let path = config.localDirectory + Package.fileName
+        let path = directory + Package.fileName
         guard let fileStream = WriteStream.for(path: path.string, appending: false) else  {
             throw IceError(message: "couldn't write to \(path)")
         }
