@@ -80,8 +80,14 @@ public class SPM {
         try runSwift(args: args, transformer: .test)
     }
     
-    public func resolve() throws {
-        try runSwift(args: ["package", "-v", "resolve"], transformer: .resolve)
+    public func resolve(silent: Bool = false) throws {
+        let args = ["package", "-v", "resolve"]
+        if silent {
+            _ = try captureSwift(args: args)
+        } else {
+            try runSwift(args: args, transformer: .resolve)
+        }
+        
     }
     
     // MARK: -
@@ -113,11 +119,11 @@ public class SPM {
         }
         return path.trimmingCharacters(in: .whitespacesAndNewlines)
     }
-
+    
     public func dumpPackage() throws -> Data {
         let content = try captureSwift(args: ["package", "dump-package"]).stdout
-        guard let jsonStart = content.index(of: "{"), let data = content[jsonStart...].data(using: .utf8) else {
-            throw IceError(message: "couldn't parse package")
+        guard let jsonStart = content.index(of: "{"), let data = String(content[jsonStart...]).data(using: .utf8) else {
+            throw IceError(message: "can't parse package")
         }
         return data
     }
@@ -125,9 +131,8 @@ public class SPM {
     // MARK: - Helpers
     
     private func runSwift(args: [String], transformer: TransformerPair? = nil) throws {
-        let stdout: WritableStream = transformer?.createStdout() ?? WriteStream.stdout
-        let stderr: WritableStream = transformer?.createStderr() ?? WriteStream.stderr
-        
+        let stdout: WritableStream = transformer?.stdout ?? WriteStream.stdout
+        let stderr: WritableStream = transformer?.stderr ?? WriteStream.stderr
         let task = Task(executable: "swift", arguments: args, directory: directory.string, stdout: stdout, stderr: stderr)
         let result = task.runSync()
         transformer?.wait()

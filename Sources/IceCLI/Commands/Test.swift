@@ -12,6 +12,10 @@ class TestCommand: Command {
     
     let name = "test"
     let shortDescription = "Tests the current package"
+    let longDescription = """
+    Tests the current package. Takes an optional filter argument of the
+    form [<test-target>].[<test-case>][/<test>] (e.g. `ice test IceKitTests.AddTests/testTargetAdd`)
+    """
     
     let filter = OptionalParameter()
     

@@ -15,6 +15,8 @@ import XCTest
             testCase(InitTransformTests.allTests),
             testCase(LineTests.allTests),
             testCase(PackageTests.allTests),
+            testCase(PackageDataTests.allTests),
+            testCase(PackageLoaderTests.allTests),
             testCase(PackageWriterTests.allTests),
             testCase(RegistryTests.allTests),
             testCase(RepositoryReferenceTests.allTests),

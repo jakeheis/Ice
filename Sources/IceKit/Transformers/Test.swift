@@ -11,23 +11,32 @@ import Regex
 import SwiftCLI
 
 extension TransformerPair {
-    static var test: TransformerPair { return TransformerPair(out: TestOut(), err: TestErr()) }
+    #if os(macOS)
+    static var test: TransformerPair { return TransformerPair(out: TestCollector(isStdout: true), err: TestMain()) }
+    #else
+    static var test: TransformerPair { return TransformerPair(out: TestMain(), err: TestCollector(isStdout: false)) }
+    #endif
 }
 
-class TestOut: BaseTransformer {
+class TestCollector: BaseTransformer {
     
     static var accumulated = ""
     static var accumulatedLock = NSLock()
+    static var isStdout = false
+    
+    init(isStdout: Bool) {
+        TestCollector.isStdout = isStdout
+    }
 
     func go(stream: TransformStream) {
-        TestOut.accumulatedLock.lock()
-        TestOut.accumulated += stream.require(AnyLine.self).text + "\n"
-        TestOut.accumulatedLock.unlock()
+        TestCollector.accumulatedLock.lock()
+        TestCollector.accumulated += stream.require(AnyLine.self).text + "\n"
+        TestCollector.accumulatedLock.unlock()
     }
     
 }
 
-class TestErr: BaseTransformer {
+class TestMain: BaseTransformer {
     
     var firstPass = true
     
@@ -38,11 +47,21 @@ class TestErr: BaseTransformer {
         
         let mode = stream.require(AllTestsStartLine.self).mode
         
+        #if os(macOS)
         let packageTests = stream.require(PackageTestsStartLine.self)
         if firstPass {
             stderr <<< "\n\(packageTests.packageName):\n".bold
             firstPass = false
         }
+        #else
+        if mode == .all {
+            _ = stream.require(PackageTestsStartLine.self)
+        }
+        if firstPass {
+            stderr <<< ""
+            firstPass = false
+        }
+        #endif
         
         var failureCount = 0
         while stream.nextIs(TestSuiteLine.self, where: { $0.status == .started }) {
@@ -51,8 +70,15 @@ class TestErr: BaseTransformer {
             failureCount += suite.failureCount
         }
         
+        #if os(macOS)
         _ = stream.require(AllTestsEndLine.self) // .xctest done
         _ = stream.require(TestCountLine.self) // .xctest timing
+        #else
+        if mode == .all {
+            _ = stream.require(AllTestsEndLine.self) // .xctest done
+            _ = stream.require(TestCountLine.self) // .xctest timing
+        }
+        #endif
         
         _ = stream.require(AllTestsEndLine.self) // all tests done
         let count = stream.require(TestCountLine.self)
@@ -106,7 +132,11 @@ class TestSuite: Transformer {
         let start = stream.require(TestSuiteLine.self)
         
         if let firstTestCase = stream.peek(TestCaseLine.self) {
+            #if os(macOS)
             name = "\(firstTestCase.targetName)." + start.suiteName
+            #else
+            name = start.suiteName
+            #endif
             if mode == .selected {
                 name += "/\(firstTestCase.caseName)"
             }
@@ -151,24 +181,28 @@ class TestCase: Transformer {
     func go(stream: TransformStream) {
         let testCase = stream.require(TestCaseLine.self)
         
-        var errDuringTest = ""
+        var mainOutputDuringTest = ""
         while !stream.nextIs(TestCaseLine.self) {
             if stream.nextIs(AssertionFailureLine.self) {
                 printFailed(testCase: testCase.caseName)
                 AssertionFailure().go(stream: stream)
             } else {
-                errDuringTest += stream.require(AnyLine.self).text + "\n"
+                mainOutputDuringTest += stream.require(AnyLine.self).text + "\n"
             }
         }
         
-        TestOut.accumulatedLock.lock()
-        let outDuringTest = TestOut.accumulated
-        TestOut.accumulated = ""
-        TestOut.accumulatedLock.unlock()
+        TestCollector.accumulatedLock.lock()
+        let otherOutputDuringTest = TestCollector.accumulated
+        let testCollectorIsStdout = TestCollector.isStdout
+        TestCollector.accumulated = ""
+        TestCollector.accumulatedLock.unlock()
         
         if failed {
-            printMidTestOutput(title: "Stdout", output: outDuringTest)
-            printMidTestOutput(title: "Stderr", output: errDuringTest)
+            let stdoutOutput = testCollectorIsStdout ? otherOutputDuringTest : mainOutputDuringTest
+            let stderrOutput = testCollectorIsStdout ? mainOutputDuringTest : otherOutputDuringTest
+            
+            printMidTestOutput(title:  "stdout", output: stdoutOutput)
+            printMidTestOutput(title: "stderr", output: stderrOutput)
         }
         
         _ = stream.require(TestCaseLine.self)

@@ -53,7 +53,7 @@ class ResolveTransformTests: XCTestCase {
     }
     
     private func createTest() -> TransformerTest {
-        return TransformerTest(transformer: Resolve(), isStdout: true)
+        return TransformerTest(transformer: ResolveOut(), isStdout: true)
     }
     
 }

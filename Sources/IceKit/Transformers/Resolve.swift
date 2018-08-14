@@ -10,10 +10,10 @@ import Regex
 import SwiftCLI
 
 extension TransformerPair {
-    static var resolve: TransformerPair { return TransformerPair(out: Resolve(), err: nil) }
+    static var resolve: TransformerPair { return TransformerPair(out: ResolveOut(), err: ResolveErr()) }
 }
 
-class Resolve: BaseTransformer {
+class ResolveOut: BaseTransformer {
     func go(stream: TransformStream) {
         if let action = stream.match(DependencyActionLine.self) {
             action.print(to: stdout)
@@ -23,4 +23,18 @@ class Resolve: BaseTransformer {
             stream.consume()
         }
     }
+}
+
+class ResolveErr: BaseTransformer {
+    func go(stream: TransformStream) {
+        if stream.nextIs(CompletedResolution.self) {
+            stream.consume()
+        } else {
+            stderr <<< stream.require(AnyLine.self).text
+        }
+    }
+}
+
+final class CompletedResolution: Matcher, Matchable {
+    static let regex = Regex("^Completed resolution")
 }

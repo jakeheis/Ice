@@ -1,6 +1,6 @@
 //
 //  File.swift
-//  CLI
+//  Ice
 //
 //  Created by Jake Heiser on 9/25/17.
 //
@@ -8,12 +8,12 @@
 import IceKit
 import SwiftCLI
 
-class UpdateCommand: Command {
+class UpdateCommand: IceObject, Command {
     
     let name = "update"
     let shortDescription = "Update package dependencies"
     
-    let dependency = OptionalParameter()
+    let dependency = OptionalParameter(completion: .function(.listDependencies))
     
     let version = Key<Version>("--version", description: "The new version of the dependency to depend on")
     let branch = Key<String>("--branch", description: "The new branch of the dependency to depend on")
@@ -32,7 +32,7 @@ class UpdateCommand: Command {
             return
         }
         
-        var package = try Package.load()
+        var package = try loadPackage()
         guard let dep = package.dependencies.first(where: { RepositoryReference(url: $0.url).name == dependency }) else {
             throw IceError(message: "No dependency found with that name")
         }
@@ -50,7 +50,7 @@ class UpdateCommand: Command {
         
         try package.updateDependency(dependency: dep, to: requirement)
         
-        try package.write()
+        try package.sync()
     }
     
     private func inputVersion(for dep: Package.Dependency) throws -> Package.Dependency.Requirement {

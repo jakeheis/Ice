@@ -5,6 +5,7 @@
 //  Created by Jake Heiser on 9/14/17.
 //
 
+import TestingUtilities
 import XCTest
 
 class SearchTests: XCTestCase {
@@ -19,15 +20,11 @@ class SearchTests: XCTestCase {
         let result = IceBox(template: .empty).run("search", "RxSwift")
         XCTAssertEqual(result.exitStatus, 0)
         XCTAssertEqual(result.stderr, "")
-        XCTAssertEqual(result.stdout, """
+        XCTAssertEqual(result.stdout!, """
         
         ● Name: RxSwift
           URL: https://github.com/ReactiveX/RxSwift
           Description: Reactive Programming in Swift
-
-        ● Name: Action
-          URL: https://github.com/RxSwiftCommunity/Action
-          Description: Abstracts actions to be performed in RxSwift.
 
         ● Name: RxDataSources
           URL: https://github.com/RxSwiftCommunity/RxDataSources
@@ -49,6 +46,10 @@ class SearchTests: XCTestCase {
           URL: https://github.com/Polidea/RxBluetoothKit
           Description: iOS & OSX Bluetooth library for RxSwift
         
+        ● Name: Action
+          URL: https://github.com/RxSwiftCommunity/Action
+          Description: Abstracts actions to be performed in RxSwift.
+
         
         """)
     }

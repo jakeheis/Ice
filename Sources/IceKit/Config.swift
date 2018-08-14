@@ -8,75 +8,89 @@
 import Foundation
 import PathKit
 
-public class Config {
-    
-    let globalPath: Path
-    
-    public private(set) var globalConfig: ConfigFile?
-    
-    init(globalConfigPath: Path) {
-        globalPath = globalConfigPath
-        globalConfig = ConfigFile.from(path: globalPath)
-    }
-    
-    public func get<T>(_ keyPath: KeyPath<ConfigFile, T?>, directory: Path = Path.current) -> T {
-        if let localConfig = ConfigFile.from(path: directory + "ice.json"), let value = localConfig[keyPath: keyPath] {
-            return value
-        }
-        if let globalConfig = globalConfig, let value = globalConfig[keyPath: keyPath] {
-            return value
-        }
-        return ConfigFile.defaultConfig[keyPath: keyPath]!
-    }
-    
-    public func set<T>(_ path: WritableKeyPath<ConfigFile, T?>, value: T) throws {
-        var file: ConfigFile
-        if let existing = self.globalConfig {
-            file = existing
-        } else {
-            let new = ConfigFile(reformat: nil)
-            file = new
-        }
-        
-        file[keyPath: path] = value
-        
-        self.globalConfig = file
-        
-        try globalPath.write(ConfigFile.encoder.encode(file))
-    }
-    
+public protocol ConfigType {
+    var reformat: Bool { get }
+    var openAfterXc: Bool { get }
 }
 
-public struct ConfigFile: Codable {
-    
-    public static let encoder: JSONEncoder = {
-        let encoder = JSONEncoder()
-        encoder.outputFormatting = .prettyPrinted
-        return encoder
-    }()
-    public static let decoder = JSONDecoder()
-    
-    public static let defaultConfig = ConfigFile(
-        reformat: false
-    )
+public class Config: ConfigType {
     
     public enum Keys: String {
         case reformat
-    }
-    
-    public var reformat: Bool?
-    
-    public static func layer(config: ConfigFile?, onto: ConfigFile) -> ConfigFile {
-        return ConfigFile(reformat: config?.reformat ?? onto.reformat)
-    }
-    
-    static func from(path: Path) -> ConfigFile? {
-        guard let data = try? path.read(),
-            let file = try? decoder.decode(ConfigFile.self, from: data) else {
-            return nil
+        case openAfterXc
+        
+        public var shortDescription: String {
+            switch self {
+            case .reformat: return "whether Ice should organize your Package.swift (alphabetize, etc.); defaults to false"
+            case .openAfterXc: return "whether Ice should open Xcode the generated project after running `ice xc`; defaults to true"
+            }
         }
-        return file
+        
+        public static var all: [Keys] = [.reformat, openAfterXc]
     }
     
+    public struct File: Codable {
+        public var reformat: Bool?
+        public var openAfterXc: Bool?
+        
+        static func from(path: Path) -> File? {
+            guard let data = try? path.read(),
+                let file = try? JSON.decoder.decode(File.self, from: data) else {
+                    return nil
+            }
+            return file
+        }
+    }
+    
+    public static let `default`: ConfigType = DefaultConfig()
+    
+    public let globalPath: Path
+    public let localPath: Path
+    
+    public private(set) var global: File
+    public private(set) var local: File
+    
+    public var reformat: Bool {
+        return local.reformat ?? global.reformat ?? Config.default.reformat
+    }
+    
+    public var openAfterXc: Bool {
+        return local.openAfterXc ?? global.openAfterXc ?? Config.default.openAfterXc
+    }
+    
+    public init(globalPath: Path, localDirectory: Path) {
+        self.globalPath = globalPath
+        self.localPath = localDirectory + "ice.json"
+        
+        self.global = File.from(path: globalPath) ?? File(
+            reformat: Config.default.reformat,
+            openAfterXc: Config.default.openAfterXc
+        )
+        self.local = File.from(path: localPath) ?? File(
+            reformat: nil,
+            openAfterXc: nil
+        )
+    }
+    
+    public enum UpdateScope {
+        case local
+        case global
+    }
+    
+    public func update(scope: UpdateScope, _ go: (inout File) -> ()) throws {
+        switch scope {
+        case .local:
+            go(&local)
+            try localPath.write(JSON.encoder.encode(local))
+        case .global:
+            go(&global)
+            try globalPath.write(JSON.encoder.encode(global))
+        }
+    }
+
 }
 
+private class DefaultConfig: ConfigType {
+    let reformat = false
+    let openAfterXc = true
+}

@@ -6,6 +6,7 @@
 //
 
 import PathKit
+import TestingUtilities
 import XCTest
 
 class RegistryTests: XCTestCase {
@@ -17,7 +18,7 @@ class RegistryTests: XCTestCase {
         ("testRemove", testRemove),
     ]
     
-    func testAdd() {
+    func testAdd() throws {
         let icebox = IceBox(template: .empty)
         XCTAssertFalse(icebox.fileExists("global/Registry/local.json"))
         
@@ -26,7 +27,8 @@ class RegistryTests: XCTestCase {
         XCTAssertEqual(result.stderr, "")
         XCTAssertEqual(result.stdout, "")
         
-        let json = try! JSONSerialization.jsonObject(with: icebox.fileContents("global/Registry/local.json")!, options: []) as! [String: Any]
+        XCTAssertTrue(icebox.fileExists("global/Registry/local.json"))
+        let json = try JSONSerialization.jsonObject(with: icebox.fileContents("global/Registry/local.json")!, options: []) as! [String: Any]
         let entries = json["entries"] as! [[String: Any]]
         XCTAssertEqual(entries.count, 1)
         XCTAssertEqual(entries[0]["name"] as? String, "dne")

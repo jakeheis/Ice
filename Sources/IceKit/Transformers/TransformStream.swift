@@ -5,24 +5,39 @@
 //  Created by Jake Heiser on 3/12/18.
 //
 
+import Dispatch
 import Foundation
 import Rainbow
 import SwiftCLI
 
-class TransformStream {
+class TransformStream: WritableStream {
     
-    let stream: ReadableStream
+    let writeHandle: FileHandle
+    let processObject: Any
+    let encoding: String.Encoding = .utf8
+
+    private let reader: ReadableStream
+    private let semaphore = DispatchSemaphore(value: 0)
+    private var nextLine: String? = nil
     
-    var nextLine: String? = nil
-    
-    init(stream: ReadableStream) {
-        self.stream = stream
+    init(transformer: Transformer) {
+        let pipe = Pipe()
+        writeHandle = pipe.fileHandleForWriting
+        processObject = pipe
+        reader = ReadStream.for(fileHandle: pipe.fileHandleForReading)
+        
+        DispatchQueue.global().async {
+            while self.isOpen() {
+                transformer.go(stream: self)
+            }
+            self.semaphore.signal()
+        }
     }
     
     private func readNextLine() {
         guard nextLine == nil else { return }
         
-        nextLine = stream.readLine()
+        nextLine = reader.readLine()
     }
     
     func isOpen() -> Bool {
@@ -114,6 +129,10 @@ class TransformStream {
         return nil
     }
     
+    func wait() {
+        semaphore.wait()
+    }
+    
 }
 
 class TransformStreamRecord {
@@ -147,9 +166,7 @@ class TransformStreamRecord {
     }
     
     static func dump() {
-        let encoder = JSONEncoder()
-        encoder.outputFormatting = .prettyPrinted
-        let data = try! encoder.encode(actions)
+        let data = try! JSON.encoder.encode(actions)
         print(String(data: data, encoding: .utf8)!)
     }
     

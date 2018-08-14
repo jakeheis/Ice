@@ -13,7 +13,6 @@ import SwiftCLI
 // MARK: - Extensions
 
 extension String {
-    
     var beautifyPath: String {
         var improved = self
         let workingDirPrefix = FileManager.default.currentDirectoryPath + "/"
@@ -24,7 +23,17 @@ extension String {
         let last = components.removeLast()
         return components.joined(separator: "/").dim + "/\(last)"
     }
-    
+}
+
+// MARK: - JSON
+
+enum JSON {
+    static let encoder: JSONEncoder = {
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = .prettyPrinted
+        return encoder
+    }()
+    static let decoder = JSONDecoder()
 }
 
 // MARK: - Lines

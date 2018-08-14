@@ -36,7 +36,7 @@ public struct Resolved: Decodable {
             let data = try (directory + filePath).read()
             return try JSONDecoder().decode(Resolved.self, from: data)
         } catch {
-            throw IceError(message: "couldn't parse Package.resolved")
+            throw IceError(message: "can't parse Package.resolved")
         }
     }
     

@@ -1,0 +1,223 @@
+{
+  "cLanguageStandard": null,
+  "cxxLanguageStandard": null,
+  "dependencies": [
+    {
+      "requirement": {
+        "lowerBound": "0.0.2",
+        "type": "range",
+        "upperBound": "1.0.0"
+      },
+      "url": "https://github.com/jakeheis/Icebox"
+    },
+    {
+      "requirement": {
+        "lowerBound": "0.9.1",
+        "type": "range",
+        "upperBound": "1.0.0"
+      },
+      "url": "https://github.com/kylef/PathKit"
+    },
+    {
+      "requirement": {
+        "lowerBound": "3.1.1",
+        "type": "range",
+        "upperBound": "4.0.0"
+      },
+      "url": "https://github.com/onevcat/Rainbow"
+    },
+    {
+      "requirement": {
+        "lowerBound": "1.1.0",
+        "type": "range",
+        "upperBound": "2.0.0"
+      },
+      "url": "https://github.com/sharplet/Regex"
+    },
+    {
+      "requirement": {
+        "lowerBound": "5.1.3",
+        "type": "range",
+        "upperBound": "6.0.0"
+      },
+      "url": "https://github.com/jakeheis/SwiftCLI"
+    },
+    {
+      "requirement": {
+        "lowerBound": "0.8.0",
+        "type": "range",
+        "upperBound": "1.0.0"
+      },
+      "url": "https://github.com/scottrhoyt/SwiftyTextTable"
+    },
+    {
+      "requirement": {
+        "type": "localPackage"
+      },
+      "url": "/Projects/FakeLocal"
+    }
+  ],
+  "name": "Ice",
+  "products": [
+    {
+      "name": "ice",
+      "product_type": "executable",
+      "targets": [
+        "Ice"
+      ]
+    },
+    {
+      "name": "IceKit",
+      "product_type": "library",
+      "targets": [
+        "IceKit"
+      ],
+      "type": null
+    }
+  ],
+  "targets": [
+    {
+      "dependencies": [
+        {
+          "name": "IceCLI",
+          "type": "byname"
+        }
+      ],
+      "exclude": [
+
+      ],
+      "name": "Ice",
+      "path": null,
+      "publicHeadersPath": null,
+      "sources": null,
+      "type": "regular"
+    },
+    {
+      "dependencies": [
+        {
+          "name": "IceKit",
+          "type": "byname"
+        },
+        {
+          "name": "PathKit",
+          "type": "byname"
+        },
+        {
+          "name": "Rainbow",
+          "type": "byname"
+        },
+        {
+          "name": "SwiftCLI",
+          "type": "byname"
+        },
+        {
+          "name": "SwiftyTextTable",
+          "type": "byname"
+        }
+      ],
+      "exclude": [
+
+      ],
+      "name": "IceCLI",
+      "path": null,
+      "publicHeadersPath": null,
+      "sources": null,
+      "type": "regular"
+    },
+    {
+      "dependencies": [
+        {
+          "name": "PathKit",
+          "type": "byname"
+        },
+        {
+          "name": "Rainbow",
+          "type": "byname"
+        },
+        {
+          "name": "Regex",
+          "type": "byname"
+        },
+        {
+          "name": "SwiftCLI",
+          "type": "byname"
+        }
+      ],
+      "exclude": [
+
+      ],
+      "name": "IceKit",
+      "path": null,
+      "publicHeadersPath": null,
+      "sources": null,
+      "type": "regular"
+    },
+    {
+      "dependencies": [
+        {
+          "name": "IceKit",
+          "type": "byname"
+        },
+        {
+          "name": "PathKit",
+          "type": "byname"
+        },
+        {
+          "name": "SwiftCLI",
+          "type": "byname"
+        }
+      ],
+      "exclude": [
+
+      ],
+      "name": "IceKitTests",
+      "path": null,
+      "publicHeadersPath": null,
+      "sources": null,
+      "type": "test"
+    },
+    {
+      "dependencies": [
+        {
+          "name": "Icebox",
+          "type": "byname"
+        },
+        {
+          "name": "Rainbow",
+          "type": "byname"
+        }
+      ],
+      "exclude": [
+
+      ],
+      "name": "IceTests",
+      "path": null,
+      "publicHeadersPath": null,
+      "sources": null,
+      "type": "test"
+    },
+    {
+      "dependencies": [
+
+      ],
+      "exclude": [
+
+      ],
+      "name": "CZLib",
+      "path": null,
+      "pkgConfig": "pc",
+      "providers": [
+        {
+          "name": "apt",
+          "values": [
+            "hey"
+          ]
+        }
+      ],
+      "publicHeadersPath": null,
+      "sources": null,
+      "type": "system"
+    }
+  ]
+}
+

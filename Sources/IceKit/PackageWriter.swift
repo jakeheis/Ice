@@ -7,211 +7,385 @@
 
 import SwiftCLI
 
-class PackageWriter {
+public class PackageWriter {
     
-    private let out: IndentStream
+    private let writer: PackageWriterImpl
     
-    init(stream: WritableStream) {
-        self.out = IndentStream(out: stream)
-    }
-    
-    func write(package: Package) {
-        writeStart()
-        out.indent {
-            writeName(package.name)
-            writePkgConfig(package.pkgConfig)
-            writeProviders(package.providers)
-            writeProducts(package.products)
-            writeDependencies(package.dependencies)
-            writeTargets(package.targets)
-            writeSwiftLanguageVersion(package.swiftLanguageVersions)
-            writeCLangaugeStandard(package.cLanguageStandard)
-            writeCxxLangaugeStandard(package.cxxLanguageStandard)
+    public init(package: ModernPackageData, toolsVersion: SwiftToolsVersion) throws {
+        if toolsVersion >= SwiftToolsVersion.v4_2 {
+            self.writer = Version4_2Writer(package: package, toolsVersion: toolsVersion)
+        } else if toolsVersion >= SwiftToolsVersion.v4 {
+            self.writer = Version4_0Writer(package: package, toolsVersion: toolsVersion)
+        } else {
+            throw IceError(message: "tools version \(toolsVersion) not supported")
         }
-        writeEnd()
     }
     
-    func writeStart() {
+    public func write(to stream: WritableStream) throws {
+        try writer.write(to: stream)
+    }
+    
+}
+
+protocol PackageWriterImpl {
+    var package: ModernPackageData { get }
+    var toolsVersion: SwiftToolsVersion { get }
+    
+    init(package: ModernPackageData, toolsVersion: SwiftToolsVersion)
+    
+    func canWrite() -> Bool
+    func addSwiftLanguageVersions(to function: inout FunctionCallComponent)
+}
+
+extension PackageWriterImpl {
+    
+    func write(to out: WritableStream) throws {
+        guard canWrite() else {
+            throw IceError(message: "cannot write package in version \(toolsVersion); try a different tools version")
+        }
+        
+        var function = FunctionCallComponent(name: "Package")
+        addName(to: &function)
+        addPkgConfig(to: &function)
+        addProviders(to: &function)
+        addProducts(to: &function)
+        addDependencies(to: &function)
+        addTargets(to: &function)
+        addSwiftLanguageVersions(to: &function)
+        addCLangaugeStandard(to: &function)
+        addCxxLangaugeStandard(to: &function)
+        
         out <<< """
-        // swift-tools-version:4.0
+        // swift-tools-version:\(toolsVersion)
         // Managed by ice
         
         import PackageDescription
         
-        let package = Package(
+        let package = \(function.render())
         """
     }
     
-    func writeName(_ name: String) {
-        out <<< "name: \(name.quoted),"
+    func addName(to function: inout FunctionCallComponent) {
+        function.addQuoted(key: "name", value: package.name)
     }
     
-    func writePkgConfig(_ pkgConfig: String?) {
-        if let pkgConfig = pkgConfig {
-            out <<< "pkgConfig: \(pkgConfig.quoted),"
+    func addPkgConfig(to function: inout FunctionCallComponent) {
+        if let pkgConfig = package.pkgConfig {
+            function.addQuoted(key: "pkgConfig", value: pkgConfig)
         }
     }
     
-    func writeProviders(_ providers: [Package.Provider]?) {
-        guard let providers = providers, !providers.isEmpty else {
+    func addProviders(to function: inout FunctionCallComponent) {
+        guard let providers = package.providers, !providers.isEmpty else {
             return
         }
-        out <<< "providers: ["
-        out.indentEach(providers) { (provider) in
-            let values = provider.values.map { $0.quoted }.joined(separator: ", ")
-            out <<< ".\(provider.name)([\(values)]),"
-        }
-        out <<< "],"
+        function.addMultilineArray(key: "providers", children: providers.map { (provider) in
+            return providerComponent(for: provider)
+        })
     }
     
-    func writeProducts(_ products: [Package.Product]) {
-        if products.isEmpty {
+    func addProducts(to function: inout FunctionCallComponent) {
+        if package.products.isEmpty {
             return
         }
         
-        out <<< "products: ["
-        out.indentEach(products) { (product) in
-            let targetsPortion = product.targets.map { $0.quoted }.joined(separator: ", ")
-            let typePortion: String
+        function.addMultilineArray(key: "products", children: package.products.map { (product) in
+            var prodFunc = FunctionCallComponent(staticMember: product.product_type)
+            prodFunc.addQuoted(key: "name", value: product.name)
             if let type = product.type {
-                typePortion = ", type: .\(type)"
-            } else {
-                typePortion = ""
+                prodFunc.addSimple(key: "type", value: "." + type)
             }
-            out <<< ".\(product.product_type)(name: \(product.name.quoted)\(typePortion), targets: [\(targetsPortion)]),"
-        }
-        out <<< "],"
+            prodFunc.addSingleLineArray(key: "targets", children: product.targets.quoted())
+            return prodFunc
+        })
     }
     
-    func writeDependencies(_ dependencies: [Package.Dependency]) {
-        if dependencies.isEmpty {
+    func addDependencies(to function: inout FunctionCallComponent) {
+        if package.dependencies.isEmpty {
             return
         }
         
-        out <<< "dependencies: ["
-        out.indentEach(dependencies) { (dependency) in
-            let versionPortion: String
+        function.addMultilineArray(key: "dependencies", children: package.dependencies.map { (dependency) in
+            var depFunction = FunctionCallComponent(staticMember: "package")
+            switch dependency.requirement.type {
+            case .localPackage:
+                depFunction.addQuoted(key: "path", value: dependency.url)
+            case .range, .branch, .exact, .revision:
+                depFunction.addQuoted(key: "url", value: dependency.url)
+            }
             
-            if dependency.requirement.type == .range {
+            switch dependency.requirement.type {
+            case .range:
                 guard let lowerBoundString = dependency.requirement.lowerBound, let lowerBound = Version(lowerBoundString),
                     let upperBoundString = dependency.requirement.upperBound, let upperBound = Version(upperBoundString) else {
-                        fatalError("Wrong")
+                        fatalError("impossible dependency requirement; invalid range specified")
                 }
                 if upperBound == Version(lowerBound.major + 1, 0, 0) {
-                    versionPortion = "from: \(lowerBoundString.quoted)"
+                    depFunction.addQuoted(key: "from", value: lowerBoundString)
                 } else if upperBound == Version(lowerBound.major, lowerBound.minor + 1, 0) {
-                    versionPortion = ".upToNextMinor(from: \(lowerBoundString.quoted))"
+                    var upToMinor = FunctionCallComponent(staticMember: "upToNextMinor")
+                    upToMinor.addQuoted(key: "from", value: lowerBoundString)
+                    depFunction.addArgument(key: nil, component: upToMinor)
                 } else {
-                    versionPortion = "\(lowerBoundString.quoted)..<\(upperBoundString.quoted)"
+                    depFunction.addSimple(key: nil, value: "\(lowerBoundString.quoted)..<\(upperBoundString.quoted)")
                 }
-            } else {
+            case .branch, .exact, .revision:
                 guard let identifier = dependency.requirement.identifier else {
-                    fatalError("Wrong")
+                    fatalError("impossible dependency requirement; \(dependency.requirement.type) specified, but no identifier given")
                 }
-                let function: String
-                switch dependency.requirement.type {
-                case .branch: function = "branchItem"
-                case .exact: function = "exact"
-                case .revision: function = "revision"
-                default: return
-                }
-                versionPortion = ".\(function)(\(identifier.quoted))"
+                var idFunc = FunctionCallComponent(staticMember: dependency.requirement.type.rawValue)
+                idFunc.addQuoted(key: nil, value: identifier)
+                depFunction.addArgument(key: nil, component: idFunc)
+            case .localPackage: break
             }
             
-            out <<< ".package(url: \(dependency.url.quoted), \(versionPortion)),"
-        }
-        out <<< "],"
+            return depFunction
+        })
     }
     
-    func writeTargets(_ targets: [Package.Target]) {
-        if targets.isEmpty {
-            out <<< "targets: []"
+    func addTargets(to function: inout FunctionCallComponent) {
+        if package.targets.isEmpty {
+            function.addSingleLineArray(key: "targets", children: [])
         } else {
-            out <<< "targets: ["
-            out.indentEach(targets) { (target) in
-                var line = target.isTest ? ".testTarget" : ".target"
-                line += "(name: \(target.name.quoted)"
-                line += ", dependencies: [" + target.dependencies.map { $0.name.quoted }.joined(separator: ", ") + "]"
+            function.addMultilineArray(key: "targets", children: package.targets.map { (target) in
+                let functionName: String
+                switch target.type {
+                case .regular: functionName = "target"
+                case .test: functionName = "testTarget"
+                case .system: functionName = "systemLibrary"
+                }
+                
+                var functionCall = FunctionCallComponent(staticMember: functionName)
+                functionCall.addQuoted(key: "name", value: target.name)
+                switch target.type {
+                case .regular, .test:
+                    functionCall.addSingleLineArray(key: "dependencies", children: target.dependencies.map({ $0.name.quoted }))
+                case .system: break
+                }
                 if let path = target.path {
-                    line += ", path: \(path.quoted)"
+                    functionCall.addQuoted(key: "path", value: path)
                 }
-                if !target.exclude.isEmpty {
-                    line += ", exclude: [" + target.exclude.map { $0.quoted }.joined(separator: ", ") + "]"
+                switch target.type {
+                case .system:
+                    if let pkgConfig = target.pkgConfig {
+                        functionCall.addQuoted(key: "pkgConfig", value: pkgConfig)
+                    }
+                    if let providers = target.providers {
+                        functionCall.addMultilineArray(key: "providers", children: providers.map(providerComponent))
+                    }
+                case .regular, .test:
+                    if !target.exclude.isEmpty {
+                        functionCall.addSingleLineArray(key: "exclude", children: target.exclude.quoted())
+                    }
+                    if let sources = target.sources {
+                        functionCall.addSingleLineArray(key: "sources", children: sources.quoted())
+                    }
+                    if target.type == .regular, let publicHeadersPath = target.publicHeadersPath {
+                        functionCall.addQuoted(key: "publicHeadersPath", value: publicHeadersPath)
+                    }
                 }
-                if let sources = target.sources {
-                    line += ", sources: [" + sources.map { $0.quoted }.joined(separator: ", ") + "]"
-                }
-                if let publicHeadersPath = target.publicHeadersPath {
-                    line += ", publicHeadersPath: \(publicHeadersPath.quoted)"
-                }
-                line += "),"
-                out <<< line
-            }
-            out <<< "]"
+                return functionCall
+            })
         }
     }
     
-    func writeSwiftLanguageVersion(_ versions: [Int]?) {
-        if let versions = versions {
-            let stringVersions = versions.map(String.init).joined(separator: ", ")
-            out <<< "swiftLanguageVersions: [\(stringVersions)],"
-        }
-    }
-    
-    func writeCLangaugeStandard(_ standard: String?) {
-        if let standard = standard {
+    func addCLangaugeStandard(to function: inout FunctionCallComponent) {
+        if let standard = package.cLanguageStandard {
             let converted = standard.replacingOccurrences(of: ":", with: "_")
-            out <<< "cLanguageStandard: .\(converted),"
+            function.addSimple(key: "cLanguageStandard", value: ".\(converted)")
         }
     }
     
-    func writeCxxLangaugeStandard(_ standard: String?) {
-        if let standard = standard {
+    func addCxxLangaugeStandard(to function: inout FunctionCallComponent) {
+        if let standard = package.cxxLanguageStandard {
             let converted = standard
                 .replacingOccurrences(of: "c++", with: "cxx")
                 .replacingOccurrences(of: "gnu++", with: "gnucxx")
-            out <<< "cxxLanguageStandard: .\(converted),"
+            function.addSimple(key: "cxxLanguageStandard", value: ".\(converted)")
         }
     }
     
-    func writeEnd() {
-        out <<< ")"
+    private func providerComponent(for provider: Package.Provider) -> Component {
+        var provFunc = FunctionCallComponent(staticMember: provider.name)
+        provFunc.addSingleLineArray(key: nil, children: provider.values.quoted())
+        return provFunc
     }
     
 }
 
-// MARK: -
+final class Version4_0Writer: PackageWriterImpl {
+    
+    let package: ModernPackageData
+    let toolsVersion: SwiftToolsVersion
+    
+    init(package: ModernPackageData, toolsVersion: SwiftToolsVersion) {
+        self.package = package
+        self.toolsVersion = toolsVersion
+    }
+    
+    func canWrite() -> Bool {
+        if package.dependencies.contains(where:  { $0.requirement.type == .localPackage }) {
+            return false
+        }
+        if package.targets.contains(where:  { $0.type == .system }) {
+            return false
+        }
+        if package.swiftLanguageVersions?.contains(where: { Int($0) == nil }) == true {
+            return false
+        }
+        return true
+    }
+    
+    func addSwiftLanguageVersions(to function: inout FunctionCallComponent) {
+        if let versions = package.swiftLanguageVersions {
+            function.addSingleLineArray(key: "swiftLanguageVersions", children: versions)
+        }
+    }
+    
+}
 
-private class IndentStream {
+final class Version4_2Writer: PackageWriterImpl {
     
-    let out: WritableStream
+    let package: ModernPackageData
+    let toolsVersion: SwiftToolsVersion
     
-    private var indentationLevel = 0
-    
-    init(out: WritableStream) {
-        self.out = out
+    init(package: ModernPackageData, toolsVersion: SwiftToolsVersion) {
+        self.package = package
+        self.toolsVersion = toolsVersion
     }
     
-    func print(_ content: String) {
-        out <<< String(repeating: "    ", count: indentationLevel) + content
+    func canWrite() -> Bool {
+        return true
     }
     
-    func indent(_ go: () -> ()) {
-        indentationLevel += 1
-        go()
-        indentationLevel -= 1
-    }
-    
-    func indentEach<T>(_ objects: [T], _ each: (T) -> ()) {
-        indent {
-            for obj in objects {
-                each(obj)
+    func addSwiftLanguageVersions(to function: inout FunctionCallComponent) {
+        if let versions = package.swiftLanguageVersions {
+            var enumVersions: [String] = []
+            for version in versions {
+                if version == "3" {
+                    enumVersions.append(".v3")
+                } else if version == "4" {
+                    enumVersions.append(".v4")
+                } else if version == "4.2" {
+                    enumVersions.append(".v4_2")
+                } else {
+                    enumVersions.append(".version(\"\(version)\")")
+                }
             }
+            function.addSingleLineArray(key: "swiftLanguageVersions", children: enumVersions)
         }
     }
     
 }
 
-private func <<<(stream: IndentStream, text: String) {
-    stream.print(text)
+// MARK: - Components
+
+protocol Component {
+    func render() -> String
+}
+
+struct ValueComponent: Component {
+    let value: Any
+    func render() -> String {
+        return String(describing: value)
+    }
+}
+
+struct ArrayComponent: Component {
+    let elements: [Component]
+    let multiline: Bool
+    
+    func render() -> String {
+        if multiline {
+            let values = elements.map({ $0.render().indentingEachLine() }).joined(separator: ",\n") + ","
+            return "[\n\(values)\n]"
+        } else {
+            let values = elements.map({ $0.render() }).joined(separator: ", ")
+            return "[\(values)]"
+        }
+    }
+}
+
+struct ArgumentComponent: Component {
+    let key: String?
+    let value: Component
+    func render() -> String {
+        if let key = key {
+            return "\(key): " + value.render()
+        }
+        return value.render()
+    }
+}
+
+struct FunctionCallComponent: Component {
+    let name: String
+    var arguments: [ArgumentComponent]
+    let linebreak: Bool
+    
+    init(name: String) {
+        self.name = name
+        self.arguments = []
+        self.linebreak = true
+    }
+    
+    init(staticMember: String) {
+        self.name = "." + staticMember
+        self.arguments = []
+        self.linebreak = false
+    }
+    
+    mutating func addQuoted(key: String?, value: String) {
+        arguments.append(.init(key: key, value: ValueComponent(value: value.quoted)))
+    }
+    
+    mutating func addSimple(key: String?, value: Any) {
+        arguments.append(.init(key: key, value: ValueComponent(value: value)))
+    }
+    
+    mutating func addMultilineArray(key: String?, children: [Component]) {
+        arguments.append(.init(key: key, value: ArrayComponent(elements: children, multiline: true)))
+    }
+    
+    mutating func addSingleLineArray(key: String?, children: [Component]) {
+        arguments.append(.init(key: key, value: ArrayComponent(elements: children, multiline: false)))
+    }
+    
+    mutating func addSingleLineArray(key: String?, children: [Any]) {
+        arguments.append(.init(key: key, value: ArrayComponent(elements: children.map({ ValueComponent(value: $0) }), multiline: false)))
+    }
+    
+    mutating func addArgument(key: String?, component: Component) {
+        arguments.append(.init(key: key, value: component))
+    }
+    
+    func render() -> String {
+        var str = name + "("
+        if linebreak {
+            str += "\n"
+            str += arguments.map({ $0.render().indentingEachLine() }).joined(separator: ",\n")
+            str += "\n"
+        } else {
+            str += arguments.map({ $0.render() }).joined(separator: ", ")
+        }
+        str += ")"
+        return str
+    }
+}
+
+// MARK: - Extensions
+
+private extension Sequence where Element == String {
+    func quoted() -> [String] {
+        return map { $0.quoted }
+    }
+}
+
+private extension String {
+    func prependingEachLine(with value: String) -> String {
+        return split(separator: "\n").map({ value + $0 }).joined(separator: "\n")
+    }
+    func indentingEachLine() -> String {
+        let singleIndent = "    "
+        return prependingEachLine(with: singleIndent)
+    }
 }

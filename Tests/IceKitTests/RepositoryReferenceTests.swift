@@ -14,44 +14,44 @@ class RepositoryReferenceTests: XCTestCase {
         ("testMostRecentVersion", testMostRecentVersion),
     ]
     
-    func testGithub() {
-        let short = RepositoryReference("jakeheis/SwiftCLI")
+    func testGithub() {        
+        let short = RepositoryReference(blob: "jakeheis/SwiftCLI", registry: MockRegistry())
         XCTAssertEqual(short?.url, "https://github.com/jakeheis/SwiftCLI")
         XCTAssertEqual(short?.name, "SwiftCLI")
         
-        let mid = RepositoryReference("gh:jakeheis/SwiftCLI")
+        let mid = RepositoryReference(blob: "gh:jakeheis/SwiftCLI", registry: MockRegistry())
         XCTAssertEqual(mid?.url, "https://github.com/jakeheis/SwiftCLI")
         XCTAssertEqual(mid?.name, "SwiftCLI")
         
-        let full = RepositoryReference("https://github.com/jakeheis/SwiftCLI")
+        let full = RepositoryReference(blob: "https://github.com/jakeheis/SwiftCLI", registry: MockRegistry())
         XCTAssertEqual(full?.url, "https://github.com/jakeheis/SwiftCLI")
         XCTAssertEqual(full?.name, "SwiftCLI")
         
-        let fullGit = RepositoryReference("https://github.com/jakeheis/SwiftCLI.git")
+        let fullGit = RepositoryReference(blob: "https://github.com/jakeheis/SwiftCLI.git", registry: MockRegistry())
         XCTAssertEqual(fullGit?.url, "https://github.com/jakeheis/SwiftCLI.git")
         XCTAssertEqual(fullGit?.name, "SwiftCLI")
         
-        let ssh = RepositoryReference("git@github.com:jakeheis/SwiftCLI.git")
+        let ssh = RepositoryReference(blob: "git@github.com:jakeheis/SwiftCLI.git", registry: MockRegistry())
         XCTAssertEqual(ssh?.url, "git@github.com:jakeheis/SwiftCLI.git")
         XCTAssertEqual(ssh?.name, "SwiftCLI")
     }
     
     func testGitlab() {
-        let mid = RepositoryReference("gl:jakeheis/SwiftCLI")
+        let mid = RepositoryReference(blob: "gl:jakeheis/SwiftCLI", registry: MockRegistry())
         XCTAssertEqual(mid?.url, "https://gitlab.com/jakeheis/SwiftCLI")
         XCTAssertEqual(mid?.name, "SwiftCLI")
         
-        let full = RepositoryReference("https://gitlab.com/jakeheis/SwiftCLI")
+        let full = RepositoryReference(blob: "https://gitlab.com/jakeheis/SwiftCLI", registry: MockRegistry())
         XCTAssertEqual(full?.url, "https://gitlab.com/jakeheis/SwiftCLI")
         XCTAssertEqual(full?.name, "SwiftCLI")
         
-        let ssh = RepositoryReference("git@gitlab.com:jakeheis/SwiftCLI.git")
+        let ssh = RepositoryReference(blob: "git@gitlab.com:jakeheis/SwiftCLI.git", registry: MockRegistry())
         XCTAssertEqual(ssh?.url, "git@gitlab.com:jakeheis/SwiftCLI.git")
         XCTAssertEqual(ssh?.name, "SwiftCLI")
     }
     
     func testMostRecentVersion() throws {
-        let ref = RepositoryReference("jakeheis/Alamofire")
+        let ref = RepositoryReference(blob: "jakeheis/Alamofire", registry: MockRegistry())
         let latest = try ref?.latestVersion()
         XCTAssertEqual(latest, Version("3.4.1"))
     }

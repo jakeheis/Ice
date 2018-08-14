@@ -5,6 +5,7 @@
 //  Created by Jake Heiser on 9/14/17.
 //
 
+import TestingUtilities
 import XCTest
 
 class BuildTests: XCTestCase {
@@ -80,7 +81,7 @@ class BuildTests: XCTestCase {
     func testWatchBuild() {
         let icebox = IceBox(template: .lib)
         
-        #if !os(Linux) && !os(Android)
+        #if os(macOS)
         
         DispatchQueue.global().asyncAfter(deadline: .now() + 4) {
             icebox.createFile(path: "Sources/Lib/Lib.swift", contents: "\nprint(\"hey world\")\n")
@@ -139,7 +140,53 @@ class BuildTests: XCTestCase {
         let result = icebox.run("build")
         XCTAssertEqual(result.exitStatus, 1)
         XCTAssertEqual(result.stderr, "")
-        XCTAssertEqual(result.stdout, """
+        
+        differentiatedAssertEquality(result.stdout, swift4_2AndAbove: """
+        Fetch https://github.com/jakeheis/SwiftCLI
+        Clone https://github.com/jakeheis/SwiftCLI
+        Resolve https://github.com/jakeheis/SwiftCLI at 4.1.2
+        Compile SwiftCLI (23 sources)
+        Compile Exec (1 sources)
+
+          ● Warning: expression implicitly coerced from 'String?' to 'Any'
+
+            print(str)
+                  ^^^
+            at Sources/Exec/main.swift:2
+
+            Note: provide a default value to avoid this warning
+
+            print(str)
+                  ^^^
+                      ?? <#default value#>
+
+            at Sources/Exec/main.swift:2
+
+            Note: force-unwrap the value to avoid this warning
+
+            print(str)
+                  ^^^
+                     !
+
+            at Sources/Exec/main.swift:2
+
+            Note: explicitly cast to 'Any' with 'as Any' to silence this warning
+
+            print(str)
+                  ^^^
+                      as Any
+
+            at Sources/Exec/main.swift:2
+
+
+          ● Error: cannot convert value of type 'String' to specified type 'Int'
+
+            let int: Int = "hello world"
+                           ^^^^^^^^^^^^^
+            at Sources/Exec/main.swift:4
+        
+        
+        """, swift4_0AndAbove: """
         Fetch https://github.com/jakeheis/SwiftCLI
         Clone https://github.com/jakeheis/SwiftCLI
         Resolve https://github.com/jakeheis/SwiftCLI at 4.1.2

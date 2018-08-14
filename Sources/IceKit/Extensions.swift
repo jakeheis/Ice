@@ -16,3 +16,15 @@ public extension String {
     }
     
 }
+
+#if !swift(>=4.1)
+
+public extension Sequence {
+    
+    func compactMap<U>(_ transform: (Element) -> U?) -> [U] {
+        return flatMap(transform)
+    }
+    
+}
+
+#endif

@@ -2,81 +2,131 @@
 //  PackageTests.swift
 //  IceKitTests
 //
-//  Created by Jake Heiser on 9/11/17.
+//  Created by Jake Heiser on 7/29/18.
 //
 
-import XCTest
-import Foundation
+@testable import IceKit
 import PathKit
-import SwiftCLI
-import IceKit
+import XCTest
 
 class PackageTests: XCTestCase {
     
     static var allTests = [
-        ("testBasic", testBasic),
-        ("testComplex", testComplex),
+        ("testAddProduct", testAddProduct),
+        ("testRemoveProduct", testRemoveProduct),
+        ("testAddDependency", testAddDependency),
+        ("testUpdateDependency", testUpdateDependency),
+        ("testRemoveDependency", testRemoveDependency),
+        ("testAddTarget", testAddTarget),
+        ("testDepend", testDepend),
+        ("testRemoveTarget", testRemoveTarget),
     ]
     
-    func testBasic() throws {
-        XCTAssertEqual(try writePackage(path: "SwiftCLI.json"), """
-        // swift-tools-version:4.0
-        // Managed by ice
-
-        import PackageDescription
-
-        let package = Package(
-            name: "SwiftCLI",
-            products: [
-                .library(name: "SwiftCLI", targets: ["SwiftCLI"]),
-            ],
-            targets: [
-                .target(name: "SwiftCLI", dependencies: []),
-                .testTarget(name: "SwiftCLITests", dependencies: ["SwiftCLI"]),
-            ]
-        )
+    func testAddProduct() {
+        var package = createPackage()
         
-        """)
-    }
-    
-    func testComplex() throws {
-        XCTAssertEqual(try writePackage(path: "Ice.json"), """
-        // swift-tools-version:4.0
-        // Managed by ice
-
-        import PackageDescription
-
-        let package = Package(
-            name: "Ice",
-            products: [
-                .executable(name: "ice", targets: ["CLI"]),
-            ],
-            dependencies: [
-                .package(url: "https://github.com/JohnSundell/Files", from: "1.11.0"),
-                .package(url: "https://github.com/JustHTTP/Just", from: "0.6.0"),
-                .package(url: "https://github.com/onevcat/Rainbow", from: "2.1.0"),
-                .package(url: "https://github.com/sharplet/Regex", from: "1.1.0"),
-                .package(url: "https://github.com/jakeheis/SwiftCLI", .branchItem("master")),
-            ],
-            targets: [
-                .target(name: "CLI", dependencies: ["Core", "SwiftCLI"]),
-                .target(name: "Core", dependencies: ["Exec", "Files", "Just", "Rainbow", "Regex"]),
-                .target(name: "Exec", dependencies: ["Regex", "SwiftCLI"]),
-                .testTarget(name: "CoreTests", dependencies: ["Core"]),
-            ]
-        )
-
-        """)
-    }
-    
-    func writePackage(path: String) throws -> String {
-        let data = try Data(contentsOf: URL(fileURLWithPath: "Tests/Fixtures/\(path)"))
-        let package = try Package.load(data: data)
-        let captureStream = PipeStream()
-        try package.write(to: captureStream)
-        captureStream.closeWrite()
+        package.addProduct(name: "MyCLI", type: .executable, targets: ["Target3"])
+        package.addProduct(name: "MyLib", type: .dynamicLibrary, targets: ["Target4"])
         
-        return captureStream.readAll()
+        let expectedProducts = Fixtures.products + [
+            .init(name: "MyCLI", product_type: "executable", targets: ["Target3"], type: nil),
+            .init(name: "MyLib", product_type: "library", targets: ["Target4"], type: "dynamic")
+        ]
+        assertEqualCodings(package.products, expectedProducts)
     }
     
+    func testRemoveProduct() throws {
+        var package = createPackage()
+        
+        try package.removeProduct(name: "Static")
+        
+        var expectedProducts = Fixtures.products
+        expectedProducts.remove(at: 2)
+        assertEqualCodings(package.products, expectedProducts)
+        
+        XCTAssertThrowsError(try package.removeProduct(name: "not-real"))
+    }
+    
+    func testAddDependency() {
+        var package = createPackage()
+        
+        let ref = RepositoryReference(url: "https://github.com/jakeheis/SwiftCLI")
+        package.addDependency(ref: ref, requirement: .init(version: Version(5, 2, 0)))
+        
+        let expectedDependencies = Fixtures.dependencies + [
+            .init(url: "https://github.com/jakeheis/SwiftCLI", requirement: .init(type: .range, lowerBound: "5.2.0", upperBound: "6.0.0", identifier: nil))
+        ]
+        assertEqualCodings(package.dependencies, expectedDependencies)
+    }
+    
+    func testUpdateDependency() throws {
+        var package = createPackage()
+        
+        try package.updateDependency(dependency: Fixtures.dependencies[3], to: .init(type: .branch, lowerBound: nil, upperBound: nil, identifier: "master"))
+        
+        var expectedDependencies = Fixtures.dependencies
+        expectedDependencies[3].requirement = .init(type: .branch, lowerBound: nil, upperBound: nil, identifier: "master")
+        assertEqualCodings(package.dependencies, expectedDependencies)
+    }
+    
+    func testRemoveDependency() throws {
+        var package = createPackage()
+        
+        try package.removeDependency(named: "Flock")
+        
+        var expectedDependencies = Fixtures.dependencies
+        expectedDependencies.remove(at: 2)
+        assertEqualCodings(package.dependencies, expectedDependencies)
+        
+        var expectedTargets = Fixtures.targets
+        expectedTargets[3].dependencies = [.init(name: "Core")]
+        assertEqualCodings(package.targets, expectedTargets)
+        
+        XCTAssertThrowsError(try package.removeDependency(named: "not-real"))
+    }
+    
+    func testAddTarget() {
+        var package = createPackage()
+        
+        package.addTarget(name: "CoreTests", type: .test, dependencies: ["Core"])
+        
+        let expectedTargets = Fixtures.targets + [
+            .init(name: "CoreTests", type: .test, dependencies: [.init(name: "Core")], path: nil, exclude: [], sources: nil, publicHeadersPath: nil, pkgConfig: nil, providers: nil)
+        ]
+        assertEqualCodings(package.targets, expectedTargets)
+    }
+    
+    func testDepend() throws {
+        var package = createPackage()
+        
+        try package.depend(target: "Core", on: "SwiftCLI")
+        try package.depend(target: "Exclusive", on: "CLI")
+        
+        var expectedTargets = Fixtures.targets
+        expectedTargets[2].dependencies = [.init(name: "SwiftCLI")]
+        expectedTargets[3].dependencies += [.init(name: "CLI")]
+        assertEqualCodings(package.targets, expectedTargets)
+        
+        XCTAssertThrowsError(try package.depend(target: "not-real", on: "SwiftCLI"))
+    }
+    
+    func testRemoveTarget() throws {
+        var package = createPackage()
+        
+        try package.removeTarget(named: "Core")
+        
+        var expectedTargets = Fixtures.targets
+        expectedTargets.remove(at: 2)
+        expectedTargets[0].dependencies.removeFirst()
+        expectedTargets[1].dependencies.remove(at: 1)
+        expectedTargets[2].dependencies.removeFirst()
+        assertEqualCodings(package.targets, expectedTargets)
+        
+        XCTAssertThrowsError(try package.removeTarget(named: "not-real"))
+    }
+    
+    private func createPackage() -> Package {
+        return Package(data: Fixtures.package, toolsVersion: .v4, directory: .current, config: MockConfig())
+    }
+
 }

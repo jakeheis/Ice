@@ -20,109 +20,13 @@ class PackageWriterTests: XCTestCase {
         ("testSwiftLanguageVersions", testSwiftLanguageVersions),
         ("testCLanguageStandard", testCLanguageStandard),
         ("testCxxLanguageStandard", testCxxLanguageStandard),
+        ("testCanWrite", testCanWrite),
     ]
     
-    let products: [Package.Product] = [
-        .init(name: "exec", product_type: "executable", targets: ["MyLib"], type: nil),
-        .init(name: "Lib", product_type: "library", targets: ["Core"], type: nil),
-        .init(name: "Static", product_type: "library", targets: ["MyLib"], type: "static"),
-        .init(name: "Dynamic", product_type: "library", targets: ["Core"], type: "dynamic")
-    ]
-    
-    let dependencies: [Package.Dependency] = [
-        .init(
-            url: "https://github.com/jakeheis/SwiftCLI",
-            requirement: .init(
-                type: .branch,
-                lowerBound: nil,
-                upperBound: nil,
-                identifier: "swift4"
-            )
-        ),
-        .init(
-            url: "https://github.com/jakeheis/Spawn",
-            requirement: .init(
-                type: .exact,
-                lowerBound: nil,
-                upperBound: nil,
-                identifier: "0.0.4"
-            )
-        ),
-        .init(
-            url: "https://github.com/jakeheis/Flock",
-            requirement: .init(
-                type: .revision,
-                lowerBound: nil,
-                upperBound: nil,
-                identifier: "c57454ce053821d2fef8ad25d8918ae83506810c"
-            )
-        ),
-        .init(
-            url: "https://github.com/jakeheis/FlockCLI",
-            requirement: .init(
-                type: .range,
-                lowerBound: "4.1.0",
-                upperBound: "5.0.0",
-                identifier: nil
-            )
-        ),
-        .init(
-            url: "https://github.com/jakeheis/FileKit",
-            requirement: .init(
-                type: .range,
-                lowerBound: "2.1.3",
-                upperBound: "2.2.0",
-                identifier: nil
-            )
-        ),
-        .init(
-            url: "https://github.com/jakeheis/Shout",
-            requirement: .init(
-                type: .range,
-                lowerBound: "0.6.4",
-                upperBound: "0.6.8",
-                identifier: nil
-            )
-        )
-    ]
-    
-    let targets: [Package.Target] = [
-        .init(name: "CLI", isTest: false, dependencies: [
-            .init(name: "Core")
-            ], path: nil, exclude: [], sources: nil, publicHeadersPath: nil),
-        .init(name: "CLITests", isTest: true, dependencies: [
-            .init(name: "CLI"),
-            .init(name: "Core")
-            ], path: nil, exclude: [], sources: nil, publicHeadersPath: nil),
-        .init(name: "Other", isTest: false, dependencies: [
-            .init(name: "Core")
-            ], path: "Sources/Diff", exclude: ["ignore.swift"], sources: nil, publicHeadersPath: nil),
-        .init(name: "Exclusive", isTest: false, dependencies: [
-            .init(name: "Other")
-            ], path: nil, exclude: [], sources: ["only.swift"], publicHeadersPath: "headers.h")
-    ]
-    
-    let providers: [Package.Provider] = [
-        .init(name: "brew", values: ["libssh2"]),
-        .init(name: "apt", values: ["libssh2-1-dev", "libssh2-2-dev"])
-    ]
-    
-    func testFull() {
-        let package = Package(
-            name: "myPackage",
-            pkgConfig: "config",
-            providers: providers,
-            products: products,
-            dependencies: dependencies,
-            targets: targets,
-            swiftLanguageVersions: [2, 3],
-            cLanguageStandard: "c90",
-            cxxLanguageStandard: "c++03"
-        )
-        
-        let capture = PipeStream()
-        let writer = PackageWriter(stream: capture)
-        writer.write(package: package)
+    func testFull() throws {
+        let capture = CaptureStream()
+        let writer = try PackageWriter(package: Fixtures.package, toolsVersion: .v4)
+        try writer.write(to: capture)
         capture.closeWrite()
         
         XCTAssertEqual(capture.readAll(), """
@@ -145,7 +49,7 @@ class PackageWriterTests: XCTestCase {
                 .library(name: "Dynamic", type: .dynamic, targets: ["Core"]),
             ],
             dependencies: [
-                .package(url: "https://github.com/jakeheis/SwiftCLI", .branchItem("swift4")),
+                .package(url: "https://github.com/jakeheis/SwiftCLI", .branch("swift4")),
                 .package(url: "https://github.com/jakeheis/Spawn", .exact("0.0.4")),
                 .package(url: "https://github.com/jakeheis/Flock", .revision("c57454ce053821d2fef8ad25d8918ae83506810c")),
                 .package(url: "https://github.com/jakeheis/FlockCLI", from: "4.1.0"),
@@ -153,126 +57,201 @@ class PackageWriterTests: XCTestCase {
                 .package(url: "https://github.com/jakeheis/Shout", "0.6.4"..<"0.6.8"),
             ],
             targets: [
-                .target(name: "CLI", dependencies: ["Core"]),
+                .target(name: "CLI", dependencies: ["Core", "FileKit"]),
                 .testTarget(name: "CLITests", dependencies: ["CLI", "Core"]),
-                .target(name: "Other", dependencies: ["Core"], path: "Sources/Diff", exclude: ["ignore.swift"]),
-                .target(name: "Exclusive", dependencies: ["Other"], sources: ["only.swift"], publicHeadersPath: "headers.h"),
-            ]
-            swiftLanguageVersions: [2, 3],
-            cLanguageStandard: .c90,
-            cxxLanguageStandard: .cxx03,
+                .target(name: "Core", dependencies: [], path: "Sources/Diff", exclude: ["ignore.swift"]),
+                .target(name: "Exclusive", dependencies: ["Core", "Flock"], sources: ["only.swift"], publicHeadersPath: "headers.h"),
+            ],
+            swiftLanguageVersions: [3, 4],
+            cLanguageStandard: .iso9899_199409,
+            cxxLanguageStandard: .gnucxx1z
+        )
+
+        """)
+        
+        let capture42 = CaptureStream()
+        let writer42 = try PackageWriter(package: Fixtures.package, toolsVersion: .v4_2)
+        try writer42.write(to: capture42)
+        capture42.closeWrite()
+        
+        XCTAssertEqual(capture42.readAll(), """
+        // swift-tools-version:4.2
+        // Managed by ice
+
+        import PackageDescription
+
+        let package = Package(
+            name: "myPackage",
+            pkgConfig: "config",
+            providers: [
+                .brew(["libssh2"]),
+                .apt(["libssh2-1-dev", "libssh2-2-dev"]),
+            ],
+            products: [
+                .executable(name: "exec", targets: ["MyLib"]),
+                .library(name: "Lib", targets: ["Core"]),
+                .library(name: "Static", type: .static, targets: ["MyLib"]),
+                .library(name: "Dynamic", type: .dynamic, targets: ["Core"]),
+            ],
+            dependencies: [
+                .package(url: "https://github.com/jakeheis/SwiftCLI", .branch("swift4")),
+                .package(url: "https://github.com/jakeheis/Spawn", .exact("0.0.4")),
+                .package(url: "https://github.com/jakeheis/Flock", .revision("c57454ce053821d2fef8ad25d8918ae83506810c")),
+                .package(url: "https://github.com/jakeheis/FlockCLI", from: "4.1.0"),
+                .package(url: "https://github.com/jakeheis/FileKit", .upToNextMinor(from: "2.1.3")),
+                .package(url: "https://github.com/jakeheis/Shout", "0.6.4"..<"0.6.8"),
+            ],
+            targets: [
+                .target(name: "CLI", dependencies: ["Core", "FileKit"]),
+                .testTarget(name: "CLITests", dependencies: ["CLI", "Core"]),
+                .target(name: "Core", dependencies: [], path: "Sources/Diff", exclude: ["ignore.swift"]),
+                .target(name: "Exclusive", dependencies: ["Core", "Flock"], sources: ["only.swift"], publicHeadersPath: "headers.h"),
+            ],
+            swiftLanguageVersions: [.v3, .v4],
+            cLanguageStandard: .iso9899_199409,
+            cxxLanguageStandard: .gnucxx1z
         )
 
         """)
     }
     
     func testProducts() {
-        let capture = PipeStream()
-        let writer = PackageWriter(stream: capture)
-        writer.writeProducts(products)
-        capture.closeWrite()
-        
-        XCTAssertEqual(capture.readAll(), """
-        products: [
-            .executable(name: "exec", targets: ["MyLib"]),
-            .library(name: "Lib", targets: ["Core"]),
-            .library(name: "Static", type: .static, targets: ["MyLib"]),
-            .library(name: "Dynamic", type: .dynamic, targets: ["Core"]),
-        ],
-
+        let result = with4_0 { $0.addProducts(to: &$1) }
+        XCTAssertEqual(result, """
+            products: [
+                .executable(name: "exec", targets: ["MyLib"]),
+                .library(name: "Lib", targets: ["Core"]),
+                .library(name: "Static", type: .static, targets: ["MyLib"]),
+                .library(name: "Dynamic", type: .dynamic, targets: ["Core"]),
+            ]
         """)
     }
     
     func testDependencies() {
-        let capture = PipeStream()
-        let writer = PackageWriter(stream: capture)
-        writer.writeDependencies(dependencies)
-        capture.closeWrite()
+        let result = with4_0 { $0.addDependencies(to: &$1) }
+        XCTAssertEqual(result, """
+            dependencies: [
+                .package(url: "https://github.com/jakeheis/SwiftCLI", .branch("swift4")),
+                .package(url: "https://github.com/jakeheis/Spawn", .exact("0.0.4")),
+                .package(url: "https://github.com/jakeheis/Flock", .revision("c57454ce053821d2fef8ad25d8918ae83506810c")),
+                .package(url: "https://github.com/jakeheis/FlockCLI", from: "4.1.0"),
+                .package(url: "https://github.com/jakeheis/FileKit", .upToNextMinor(from: "2.1.3")),
+                .package(url: "https://github.com/jakeheis/Shout", "0.6.4"..<"0.6.8"),
+            ]
+        """)
         
-        XCTAssertEqual(capture.readAll(), """
-        dependencies: [
-            .package(url: "https://github.com/jakeheis/SwiftCLI", .branchItem("swift4")),
-            .package(url: "https://github.com/jakeheis/Spawn", .exact("0.0.4")),
-            .package(url: "https://github.com/jakeheis/Flock", .revision("c57454ce053821d2fef8ad25d8918ae83506810c")),
-            .package(url: "https://github.com/jakeheis/FlockCLI", from: "4.1.0"),
-            .package(url: "https://github.com/jakeheis/FileKit", .upToNextMinor(from: "2.1.3")),
-            .package(url: "https://github.com/jakeheis/Shout", "0.6.4"..<"0.6.8"),
-        ],
-
+        let result2 = with4_2 { $0.addDependencies(to: &$1) }
+        XCTAssertEqual(result2, """
+            dependencies: [
+                .package(url: "https://github.com/jakeheis/SwiftCLI", .branch("swift4")),
+                .package(url: "https://github.com/jakeheis/Spawn", .exact("0.0.4")),
+                .package(url: "https://github.com/jakeheis/Flock", .revision("c57454ce053821d2fef8ad25d8918ae83506810c")),
+                .package(url: "https://github.com/jakeheis/FlockCLI", from: "4.1.0"),
+                .package(url: "https://github.com/jakeheis/FileKit", .upToNextMinor(from: "2.1.3")),
+                .package(url: "https://github.com/jakeheis/Shout", "0.6.4"..<"0.6.8"),
+                .package(path: "/Projects/PathKit"),
+            ]
         """)
     }
     
-    func testTargets() {
-        let capture = PipeStream()
-        let writer = PackageWriter(stream: capture)
-        writer.writeTargets(targets)
-        capture.closeWrite()
+    func testTargets() throws {
+        let result = with4_0 { $0.addTargets(to: &$1) }
+        XCTAssertEqual(result, """
+            targets: [
+                .target(name: "CLI", dependencies: ["Core", "FileKit"]),
+                .testTarget(name: "CLITests", dependencies: ["CLI", "Core"]),
+                .target(name: "Core", dependencies: [], path: "Sources/Diff", exclude: ["ignore.swift"]),
+                .target(name: "Exclusive", dependencies: ["Core", "Flock"], sources: ["only.swift"], publicHeadersPath: "headers.h"),
+            ]
+        """)
         
-        XCTAssertEqual(capture.readAll(), """
-        targets: [
-            .target(name: "CLI", dependencies: ["Core"]),
-            .testTarget(name: "CLITests", dependencies: ["CLI", "Core"]),
-            .target(name: "Other", dependencies: ["Core"], path: "Sources/Diff", exclude: ["ignore.swift"]),
-            .target(name: "Exclusive", dependencies: ["Other"], sources: ["only.swift"], publicHeadersPath: "headers.h"),
-        ]
-
+        let result2 = with4_2 { $0.addTargets(to: &$1) }
+        XCTAssertEqual(result2, """
+            targets: [
+                .target(name: "CLI", dependencies: ["Core", "FileKit"]),
+                .testTarget(name: "CLITests", dependencies: ["CLI", "Core"]),
+                .target(name: "Core", dependencies: [], path: "Sources/Diff", exclude: ["ignore.swift"]),
+                .target(name: "Exclusive", dependencies: ["Core", "Flock"], sources: ["only.swift"], publicHeadersPath: "headers.h"),
+                .systemLibrary(name: "Clibssh2", path: "aPath", pkgConfig: "pc", providers: [
+                    .brew(["libssh2"]),
+                    .apt(["libssh2-1-dev", "libssh2-2-dev"]),
+                ]),
+            ]
         """)
     }
     
     func testProviders() {
-        let capture = PipeStream()
-        let writer = PackageWriter(stream: capture)
-        writer.writeProviders(providers)
-        capture.closeWrite()
-        
-        XCTAssertEqual(capture.readAll(), """
-        providers: [
-            .brew(["libssh2"]),
-            .apt(["libssh2-1-dev", "libssh2-2-dev"]),
-        ],
-
+        let result = with4_0 { $0.addProviders(to: &$1) }
+        XCTAssertEqual(result, """
+            providers: [
+                .brew(["libssh2"]),
+                .apt(["libssh2-1-dev", "libssh2-2-dev"]),
+            ]
         """)
     }
     
-    func testSwiftLanguageVersions() {
-        let versions = [2, 3]
-        let capture = PipeStream()
-        let writer = PackageWriter(stream: capture)
-        writer.writeSwiftLanguageVersion(versions)
-        capture.closeWrite()
+    func testSwiftLanguageVersions() throws {
+        let result40 = with4_0 { $0.addSwiftLanguageVersions(to: &$1) }
+        XCTAssertEqual(result40, """
+            swiftLanguageVersions: [3, 4]
+        """)
         
-        XCTAssertEqual(capture.readAll(), """
-        swiftLanguageVersions: [2, 3],
-
+        let result42 = with4_2 { $0.addSwiftLanguageVersions(to: &$1) }
+        XCTAssertEqual(result42, """
+            swiftLanguageVersions: [.v3, .v4, .v4_2]
         """)
     }
     
     func testCLanguageStandard() {
-        let capture = PipeStream()
-        let writer = PackageWriter(stream: capture)
-        writer.writeCLangaugeStandard("c90")
-        writer.writeCLangaugeStandard("iso9899:199409")
-        capture.closeWrite()
-        
-        XCTAssertEqual(capture.readAll(), """
-        cLanguageStandard: .c90,
-        cLanguageStandard: .iso9899_199409,
-
+        let result = with4_0 { $0.addCLangaugeStandard(to: &$1) }
+        XCTAssertEqual(result, """
+            cLanguageStandard: .iso9899_199409
         """)
     }
     
     func testCxxLanguageStandard() {
-        let capture = PipeStream()
-        let writer = PackageWriter(stream: capture)
-        writer.writeCxxLangaugeStandard("c++03")
-        writer.writeCxxLangaugeStandard("gnu++1z")
-        capture.closeWrite()
-        
-        XCTAssertEqual(capture.readAll(), """
-        cxxLanguageStandard: .cxx03,
-        cxxLanguageStandard: .gnucxx1z,
-
+        let result = with4_0 { $0.addCxxLangaugeStandard(to: &$1) }
+        XCTAssertEqual(result, """
+            cxxLanguageStandard: .gnucxx1z
         """)
+    }
+    
+    func testCanWrite() {
+        var localDep = Fixtures.package
+        localDep.dependencies = Fixtures.package4_2.dependencies
+        XCTAssertFalse(Version4_0Writer(package: localDep, toolsVersion: .v4).canWrite())
+        XCTAssertTrue(Version4_2Writer(package: localDep, toolsVersion: .v4_2).canWrite())
+        
+        var systemTarget = Fixtures.package
+        systemTarget.targets = Fixtures.package4_2.targets
+        XCTAssertFalse(Version4_0Writer(package: systemTarget, toolsVersion: .v4).canWrite())
+        XCTAssertTrue(Version4_2Writer(package: systemTarget, toolsVersion: .v4_2).canWrite())
+        
+        var swiftLangVersions = Fixtures.package
+        swiftLangVersions.swiftLanguageVersions = Fixtures.package4_2.swiftLanguageVersions
+        XCTAssertFalse(Version4_0Writer(package: swiftLangVersions, toolsVersion: .v4).canWrite())
+        XCTAssertTrue(Version4_2Writer(package: swiftLangVersions, toolsVersion: .v4_2).canWrite())
+    }
+    
+    // MARK: -
+    
+    private func withWriter<T: PackageWriterImpl>(_ toolsVersion: SwiftToolsVersion, _ package: ModernPackageData, _ run: (T, inout FunctionCallComponent) throws -> ()) rethrows -> String {
+        var function = FunctionCallComponent(name: "Package")
+        let writer = T(package: package, toolsVersion: toolsVersion)
+        try run(writer, &function)
+        
+        var renderedLines = function.render().components(separatedBy: "\n")
+        renderedLines.removeFirst()
+        renderedLines.removeLast()
+        return renderedLines.joined(separator: "\n")
+    }
+    
+    private func with4_0(_ run: (Version4_0Writer, inout FunctionCallComponent) throws -> ()) rethrows -> String {
+        return try withWriter(.v4, Fixtures.package, run)
+    }
+    
+    private func with4_2(_ run: (Version4_2Writer, inout FunctionCallComponent) throws -> ()) rethrows -> String {
+        return try withWriter(.v4_2, Fixtures.package4_2, run)
     }
     
 }

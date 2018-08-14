@@ -9,20 +9,18 @@ import IceKit
 import Rainbow
 import SwiftCLI
 
-class DescribeCommand: Command {
+class DescribeCommand: IceObject, Command {
     
     let name = "describe"
     let shortDescription = "Describes the given package"
 
-    let package = Parameter()
+    let package = Parameter(completion: .function(.listRegistry))
     
     func execute() throws {
-        if let entry = Ice.registry.get(package.value) {
-            guard let ref = RepositoryReference(entry.url) else {
-                throw IceError(message: "Malformed registry entry: \(entry.url)")
-            }
+        if let entry = registry.get(package.value) {
+            let ref = RepositoryReference(url: entry.url)
             try printRef(ref, description: entry.description)
-        } else if let ref = RepositoryReference(package.value) {
+        } else if let ref = RepositoryReference(blob: package.value, registry: registry) {
             try printRef(ref)
         }
     }
@@ -36,7 +34,7 @@ class DescribeCommand: Command {
         
         do {
             if let version = try ref.latestVersion() {
-                printDetail(title: "Latest", value: version.raw)
+                printDetail(title: "Latest", value: version.string)
                 return
             }
         } catch {}

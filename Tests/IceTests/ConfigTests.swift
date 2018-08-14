@@ -5,6 +5,8 @@
 //  Created by Jake Heiser on 9/13/17.
 //
 
+import Foundation
+import TestingUtilities
 import XCTest
 
 class ConfigTests: XCTestCase {
@@ -13,7 +15,7 @@ class ConfigTests: XCTestCase {
         ("testGet", testGet),
         ("testSet", testSet),
         ("testSetInvalid", testSetInvalid),
-        ("testList", testList),
+        ("testShow", testShow),
     ]
     
     func testGet() {
@@ -44,7 +46,11 @@ class ConfigTests: XCTestCase {
         XCTAssertEqual(reformatResult.stderr, "")
         XCTAssertEqual(reformatResult.stdout, "")
         
-        XCTAssertEqual(icebox.fileContents("global/config.json"), "{\n  \"reformat\" : true\n}")
+        let object = try! JSONSerialization.jsonObject(with: icebox.fileContents("global/config.json")!, options: []) as! [String: Bool]
+        XCTAssertEqual(object, [
+            "openAfterXc": true,
+            "reformat": true,
+        ])
     }
     
     func testSetInvalid() {
@@ -57,20 +63,24 @@ class ConfigTests: XCTestCase {
 
         Valid keys:
         
-          reformat      whether Ice should organize your Package.swift (alphabetize, etc.); defaults to false
+          reformat     whether Ice should organize your Package.swift (alphabetize, etc.); defaults to false
+          openAfterXc  whether Ice should open Xcode the generated project after running `ice xc`; defaults to true
 
         
         """)
     }
     
-    func testList() {
-        let result = IceBox(template: .empty).run("config", "list")
+    func testShow() {
+        let result = IceBox(template: .empty).run("config", "show")
         XCTAssertEqual(result.exitStatus, 0)
         XCTAssertEqual(result.stderr, "")
         XCTAssertEqual(result.stdout, """
-        {
-          "reformat" : false
-        }
+        +-------------+--------+--------+----------+
+        | Key         | Local  | Global | Resolved |
+        +-------------+--------+--------+----------+
+        | reformat    | (none) | false  | false    |
+        | openAfterXc | (none) | true   | true     |
+        +-------------+--------+--------+----------+
         
         """)
     }

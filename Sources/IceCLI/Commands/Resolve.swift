@@ -1,6 +1,6 @@
 //
 //  Resolve.swift
-//  CLI
+//  Ice
 //
 //  Created by Jake Heiser on 3/28/18.
 //

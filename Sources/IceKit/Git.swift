@@ -20,7 +20,7 @@ class Git {
     
     static func lsRemote(url: String) throws -> [Version] {
         var versions: [Version] = []
-        let out = LineStream { (line) in
+        let versionStream = LineStream { (line) in
             guard let index = line.index(of: "\t") else {
                 return
             }
@@ -29,17 +29,18 @@ class Git {
                 versions.append(version)
             }
         }
-        let task = Task(executable: "git", arguments: ["ls-remote", "--tags", url], stdout: out, stderr: WriteStream.null)
+        let err = CaptureStream()
+        let task = Task(executable: "git", arguments: ["ls-remote", "--tags", url], stdout: versionStream, stderr: err)
         let exitStatus = task.runSync()
         guard exitStatus == 0 else {
-            throw IceError(message: "not a valid package reference", exitStatus: exitStatus)
+            throw IceError(message: "couldn't retrieve versions at \(url)\nGit output: \(err.readAll())", exitStatus: exitStatus)
         }
         return versions
     }
     
     private static func runGit(args: [String], silent: Bool, timeout: Int? = nil) throws {
-        let stdout: WriteStream = silent ? .null : .stdout
-        let stderr: WriteStream = silent ? .null : .stderr
+        let stdout: WritableStream = silent ? WriteStream.null : WriteStream.stdout
+        let stderr: WritableStream = silent ? WriteStream.null : WriteStream.stderr
         let task = Task(executable: "git", arguments: args, stdout: stdout, stderr: stderr)
         
         let interruptItem = createInterruptItem(task: task, timeout: timeout)

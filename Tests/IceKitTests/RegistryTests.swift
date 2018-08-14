@@ -18,16 +18,15 @@ class RegistryTests: XCTestCase {
         ("testRemove", testRemove),
     ]
     
-    lazy var registryPath = Path("Registry")
-    lazy var sharedPath = registryPath + "shared/Registry"
-    lazy var localPath = registryPath + "local.json"
+    let registryPath: Path = Path("/tmp/ice/Registry")
+    var sharedPath: Path { return registryPath + "shared" + "Registry" }
+    var localPath: Path {  return registryPath + "local.json" }
     
     override func setUp() {
-        try! registryPath.mkdir()
-    }
-    
-    override func tearDown() {
-        try! registryPath.delete()
+        if registryPath.exists {
+            try! registryPath.delete()
+        }
+        try! registryPath.mkpath()
     }
     
     func testAutoRefresh() throws {

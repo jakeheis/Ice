@@ -14,76 +14,60 @@ class ConfigTests: XCTestCase {
     static var allTests = [
         ("testGet", testGet),
         ("testSet", testSet),
-        ("testLayer", testLayer),
-        ("testMigration", testMigration)
     ]
     
-    let configPath = Path("config.json")
+    let directory = Path("/tmp/ice_config")
+    var globalPath: Path {  return directory + "config.json" }
+    var localPath: Path {  return directory + "ice.json" }
     
-    override func tearDown() {
-        if configPath.exists {
-            try! configPath.delete()
+    override func setUp() {
+        if directory.exists {
+            try! directory.delete()
         }
+        try! directory.mkpath()
     }
     
     func testGet() {
-        try! configPath.write("""
+        try! globalPath.write("""
         {
           "reformat" : true
         }
         """)
         
-        let config = Config(globalConfigPath: configPath)
-        XCTAssertEqual(config.get(\.reformat), true)
+        let config = Config(globalPath: globalPath, localDirectory: directory)
+        XCTAssertEqual(config.reformat, true)
+        
+        try! localPath.write("""
+        {
+          "reformat" : false
+        }
+        """)
+        
+        let config2 = Config(globalPath: globalPath, localDirectory: directory)
+        XCTAssertEqual(config2.reformat, false)
     }
     
-    func testSet() {
-        try! configPath.write("""
+    func testSet() throws {
+        try! globalPath.write("""
         {
           "reformat" : true
         }
         """)
 
-        let config = Config(globalConfigPath: configPath)
-        try! config.set(\.reformat, value: false)
-
+        let config = Config(globalPath: globalPath, localDirectory: directory)
+        XCTAssertEqual(config.reformat, true)
         
-        XCTAssertEqual(try? configPath.read(), """
-        {
-          "reformat" : false
-        }
-        """)
-        XCTAssertEqual(config.get(\.reformat), false)
-    }
-    
-    func testLayer() {
-        let top = ConfigFile(
-            reformat: nil
-        )
-        let bottom = ConfigFile(
-            reformat: false
-        )
+        try config.update(scope: .global) { $0.reformat = false }
         
-        let result = ConfigFile.layer(config: top, onto: bottom)
-        XCTAssertEqual(result.reformat, false)
-    }
-    
-    func testMigration() {
-        try! configPath.write("""
-        {
-          "bin" : "/.icebox/bin",
-          "reformat" : true
-        }
-        """)
+        let object = try! JSONSerialization.jsonObject(with: globalPath.read(), options: []) as! [String: Bool]
+        XCTAssertEqual(object["reformat"], false)
+        XCTAssertEqual(config.reformat, false)
         
-        let config = Config(globalConfigPath: configPath)
-        try! config.set(\.reformat, value: false)
+        try config.update(scope: .local) { $0.reformat = true }
         
-        XCTAssertEqual(try? configPath.read(), """
-        {
-          "reformat" : false
-        }
-        """)
+        let object2 = try! JSONSerialization.jsonObject(with: localPath.read(), options: []) as! [String: Bool]
+        XCTAssertEqual(object2["reformat"], true)
+        XCTAssertEqual(config.reformat, true)
     }
     
 }

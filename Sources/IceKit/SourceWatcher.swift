@@ -22,7 +22,7 @@ public class SourceWatcher {
         self.action = action
     }
     
-    #if !os(Linux) && !os(Android)
+    #if os(macOS)
     
     private var watchers: [DispatchSourceFileSystemObject] = []
     

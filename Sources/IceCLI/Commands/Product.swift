@@ -8,21 +8,21 @@
 import IceKit
 import SwiftCLI
 
-class ProductGroup: CommandGroup {
+class ProductGroup: IceObject, CommandGroup {
     let name = "product"
     let shortDescription = "Manage the package products"
-    let children: [Routable] = [
-        ProductAddCommand(),
-        ProductRemoveCommand()
+    lazy var children: [Routable] = [
+        ProductAddCommand(ice: ice),
+        ProductRemoveCommand(ice: ice)
     ]
 }
 
-private class ProductAddCommand: Command {
+private class ProductAddCommand: IceObject, Command {
     
     let name = "add"
     let shortDescription = "Add a new product"
     
-    let productName = Parameter()
+    let productName = Parameter(completion: .none)
     
     let executable = Flag("-e", "--exec", description: "Make an executable product")
     let library = Flag("-l", "--lib", description: "Make a library product (default)")
@@ -40,7 +40,7 @@ private class ProductAddCommand: Command {
     }
     
     func execute() throws {
-        var package = try Package.load()
+        var package = try loadPackage()
         
         if package.products.contains(where: { $0.name == productName.value }) {
             throw IceError(message: "product \(productName.value) already exists")
@@ -62,21 +62,22 @@ private class ProductAddCommand: Command {
             type: type,
             targets: productTargets
         )
-        try package.write()
+        try package.sync()
     }
     
 }
 
-private class ProductRemoveCommand: Command {
+private class ProductRemoveCommand: IceObject, Command {
     
     let name = "remove"
+    let shortDescription = "Remove the given product"
     
     let product = Parameter()
     
     func execute() throws {
-        var project = try Package.load()
+        var project = try loadPackage()
         try project.removeProduct(name: product.value)
-        try project.write()
+        try project.sync()
     }
     
 }

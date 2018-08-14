@@ -1,6 +1,6 @@
 //
 //  Reset.swift
-//  CLI
+//  Ice
 //
 //  Created by Jake Heiser on 9/6/17.
 //

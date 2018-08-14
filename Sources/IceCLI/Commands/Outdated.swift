@@ -1,6 +1,6 @@
 //
 //  Outdated.swift
-//  CLI
+//  Ice
 //
 //  Created by Jake Heiser on 3/9/18.
 //
@@ -9,13 +9,13 @@ import IceKit
 import SwiftCLI
 import SwiftyTextTable
 
-class OutdatedCommand: Command {
+class OutdatedCommand: IceObject, Command {
     
     let name = "outdated"
     let shortDescription = "List the dependencies which have newer versions"
     
     func execute() throws {
-        let package = try Package.load()
+        let package = try loadPackage()
         guard !package.dependencies.isEmpty else {
             return
         }
@@ -37,7 +37,16 @@ class OutdatedCommand: Command {
             let pin = resolved.findPin(url: dep.url)
             
             let name = ref.name
-            let wanted = dep.requirement.type == .range ? "\(dep.requirement.lowerBound!) ..< \(dep.requirement.upperBound!)" : dep.requirement.identifier!
+            let wanted: String
+            switch dep.requirement.type {
+            case .range:
+                wanted = "\(dep.requirement.lowerBound!) ..< \(dep.requirement.upperBound!)"
+            case .branch, .exact, .revision:
+                wanted = dep.requirement.identifier!
+            case .localPackage:
+                table.addRow(values: [name, "(local)", "(local)", "(local)"])
+                continue
+            }
             let resolved = pin?.state.version ?? pin?.state.branch ?? pin?.state.revision ?? "(none)"
             let latest = try ref.latestVersion()?.description ?? "(unknown)"
             

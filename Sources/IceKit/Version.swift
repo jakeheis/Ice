@@ -13,8 +13,8 @@ public struct Version {
     public let minor: Int
     public let patch: Int
     
-    public var raw: String {
-        return description
+    public var string: String {
+        return "\(major).\(minor).\(patch)"
     }
     
     public init?(_ str: String) {
@@ -64,13 +64,9 @@ extension Version: Comparable {
 
 extension Version: CustomStringConvertible {
     public var description: String {
-        return "\(major).\(minor).\(patch)"
+        return string
     }
 }
 
-extension Version: ConvertibleFromString {
-    public static func convert(from: String) -> Version? {
-        return Version(from)
-    }
-}
+extension Version: LosslessStringConvertible, ConvertibleFromString {}
 

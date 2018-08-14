@@ -1,6 +1,6 @@
 //
 //  New.swift
-//  Bark
+//  Ice
 //
 //  Created by Jake Heiser on 7/21/17.
 //
@@ -9,16 +9,12 @@ import IceKit
 import PathKit
 import SwiftCLI
 
-class NewCommand: Command {
+class NewCommand: CreateProjectCommand, Command {
 
     let name = "new"
     let shortDescription = "Creates a new package in the given directory"
     
-    let projectName = Parameter()
-
-    let library = InitializerOptions.library
-    let executable = InitializerOptions.executable
-    let optionGroups = [InitializerOptions.typeGroup]
+    let projectName = Parameter(completion: .none)
 
     func execute() throws {
         let path = Path.current + projectName.value
@@ -28,17 +24,8 @@ class NewCommand: Command {
         try path.mkdir()
         
         Path.current = path
-        var type: SPM.InitType?
-        if library.value {
-            type = .library
-        } else if executable.value {
-            type = .executable
-        }
-        try SPM().initPackage(type: type)
         
-        // Reformat
-        let p = try Package.load()
-        try p.write()
+        try createProject()
         
         stdout <<< ""
         stdout <<< "Run: ".blue.bold + "cd \(projectName.value) && ice build"

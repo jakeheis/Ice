@@ -8,16 +8,22 @@
 import Foundation
 import PathKit
 
-public class Registry {
+public protocol RegistryType {
+    func get(_ name: String) -> RegistryEntry?
+}
+
+public class Registry: RegistryType {
     
     private static let url = "https://github.com/jakeheis/IceRegistry"
     
     let directory: Path
-    private lazy var localPath = directory + "local.json"
-    private lazy var sharedRepo = directory + "shared"
-    private lazy var sharedPath = sharedRepo + "Registry"
+    private var localPath: Path { return directory + "local.json" }
+    private var sharedRepo: Path { return directory + "shared" }
+    private var sharedPath: Path { return sharedRepo + "Registry" }
     
-    private lazy var localRegistry = RegistryFile.load(from: localPath) ?? RegistryFile(entries: [], lastRefreshed: nil)
+    private lazy var localRegistry = {
+        return LocalRegistryFile.load(from: localPath) ?? LocalRegistryFile(entries: [], lastRefreshed: nil)
+    }()
     
     init(registryPath: Path) {
         self.directory = registryPath
@@ -45,12 +51,12 @@ public class Registry {
         }
         
         localRegistry.lastRefreshed = Date()
-        try localPath.write(JSONEncoder().encode(localRegistry))
+        try write()
     }
     
     public func add(name: String, url: String) throws {
         localRegistry.entries.append(.init(name: name, url: url, description: nil))
-        try localPath.write(JSONEncoder().encode(localRegistry))
+        try write()
     }
     
     public func get(_ name: String) -> RegistryEntry? {
@@ -59,7 +65,7 @@ public class Registry {
         }
         
         let letterPath = sharedPath + (String(name.uppercased()[name.startIndex]) + ".json")
-        let sharedRegistry = RegistryFile.load(from: letterPath)
+        let sharedRegistry = SharedRegistryFile.load(from: letterPath)
         if let matching = sharedRegistry?.entries.first(where: { $0.name == name }) {
             return matching
         }
@@ -73,7 +79,7 @@ public class Registry {
         }
         localRegistry.entries.remove(at: index)
         
-        try localPath.write(JSONEncoder().encode(localRegistry))
+        try write()
     }
     
     public func search(query: String, includeDescription: Bool) throws -> [RegistryEntry] {
@@ -90,14 +96,14 @@ public class Registry {
         var localEntries: [RegistryEntry] = filterOnName(entries: localRegistry.entries)
         all.formUnion(localEntries.map { $0.name })
         
-        var entries: [RegistryEntry] = []
+        var highEntries: [RegistryEntry] = []
+        var middleEntries: [RegistryEntry] = []
+        var bottomEntries: [RegistryEntry] = []
         forEachShared { (file, fileName) in
-            let results = filterOnName(entries: file.entries)
-            if fileName == String(query.uppercased()[query.startIndex]) {
-                entries = results + entries // Rank results with the starting letter higher
-            } else {
-                entries += results
-            }
+            var results = filterOnName(entries: file.entries)
+            let prioritySplit = results.partition(by: { $0.name.lowercased().hasPrefix(query.lowercased()) })
+            middleEntries += results.prefix(upTo: prioritySplit)
+            highEntries += results.suffix(from: prioritySplit)
             all.formUnion(results.map { $0.name })
         }
         
@@ -108,21 +114,34 @@ public class Registry {
             localEntries += filterOnDescription(entries: localRegistry.entries)
             all.formUnion(localEntries.map { $0.name })
             forEachShared { (file, _) in
-                let results = filterOnDescription(entries: file.entries)
-                entries += results
+                var results = filterOnDescription(entries: file.entries)
+                let startChar = String(query.lowercased().prefix(upTo: query.index(after: query.startIndex)))
+                let prioritySplit = results.partition(by: { $0.name.lowercased().hasPrefix(startChar) })
+                bottomEntries += results.prefix(upTo: prioritySplit)
+                middleEntries += results.suffix(from: prioritySplit)
             }
         }
         
-        return localEntries + entries
+        var combined = localEntries + highEntries + middleEntries + bottomEntries
+        if let index = combined.index(where: { $0.name.lowercased() == query.lowercased() } ) {
+            let perfectMatch = combined.remove(at: index)
+            combined.insert(perfectMatch, at: 0)
+        }
+        
+        return combined
     }
     
-    private func forEachShared(block: (_ file: RegistryFile, _ fileName: String) -> ()) {
+    private func forEachShared(block: (_ file: SharedRegistryFile, _ fileName: String) -> ()) {
         let paths = (try? sharedPath.children()) ?? []
         paths.forEach { (path) in
-            if let file = RegistryFile.load(from: path) {
+            if let file = SharedRegistryFile.load(from: path) {
                 block(file, path.lastComponentWithoutExtension)
             }
         }
+    }
+    
+    func write() throws {
+        try localPath.write(JSON.encoder.encode(localRegistry))
     }
     
 }
@@ -133,14 +152,28 @@ public struct RegistryEntry: Codable {
     public let description: String?
 }
 
-private struct RegistryFile: Codable {
+private struct LocalRegistryFile: Codable {
     
     var entries: [RegistryEntry]
     var lastRefreshed: Date?
     
-    static func load(from path: Path) -> RegistryFile? {
+    static func load(from path: Path) -> LocalRegistryFile? {
         guard let data = try? path.read(),
-            let file = try? JSONDecoder().decode(RegistryFile.self, from: data) else {
+            let file = try? JSONDecoder().decode(LocalRegistryFile.self, from: data) else {
+                return nil
+        }
+        return file
+    }
+    
+}
+
+private struct SharedRegistryFile: Codable {
+    
+    var entries: [RegistryEntry]
+    
+    static func load(from path: Path) -> SharedRegistryFile? {
+        guard let data = try? path.read(),
+            let file = try? JSONDecoder().decode(SharedRegistryFile.self, from: data) else {
                 return nil
         }
         return file

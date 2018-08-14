@@ -5,6 +5,7 @@
 //  Created by Jake Heiser on 6/5/18.
 //
 
+import TestingUtilities
 import XCTest
 
 class VersionTests: XCTestCase {

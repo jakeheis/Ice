@@ -5,6 +5,7 @@
 //  Created by Jake Heiser on 9/13/17.
 //
 
+import TestingUtilities
 import XCTest
 
 class AddTests: XCTestCase {
@@ -21,6 +22,8 @@ class AddTests: XCTestCase {
     
     func testBasicAdd() {
         let icebox = IceBox(template: .lib)
+        
+        icebox.execute(with: "version")
         
         let result = icebox.run("add", "jakeheis/Spawn", "-n")
         XCTAssertEqual(result.exitStatus, 0)
@@ -134,23 +137,36 @@ class AddTests: XCTestCase {
         XCTAssertEqual(result.exitStatus, 0)
         XCTAssertEqual(result.stderr, "")
         
-        #if swift(>=4.1)
-        XCTAssertEqual(result.stdout, """
-        Update https://github.com/jakeheis/SwiftCLI
-        Fetch https://github.com/jakeheis/Spawn
-        Clone https://github.com/jakeheis/Spawn
-        Resolve https://github.com/jakeheis/Spawn at 0.0.6
-        
-        """)
-        #else
-        XCTAssertEqual(result.stdout, """
-        Fetch https://github.com/jakeheis/Spawn
-        Update https://github.com/jakeheis/SwiftCLI
-        Clone https://github.com/jakeheis/Spawn
-        Resolve https://github.com/jakeheis/Spawn at 0.0.6
-        
-        """)
-        #endif
+        differentiatedAssert(swift4_2AndAbove: {
+            result.assertStdout { (t) in
+                t.equals("Fetch https://github.com/jakeheis/SwiftCLI")
+                t.equals("Fetch https://github.com/jakeheis/Spawn")
+                t.equalsInAnyOrder([
+                    "Clone https://github.com/jakeheis/Spawn",
+                    "Resolve https://github.com/jakeheis/Spawn at 0.0.6",
+                    "Clone https://github.com/jakeheis/SwiftCLI",
+                    "Resolve https://github.com/jakeheis/SwiftCLI at 4.1.2"
+                ])
+                t.empty()
+                t.done()
+            }
+        }, swift4_1AndAbove: {
+            XCTAssertEqual(result.stdout, """
+            Update https://github.com/jakeheis/SwiftCLI
+            Fetch https://github.com/jakeheis/Spawn
+            Clone https://github.com/jakeheis/Spawn
+            Resolve https://github.com/jakeheis/Spawn at 0.0.6
+            
+            """)
+        }, swift4_0AndAbove: {
+            XCTAssertEqual(result.stdout, """
+            Fetch https://github.com/jakeheis/Spawn
+            Update https://github.com/jakeheis/SwiftCLI
+            Clone https://github.com/jakeheis/Spawn
+            Resolve https://github.com/jakeheis/Spawn at 0.0.6
+            
+            """)
+        })
         
         XCTAssertEqual(icebox.fileContents("Package.swift"), """
         // swift-tools-version:4.0
@@ -197,7 +213,7 @@ class AddTests: XCTestCase {
                 .library(name: "Lib", targets: ["Lib"]),
             ],
             dependencies: [
-                .package(url: "https://github.com/jakeheis/SwiftCLI", .branchItem("master")),
+                .package(url: "https://github.com/jakeheis/SwiftCLI", .branch("master")),
             ],
             targets: [
                 .target(name: "Lib", dependencies: []),
@@ -251,23 +267,36 @@ class AddTests: XCTestCase {
         XCTAssertEqual(result.exitStatus, 0)
         XCTAssertEqual(result.stderr, "")
         
-        #if swift(>=4.1)
-        XCTAssertEqual(result.stdout, """
-        Update https://github.com/jakeheis/SwiftCLI
-        Fetch https://github.com/jakeheis/IceLibTest
-        Clone https://github.com/jakeheis/IceLibTest
-        Resolve https://github.com/jakeheis/IceLibTest at 1.0.0
-        
-        """)
-        #else
-        XCTAssertEqual(result.stdout, """
-        Fetch https://github.com/jakeheis/IceLibTest
-        Update https://github.com/jakeheis/SwiftCLI
-        Clone https://github.com/jakeheis/IceLibTest
-        Resolve https://github.com/jakeheis/IceLibTest at 1.0.0
-        
-        """)
-        #endif
+        differentiatedAssert(swift4_2AndAbove: {
+            result.assertStdout { (t) in
+                t.equals("Fetch https://github.com/jakeheis/SwiftCLI")
+                t.equals("Fetch https://github.com/jakeheis/IceLibTest")
+                t.equalsInAnyOrder([
+                    "Clone https://github.com/jakeheis/IceLibTest",
+                    "Resolve https://github.com/jakeheis/IceLibTest at 1.0.0",
+                    "Clone https://github.com/jakeheis/SwiftCLI",
+                    "Resolve https://github.com/jakeheis/SwiftCLI at 4.1.2"
+                ])
+                t.empty()
+                t.done()
+            }
+        }, swift4_1AndAbove: {
+            XCTAssertEqual(result.stdout, """
+            Update https://github.com/jakeheis/SwiftCLI
+            Fetch https://github.com/jakeheis/IceLibTest
+            Clone https://github.com/jakeheis/IceLibTest
+            Resolve https://github.com/jakeheis/IceLibTest at 1.0.0
+            
+            """)
+        }, swift4_0AndAbove: {
+            XCTAssertEqual(result.stdout, """
+            Fetch https://github.com/jakeheis/IceLibTest
+            Update https://github.com/jakeheis/SwiftCLI
+            Clone https://github.com/jakeheis/IceLibTest
+            Resolve https://github.com/jakeheis/IceLibTest at 1.0.0
+            
+            """)
+        })
         
         XCTAssertEqual(icebox.fileContents("Package.swift"), """
         // swift-tools-version:4.0
