@@ -8,7 +8,7 @@
 import Dispatch
 import SwiftCLI
 
-class Git {
+enum Git {
     
     static func clone(url: String, to path: String, silent: Bool = false, timeout: Int? = nil) throws {
         try runGit(args: ["clone", "--depth", "1", url, path], silent: silent, timeout: timeout)

@@ -69,8 +69,6 @@ class AddCommand: IceObject, Command {
         if libs.count > 1 {
             stdout <<< ""
             stdout <<< "Note: ".bold.blue + "this dependency offers multiple libraries (" + libs.joined(separator: ", ") + ")"
-        } else if libs.isEmpty {
-            libs.append(ref.name)
         }
         
         for lib in libs {

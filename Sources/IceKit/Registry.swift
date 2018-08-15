@@ -75,7 +75,7 @@ public class Registry: RegistryType {
     
     public func remove(_ name: String) throws {
         guard let index = localRegistry.entries.index(where: { $0.name == name })  else {
-            throw IceError(message: "shortcut does not exist")
+            throw IceError(message: "\(name) does not exist in your local registry")
         }
         localRegistry.entries.remove(at: index)
         

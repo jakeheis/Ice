@@ -55,7 +55,7 @@ public struct Package {
     
     public var dirty = false
     
-    public init(data: ModernPackageData, toolsVersion: SwiftToolsVersion, directory: Path, config: Config? = nil) {
+    public init(data: ModernPackageData, toolsVersion: SwiftToolsVersion, directory: Path, config: Config?) {
         self.data = data
         self.toolsVersion = toolsVersion
         self.directory = directory
@@ -120,10 +120,7 @@ public struct Package {
         }
         data.dependencies.remove(at: index)
         
-        var libs = retrieveLibrariesOfDependency(named: name)
-        if libs.isEmpty {
-            libs.append(name)
-        }
+        let libs = retrieveLibrariesOfDependency(named: name)
         for lib in libs {
             removeDependencyFromTargets(named: lib)
         }
@@ -190,7 +187,12 @@ public struct Package {
                 return []
         }
         let matches = Package.libRegex.allMatches(in: contents)
-        return matches.compactMap { $0.captures[0] }
+        
+        var libs = matches.compactMap { $0.captures[0] }
+        if libs.isEmpty {
+            libs.append(name)
+        }
+        return libs
     }
     
     public mutating func sync(format: Bool? = nil) throws {

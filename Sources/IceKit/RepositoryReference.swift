@@ -16,7 +16,7 @@ public struct RepositoryReference {
         return trimmed.components(separatedBy: "/").last!
     }
     
-    public init?(blob: String, registry: RegistryType) {
+    public init?(blob: String, registry: RegistryType? = nil) {
         if Regex("^[a-zA-Z\\-]+/[a-zA-Z\\-]+$").matches(blob) {
             self.init(url: "https://github.com/\(blob)")
         } else if let match = Regex("^(gh|gl):([a-zA-Z\\-]+/[a-zA-Z\\-]+)$").firstMatch(in: blob)  {
@@ -28,7 +28,7 @@ public struct RepositoryReference {
                 url = "https://gitlab.com/\(path)"
             }
             self.init(url: url)
-        } else if Regex("^[a-zA-Z\\-]+$").matches(blob) {
+        } else if Regex("^[a-zA-Z\\-]+$").matches(blob), let registry = registry {
             if let entry = registry.get(blob) {
                 self.init(url: entry.url)
             } else {
