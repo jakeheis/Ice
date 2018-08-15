@@ -29,7 +29,7 @@ public struct Config {
         public static var all: [Keys] = [.reformat, openAfterXc]
     }
     
-    public static func create(for directory: Path) -> Config {
+    public static func load(for directory: Path) -> Config {
         return ConfigManager(global: Ice.defaultRoot, local: directory).resolved
     }
     

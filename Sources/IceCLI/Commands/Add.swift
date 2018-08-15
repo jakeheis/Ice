@@ -65,7 +65,7 @@ class AddCommand: IceObject, Command {
         
         try SPM().resolve()
         
-        var libs = package.retrieveLibrariesOfDependency(named: ref.name)
+        let libs = package.retrieveLibrariesOfDependency(named: ref.name)
         if libs.count > 1 {
             stdout <<< ""
             stdout <<< "Note: ".bold.blue + "this dependency offers multiple libraries (" + libs.joined(separator: ", ") + ")"

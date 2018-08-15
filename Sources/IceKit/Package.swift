@@ -184,13 +184,13 @@ public struct Package {
         let glob = (directory + ".build" + "checkouts").glob("\(dependency)*")
         guard let path = glob.first,
             let contents: String = try? (path + Package.fileName).read().replacingOccurrences(of: "\n", with: " ") else {
-                return []
+                return [dependency]
         }
         let matches = Package.libRegex.allMatches(in: contents)
         
         var libs = matches.compactMap { $0.captures[0] }
         if libs.isEmpty {
-            libs.append(name)
+            libs.append(dependency)
         }
         return libs
     }
