@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import PathKit
 import Rainbow
 import Regex
 import SwiftCLI
@@ -34,6 +35,19 @@ enum JSON {
         return encoder
     }()
     static let decoder = JSONDecoder()
+}
+
+// MARK: - Codable
+
+extension Decodable {
+    
+    static func load(from path: Path) -> Self? {
+        if let data = try? path.read() {
+            return try? JSON.decoder.decode(self, from: data)
+        }
+        return nil
+    }
+    
 }
 
 // MARK: - Lines

@@ -16,31 +16,35 @@ public class Ice {
     public let root: Path
     public let registry: Registry
     
-    public init(root: Path = Ice.defaultRoot) throws {
+    public init?(root: Path = Ice.defaultRoot) {
         let registryDirectory = root + "Registry"
         
         self.root = root
         self.registry = Registry(registryPath: registryDirectory)
         
-        if !root.exists {
-            try run("mkdir", "-p", root.string)
-            try run("mkdir", "-p", registryDirectory.string)
-        }
-        
-        let versionFile = root + "version"
-        if let versionString: String = try? versionFile.read().trimmingCharacters(in: .whitespacesAndNewlines),
-            let oldVersion = Version(versionString) {
-            if oldVersion != Ice.version {
-                try migrate(from: oldVersion)
+        do {
+            if !root.exists {
+                try run("mkdir", "-p", root.string)
+                try run("mkdir", "-p", registryDirectory.string)
+            }
+            
+            let versionFile = root + "version"
+            if let versionString: String = try? versionFile.read().trimmingCharacters(in: .whitespacesAndNewlines),
+                let oldVersion = Version(versionString) {
+                if oldVersion != Ice.version {
+                    try migrate(from: oldVersion)
+                    try versionFile.write(Ice.version.string)
+                }
+            } else {
                 try versionFile.write(Ice.version.string)
             }
-        } else {
-            try versionFile.write(Ice.version.string)
+        } catch {
+            return nil
         }
     }
     
-    public func config(for directory: Path) -> Config {
-        return Config(globalPath: root + "config.json", localDirectory: directory)
+    public func config(for directory: Path) -> ConfigManager {
+        return .init(global: root, local: directory)
     }
     
     public func migrate(from: Version) throws {

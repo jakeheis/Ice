@@ -23,7 +23,7 @@ class OutdatedCommand: IceObject, Command {
             stdout <<< "Package.resolved has not been created; run `ice resolve`"
             return
         }
-        let resolved = try Resolved.load(from: ".")
+        let resolved = try Resolved.load(in: .current)
         
         let nameCol = TextTableColumn(header: "Name")
         let wantedCol = TextTableColumn(header: "Wanted")

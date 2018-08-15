@@ -25,7 +25,7 @@ class PackageLoaderTests: XCTestCase {
         let icebox = IceBox(template: .json)
         
         let data: Data = icebox.fileContents("SwiftCLI.json")!
-        let package = try PackageLoader.load(from: data, toolsVersion: .v4, directory: .current, config: MockConfig())
+        let package = try PackageLoader.load(from: data, toolsVersion: .v4, directory: .current, config: mockConfig)
         
         XCTAssertEqual(package.toolsVersion, .v4)
         XCTAssertEqual(package.dirty, false)
@@ -58,7 +58,7 @@ class PackageLoaderTests: XCTestCase {
         let icebox = IceBox(template: .json)
         
         let data: Data = icebox.fileContents("Ice.json")!
-        let package = try PackageLoader.load(from: data, toolsVersion: SwiftToolsVersion(major: 4, minor: 1, patch: 0), directory: .current, config: MockConfig())
+        let package = try PackageLoader.load(from: data, toolsVersion: SwiftToolsVersion(major: 4, minor: 1, patch: 0), directory: .current, config: mockConfig)
         
         XCTAssertEqual(package.toolsVersion, SwiftToolsVersion(major: 4, minor: 1, patch: 0))
         XCTAssertEqual(package.dirty, false)
@@ -100,7 +100,7 @@ class PackageLoaderTests: XCTestCase {
         let icebox = IceBox(template: .json)
         
         let data: Data = icebox.fileContents("Ice4_2.json")!
-        let package = try PackageLoader.load(from: data, toolsVersion: SwiftToolsVersion(major: 4, minor: 2, patch: 0), directory: .current, config: MockConfig())
+        let package = try PackageLoader.load(from: data, toolsVersion: SwiftToolsVersion(major: 4, minor: 2, patch: 0), directory: .current, config: mockConfig)
         
         XCTAssertEqual(package.toolsVersion, SwiftToolsVersion(major: 4, minor: 2, patch: 0))
         XCTAssertEqual(package.dirty, false)

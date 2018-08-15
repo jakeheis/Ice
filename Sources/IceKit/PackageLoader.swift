@@ -19,7 +19,7 @@ struct PackageLoader {
         var toolsVersion: String { return captures[0] }
     }
     
-    static func load(directory: Path, config: ConfigType?) throws -> Package {
+    static func load(directory: Path, config: Config?) throws -> Package {
         let data = try SPM(directory: directory).dumpPackage()
         
         guard let file = ReadStream.for(path: (directory + Package.fileName).string),
@@ -32,7 +32,7 @@ struct PackageLoader {
         return try load(from: data, toolsVersion: toolsVersion, directory: directory, config: config)
     }
     
-    static func load(from payload: Data, toolsVersion: SwiftToolsVersion, directory: Path, config: ConfigType?) throws -> Package {
+    static func load(from payload: Data, toolsVersion: SwiftToolsVersion, directory: Path, config: Config?) throws -> Package {
         let data: ModernPackageData
         if let v4_2 = try? JSONDecoder().decode(PackageDataV4_2.self, from: payload) {
             data = v4_2

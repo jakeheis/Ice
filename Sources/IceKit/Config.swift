@@ -8,12 +8,12 @@
 import Foundation
 import PathKit
 
-public protocol ConfigType {
-    var reformat: Bool { get }
-    var openAfterXc: Bool { get }
+public struct ConfigFile: Codable {
+    public var reformat: Bool?
+    public var openAfterXc: Bool?
 }
 
-public class Config: ConfigType {
+public struct Config {
     
     public enum Keys: String {
         case reformat
@@ -29,47 +29,49 @@ public class Config: ConfigType {
         public static var all: [Keys] = [.reformat, openAfterXc]
     }
     
-    public struct File: Codable {
-        public var reformat: Bool?
-        public var openAfterXc: Bool?
-        
-        static func from(path: Path) -> File? {
-            guard let data = try? path.read(),
-                let file = try? JSON.decoder.decode(File.self, from: data) else {
-                    return nil
-            }
-            return file
-        }
+    public static func create(for directory: Path) -> Config {
+        return ConfigManager(global: Ice.defaultRoot, local: directory).resolved
     }
     
-    public static let `default`: ConfigType = DefaultConfig()
+    public let reformat: Bool
+    public let openAfterXc: Bool
+    
+    public init(reformat: Bool? = nil, openAfterXc: Bool? = nil) {
+        self.reformat = reformat ?? false
+        self.openAfterXc = openAfterXc ?? true
+    }
+    
+    public init(file: ConfigFile) {
+        self.init(reformat: file.reformat, openAfterXc: file.openAfterXc)
+    }
+    
+    public init(prioritized files: [ConfigFile]) {
+        self.init(
+            reformat: files.first(where: { $0.reformat != nil })?.reformat,
+            openAfterXc: files.first(where: { $0.openAfterXc != nil })?.openAfterXc
+        )
+    }
+    
+}
+
+public class ConfigManager {
     
     public let globalPath: Path
     public let localPath: Path
     
-    public private(set) var global: File
-    public private(set) var local: File
+    public private(set) var global: ConfigFile
+    public private(set) var local: ConfigFile
     
-    public var reformat: Bool {
-        return local.reformat ?? global.reformat ?? Config.default.reformat
+    public var resolved: Config {
+        return Config(prioritized: [local, global])
     }
     
-    public var openAfterXc: Bool {
-        return local.openAfterXc ?? global.openAfterXc ?? Config.default.openAfterXc
-    }
-    
-    public init(globalPath: Path, localDirectory: Path) {
-        self.globalPath = globalPath
-        self.localPath = localDirectory + "ice.json"
+    public init(global: Path, local: Path) {
+        self.globalPath = global + "config.json"
+        self.localPath = local + "ice.json"
         
-        self.global = File.from(path: globalPath) ?? File(
-            reformat: Config.default.reformat,
-            openAfterXc: Config.default.openAfterXc
-        )
-        self.local = File.from(path: localPath) ?? File(
-            reformat: nil,
-            openAfterXc: nil
-        )
+        self.global = ConfigFile.load(from: globalPath) ?? .init()
+        self.local = ConfigFile.load(from: localPath) ?? .init()
     }
     
     public enum UpdateScope {
@@ -77,7 +79,7 @@ public class Config: ConfigType {
         case global
     }
     
-    public func update(scope: UpdateScope, _ go: (inout File) -> ()) throws {
+    public func update(scope: UpdateScope, _ go: (inout ConfigFile) -> ()) throws {
         switch scope {
         case .local:
             go(&local)
@@ -87,10 +89,5 @@ public class Config: ConfigType {
             try globalPath.write(JSON.encoder.encode(global))
         }
     }
-
-}
-
-private class DefaultConfig: ConfigType {
-    let reformat = false
-    let openAfterXc = true
+    
 }

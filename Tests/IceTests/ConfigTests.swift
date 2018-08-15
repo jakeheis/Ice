@@ -48,7 +48,6 @@ class ConfigTests: XCTestCase {
         
         let object = try! JSONSerialization.jsonObject(with: icebox.fileContents("global/config.json")!, options: []) as! [String: Bool]
         XCTAssertEqual(object, [
-            "openAfterXc": true,
             "reformat": true,
         ])
     }

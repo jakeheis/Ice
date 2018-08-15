@@ -14,7 +14,7 @@ public class SPM {
     
     public let directory: Path
     
-    public init(directory: Path = ".") {
+    public init(directory: Path = .current) {
         self.directory = directory
     }
     

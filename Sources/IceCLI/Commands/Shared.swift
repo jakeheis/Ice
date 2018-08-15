@@ -17,7 +17,7 @@ class IceObject {
         return ice.registry
     }
     
-    var config: Config {
+    var config: ConfigManager {
         return ice.config(for: .current)
     }
     
@@ -26,7 +26,7 @@ class IceObject {
     }
     
     func loadPackage() throws -> Package {
-        return try Package.load(directory: .current, config: config)
+        return try Package.load(directory: .current, config: config.resolved)
     }
     
 }

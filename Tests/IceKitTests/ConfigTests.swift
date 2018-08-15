@@ -34,8 +34,10 @@ class ConfigTests: XCTestCase {
         }
         """)
         
-        let config = Config(globalPath: globalPath, localDirectory: directory)
-        XCTAssertEqual(config.reformat, true)
+        let config = ConfigManager(global: directory, local: directory)
+        XCTAssertEqual(config.local.reformat, nil)
+        XCTAssertEqual(config.global.reformat, true)
+        XCTAssertEqual(config.resolved.reformat, true)
         
         try! localPath.write("""
         {
@@ -43,8 +45,10 @@ class ConfigTests: XCTestCase {
         }
         """)
         
-        let config2 = Config(globalPath: globalPath, localDirectory: directory)
-        XCTAssertEqual(config2.reformat, false)
+        let config2 = ConfigManager(global: directory, local: directory)
+        XCTAssertEqual(config2.local.reformat, false)
+        XCTAssertEqual(config2.global.reformat, true)
+        XCTAssertEqual(config2.resolved.reformat, false)
     }
     
     func testSet() throws {
@@ -54,20 +58,26 @@ class ConfigTests: XCTestCase {
         }
         """)
 
-        let config = Config(globalPath: globalPath, localDirectory: directory)
-        XCTAssertEqual(config.reformat, true)
+        let config = ConfigManager(global: directory, local: directory)
+        XCTAssertEqual(config.resolved.reformat, true)
         
         try config.update(scope: .global) { $0.reformat = false }
         
         let object = try! JSONSerialization.jsonObject(with: globalPath.read(), options: []) as! [String: Bool]
         XCTAssertEqual(object["reformat"], false)
-        XCTAssertEqual(config.reformat, false)
+        
+        XCTAssertEqual(config.local.reformat, nil)
+        XCTAssertEqual(config.global.reformat, false)
+        XCTAssertEqual(config.resolved.reformat, false)
         
         try config.update(scope: .local) { $0.reformat = true }
         
         let object2 = try! JSONSerialization.jsonObject(with: localPath.read(), options: []) as! [String: Bool]
         XCTAssertEqual(object2["reformat"], true)
-        XCTAssertEqual(config.reformat, true)
+        
+        XCTAssertEqual(config.local.reformat, true)
+        XCTAssertEqual(config.global.reformat, false)
+        XCTAssertEqual(config.resolved.reformat, true)
     }
     
 }

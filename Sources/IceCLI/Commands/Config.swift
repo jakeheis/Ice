@@ -53,12 +53,16 @@ class ShowConfigCommand: IceObject, Command {
     }
     
     func createRow(key: Config.Keys) -> [String] {
+        let local = config.local
+        let global = Config(file: config.global) // Fill in defaults if any keys are missing
+        let resolved = config.resolved
+        
         var row = [key.rawValue]
         switch key {
         case .reformat:
-            row += [box(config.local.reformat), box(config.global.reformat), box(config.reformat)]
+            row += [box(local.reformat), box(global.reformat), box(resolved.reformat)]
         case .openAfterXc:
-            row += [box(config.local.openAfterXc), box(config.global.openAfterXc), box(config.openAfterXc)]
+            row += [box(local.openAfterXc), box(global.openAfterXc), box(resolved.openAfterXc)]
         }
         return row
     }
@@ -83,10 +87,11 @@ class GetConfigCommand: IceObject, Command {
         guard let key = Config.Keys(rawValue: key.value) else {
             throw unrecognizedKeyError
         }
+        let resolved = config.resolved
         let value: Any
         switch key {
-        case .reformat: value = config.reformat
-        case .openAfterXc: value = config.openAfterXc
+        case .reformat: value = resolved.reformat
+        case .openAfterXc: value = resolved.openAfterXc
         }
         stdout <<< String(describing: value)
     }
@@ -104,7 +109,7 @@ class SetConfigCommand: IceObject, Command {
     let global = Flag("-g", "--global", description: "Update the global configuation; default")
     let local = Flag("-l", "--local", description: "Update the local configuation")
     
-    var configScope: Config.UpdateScope {
+    var configScope: ConfigManager.UpdateScope {
         return (local.value ? .local : .global)
     }
     

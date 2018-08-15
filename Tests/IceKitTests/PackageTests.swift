@@ -126,7 +126,7 @@ class PackageTests: XCTestCase {
     }
     
     private func createPackage() -> Package {
-        return Package(data: Fixtures.package, toolsVersion: .v4, directory: .current, config: MockConfig())
+        return Package(data: Fixtures.package, toolsVersion: .v4, directory: .current, config: mockConfig)
     }
 
 }

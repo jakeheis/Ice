@@ -153,30 +153,10 @@ public struct RegistryEntry: Codable {
 }
 
 private struct LocalRegistryFile: Codable {
-    
     var entries: [RegistryEntry]
     var lastRefreshed: Date?
-    
-    static func load(from path: Path) -> LocalRegistryFile? {
-        guard let data = try? path.read(),
-            let file = try? JSONDecoder().decode(LocalRegistryFile.self, from: data) else {
-                return nil
-        }
-        return file
-    }
-    
 }
 
-private struct SharedRegistryFile: Codable {
-    
+private struct SharedRegistryFile: Codable {    
     var entries: [RegistryEntry]
-    
-    static func load(from path: Path) -> SharedRegistryFile? {
-        guard let data = try? path.read(),
-            let file = try? JSONDecoder().decode(SharedRegistryFile.self, from: data) else {
-                return nil
-        }
-        return file
-    }
-    
 }

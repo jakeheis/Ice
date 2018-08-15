@@ -86,7 +86,7 @@ class UpdateCommand: IceObject, Command {
     }
     
     private func currentVersion(of dep: Package.Dependency) -> String {
-        if let resolved = try? Resolved.load(from: "."), let pin = resolved.findPin(url: dep.url) {
+        if let resolved = try? Resolved.load(in: .current), let pin = resolved.findPin(url: dep.url) {
             if let version = pin.state.version {
                 return version
             } else if let branch = pin.state.branch {

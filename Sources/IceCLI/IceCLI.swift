@@ -64,12 +64,11 @@ public class IceCLI {
             root = Ice.defaultRoot
         }
         
-        do {
-            return try Ice(root: root)
-        } catch {
+        guard let ice = Ice(root: root) else {
             WriteStream.stderr <<< "Error: ".bold.red + "couldn't set up Ice at \(root)"
             exit(1)
         }
+        return ice
     }
     
 }

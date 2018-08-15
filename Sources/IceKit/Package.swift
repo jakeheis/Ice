@@ -20,7 +20,7 @@ public struct Package {
     public static let fileName = Path("Package.swift")
     private static let libRegex = Regex("\\.library\\( *name: *\"([^\"]*)\"")
     
-    public static func load(directory: Path, config: ConfigType? = nil) throws -> Package {
+    public static func load(directory: Path, config: Config? = nil) throws -> Package {
         return try PackageLoader.load(directory: directory, config: config)
     }
     
@@ -51,15 +51,15 @@ public struct Package {
         }
     }
     public let directory: Path
-    public let config: ConfigType
+    public let config: Config
     
     public var dirty = false
     
-    public init(data: ModernPackageData, toolsVersion: SwiftToolsVersion, directory: Path, config: ConfigType? = nil) {
+    public init(data: ModernPackageData, toolsVersion: SwiftToolsVersion, directory: Path, config: Config? = nil) {
         self.data = data
         self.toolsVersion = toolsVersion
         self.directory = directory
-        self.config = config ?? Config.default
+        self.config = config ?? Config()
     }
     
     // MARK: - Products

@@ -31,13 +31,11 @@ public struct Resolved: Decodable {
         return object.pins
     }
     
-    public static func load(from directory: Path) throws -> Resolved {
-        do {
-            let data = try (directory + filePath).read()
-            return try JSONDecoder().decode(Resolved.self, from: data)
-        } catch {
+    public static func load(in directory: Path) throws -> Resolved {
+        guard let file = load(from: directory + filePath) else {
             throw IceError(message: "can't parse Package.resolved")
         }
+        return file
     }
     
     public func findPin(url: String) -> Object.Pin? {

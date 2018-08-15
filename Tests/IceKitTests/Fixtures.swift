@@ -137,11 +137,7 @@ struct Fixtures {
     private init() {}
 }
 
-class MockConfig: ConfigType {
-    var reformat = false
-    var openAfterXc = false
-    
-}
+let mockConfig = Config(reformat: false, openAfterXc: false)
 
 class MockRegistry: RegistryType {
     
