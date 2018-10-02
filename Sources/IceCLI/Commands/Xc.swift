@@ -14,9 +14,10 @@ class XcCommand: IceObject, Command {
     let shortDescription = "Creates a new xcode project for the current package"
     
     let noOpen = Flag("-n", "--no-open", description: "Don't open the Xcode project after generating it")
+    let codeCoverage = Flag("-c", "--code-coverage", description: "Generate Xcode project with code coverage")
     
     func execute() throws {
-        try SPM().generateXcodeProject()
+        try SPM().generateXcodeProject(codeCoverage: codeCoverage.value)
         
         if noOpen.value || config.resolved.openAfterXc == false {
             return

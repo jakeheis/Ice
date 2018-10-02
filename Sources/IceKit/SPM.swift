@@ -104,8 +104,13 @@ public class SPM {
         try runSwift(args: ["package", "update"], transformer: .resolve)
     }
 
-    public func generateXcodeProject() throws {
-        try runSwift(args: ["package", "generate-xcodeproj"], transformer: .xc)
+    public func generateXcodeProject(codeCoverage: Bool) throws {
+        if codeCoverage {
+            try runSwift(args: ["package", "generate-xcodeproj", "--enable-code-coverage"], transformer: .xc)
+        }
+        else {
+            try runSwift(args: ["package", "generate-xcodeproj"], transformer: .xc)
+        }
     }
     
     public func showBinPath(release: Bool = false) throws -> String {
