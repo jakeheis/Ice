@@ -17,10 +17,15 @@ class TestCommand: Command {
     form [<test-target>].[<test-case>][/<test>] (e.g. `ice test IceKitTests.AddTests/testTargetAdd`)
     """
     
+    let generate = Flag("-g", "--generate", description: "Generate Linux tests instead of testing", defaultValue: false)
     let filter = OptionalParameter()
     
     func execute() throws {
-        try SPM().test(filter: filter.value)
+        if generate.value {
+            try SPM().generateTests()
+        } else {
+            try SPM().test(filter: filter.value)
+        }
     }
     
 }
