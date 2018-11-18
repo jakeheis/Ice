@@ -33,7 +33,7 @@ public class IceCLI {
             DumpCommand(),
             FormatCommand(ice: ice),
             GenerateCompletionsCommand(cli: cli),
-            GenerateTestsCommand(),
+            GenerateTestListCommand(),
             InitCommand(ice: ice),
             NewCommand(ice: ice),
             OutdatedCommand(ice: ice),

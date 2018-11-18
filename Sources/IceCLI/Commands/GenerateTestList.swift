@@ -8,9 +8,9 @@
 import IceKit
 import SwiftCLI
 
-class GenerateTestsCommand: Command {
+class GenerateTestListCommand: Command {
     
-    let name = "generate-tests"
+    let name = "generate-test-list"
     let shortDescription = "Generates Linux tests"
     
     func execute() throws {

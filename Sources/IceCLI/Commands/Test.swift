@@ -17,7 +17,7 @@ class TestCommand: Command {
     form [<test-target>].[<test-case>][/<test>] (e.g. `ice test IceKitTests.AddTests/testTargetAdd`)
     """
     
-    let generate = Flag("-g", "--generate", description: "Generate Linux tests instead of testing", defaultValue: false)
+    let generate = Flag("--generate-list", description: "Generate Linux tests instead of testing", defaultValue: false)
     let filter = OptionalParameter()
     
     func execute() throws {
