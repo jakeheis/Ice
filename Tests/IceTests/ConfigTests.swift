@@ -11,13 +11,6 @@ import XCTest
 
 class ConfigTests: XCTestCase {
     
-    static var allTests = [
-        ("testGet", testGet),
-        ("testSet", testSet),
-        ("testSetInvalid", testSetInvalid),
-        ("testShow", testShow),
-    ]
-    
     func testGet() {
         let reformatResult = IceBox(template: .empty).run("config", "get", "reformat")
         XCTAssertEqual(reformatResult.exitStatus, 0)

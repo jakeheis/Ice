@@ -11,17 +11,6 @@ import XCTest
 
 class PackageTests: XCTestCase {
     
-    static var allTests = [
-        ("testAddProduct", testAddProduct),
-        ("testRemoveProduct", testRemoveProduct),
-        ("testAddDependency", testAddDependency),
-        ("testUpdateDependency", testUpdateDependency),
-        ("testRemoveDependency", testRemoveDependency),
-        ("testAddTarget", testAddTarget),
-        ("testDepend", testDepend),
-        ("testRemoveTarget", testRemoveTarget),
-    ]
-    
     func testAddProduct() {
         var package = createPackage()
         

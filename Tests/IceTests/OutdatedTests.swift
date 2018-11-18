@@ -10,11 +10,6 @@ import XCTest
 
 class OutdatedTests: XCTestCase {
     
-    static var allTests = [
-        ("testOutdated", testOutdated),
-        ("testOutdatedNoDependencies", testOutdatedNoDependencies),
-    ]
-    
     func testOutdated() {
         let result = IceBox(template: .exec).run("outdated")
         XCTAssertEqual(result.exitStatus, 0)

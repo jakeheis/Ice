@@ -10,12 +10,6 @@ import XCTest
 
 class ResolveTransformTests: XCTestCase {
     
-    static var allTests = [
-        ("testFetch", testFetch),
-        ("testUpdate", testUpdate),
-        ("testResolve", testResolve),
-    ]
-    
     func testFetch() {
         let fetch = createTest()
         fetch.send("""

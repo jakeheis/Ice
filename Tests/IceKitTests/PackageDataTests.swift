@@ -9,11 +9,6 @@
 import XCTest
 
 class PackageDataTests: XCTestCase {
-
-    static var allTests = [
-        ("testModernize4_0", testModernize4_0),
-        ("testSwiftToolsVersion", testSwiftToolsVersion),
-    ]
     
     func testModernize4_0() throws {
         let v4_0 = PackageDataV4_0(

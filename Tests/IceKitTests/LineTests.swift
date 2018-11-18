@@ -11,10 +11,6 @@ import Regex
 
 class LineTests: XCTestCase {
     
-    static var allTests = [
-        ("testAssertionFailureLine", testAssertionFailureLine),
-    ]
-    
     func testAssertionFailureLine() {
         #if os(macOS)
         let text = "/Ice/Tests/CoreTests/ConfigTests.swift:52: error: -[CoreTests.ConfigTests testSet] : XCTAssertEqual failed: (\"value with a : is bad\") is not equal to (\"hello\") - "

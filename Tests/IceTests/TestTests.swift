@@ -10,10 +10,6 @@ import XCTest
 
 class TestTests: XCTestCase {
     
-    static var allTests = [
-        ("testStructure", testStructure),
-    ]
-    
     // TODO: figure out why this test doesn't work on Linux or within Xcode
     func testStructure() {
 //        let icebox = IceBox(template: .lib)

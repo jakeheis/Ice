@@ -10,32 +10,6 @@ import XCTest
 
 class TestTransformTests: XCTestCase {
     
-    static var allTests = [
-        ("testSuitePass", testSuitePass),
-        ("testAllTests", testAllTests),
-        ("testSelectedTests", testSelectedTests),
-        ("testInterleavedOutput", testInterleavedOutput),
-        ("testNoTests", testNoTests),
-        ("testNoFilterMatch", testNoFilterMatch),
-        ("testXCTFail", testXCTFail),
-        ("testXCTEquals", testXCTEquals),
-        ("testXCTEqualWithAccuracy", testXCTEqualWithAccuracy),
-        ("testXCTNotEquals", testXCTNotEquals),
-        ("testXCTNotEqualWithAccuracy", testXCTNotEqualWithAccuracy),
-        ("testXCTNil", testXCTNil),
-        ("testXCTNotNil", testXCTNotNil),
-        ("testXCTThrow", testXCTThrow),
-        ("testXCTNoThrow", testXCTNoThrow),
-        ("testXCTAssert", testXCTAssert),
-        ("testXCTTrue", testXCTTrue),
-        ("testXCTFalse", testXCTFalse),
-        ("testXCTGreaterThan", testXCTGreaterThan),
-        ("testXCTGreaterThanOrEqual", testXCTGreaterThanOrEqual),
-        ("testXCTLessThan", testXCTLessThan),
-        ("testXCTLessThanOrEqual", testXCTLessThanOrEqual),
-        ("testMultilineEquality", testMultilineEquality),
-    ]
-    
     // MARK: - General
     
     func testSuitePass() {

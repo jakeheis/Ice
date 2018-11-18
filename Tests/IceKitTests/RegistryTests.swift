@@ -11,13 +11,6 @@ import XCTest
 
 class RegistryTests: XCTestCase {
     
-    static var allTests = [
-        ("testAutoRefresh", testAutoRefresh),
-        ("testAdd", testAdd),
-        ("testGet", testGet),
-        ("testRemove", testRemove),
-    ]
-    
     let registryPath: Path = Path("/tmp/ice/Registry")
     var sharedPath: Path { return registryPath + "shared" + "Registry" }
     var localPath: Path {  return registryPath + "local.json" }

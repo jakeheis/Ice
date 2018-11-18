@@ -11,18 +11,6 @@ import SwiftCLI
 
 class PackageWriterTests: XCTestCase {
     
-    static var allTests = [
-        ("testFull", testFull),
-        ("testProducts", testProducts),
-        ("testDependencies", testDependencies),
-        ("testTargets", testTargets),
-        ("testProviders", testProviders),
-        ("testSwiftLanguageVersions", testSwiftLanguageVersions),
-        ("testCLanguageStandard", testCLanguageStandard),
-        ("testCxxLanguageStandard", testCxxLanguageStandard),
-        ("testCanWrite", testCanWrite),
-    ]
-    
     func testFull() throws {
         let capture = CaptureStream()
         let writer = try PackageWriter(package: Fixtures.package, toolsVersion: .v4)

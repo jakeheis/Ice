@@ -11,11 +11,6 @@ import XCTest
 
 class InitTests: XCTestCase {
     
-    static var allTests = [
-        ("testLib", testLib),
-        ("testExec", testExec),
-    ]
-    
     func testLib() {
         let icebox = IceBox(template: .empty)
         icebox.createDirectory(path: "MyNewLib")

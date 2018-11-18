@@ -10,10 +10,6 @@ import XCTest
 
 class DumpTests: XCTestCase {
     
-    static var allTests = [
-        ("testDump", testDump),
-    ]
-    
     func testDump() {
         let result = IceBox(template: .exec).run("dump")
         XCTAssertEqual(result.exitStatus, 0)

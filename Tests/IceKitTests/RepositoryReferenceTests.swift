@@ -8,12 +8,6 @@ import IceKit
 
 class RepositoryReferenceTests: XCTestCase {
     
-    static var allTests = [
-        ("testGithub", testGithub),
-        ("testGitlab", testGitlab),
-        ("testMostRecentVersion", testMostRecentVersion),
-    ]
-    
     func testGithub() {        
         let short = RepositoryReference(blob: "jakeheis/SwiftCLI", registry: MockRegistry())
         XCTAssertEqual(short?.url, "https://github.com/jakeheis/SwiftCLI")

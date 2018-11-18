@@ -10,22 +10,6 @@ import XCTest
 
 class BuildTransformTests: XCTestCase {
     
-    static var allTests = [
-        ("testCompile", testCompile),
-        ("testCompileC", testCompileC),
-        ("testLink", testLink),
-        ("testError", testError),
-        ("testWarningWithSingleNote", testWarningWithSingleNote),
-        ("testNoteNoCode", testNoteNoCode),
-        ("testNoteOtherModule", testNoteOtherModule),
-        ("testSuggestion", testSuggestion),
-        ("testRepeated", testRepeated),
-        ("testPackageError", testPackageError),
-        ("testPCHError", testPCHError),
-        ("testUnusedWarning", testUnusedWarning),
-        ("testLinkerError", testLinkerError),
-    ]
-    
     func testCompile() {
         let build = createTest()
         build.send("""

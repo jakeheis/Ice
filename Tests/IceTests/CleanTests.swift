@@ -10,10 +10,6 @@ import XCTest
 
 class CleanTests: XCTestCase {
     
-    static var allTests = [
-        ("testClean", testClean),
-    ]
-    
     func testClean() {
         let icebox = IceBox(template: .lib)
         

@@ -9,10 +9,6 @@ import TestingUtilities
 import XCTest
 
 class ResolveTests: XCTestCase {
-
-    static var allTests = [
-        ("testResolve", testResolve),
-    ]
     
     func testResolve() {
         let result = IceBox(template: .exec).run("resolve")

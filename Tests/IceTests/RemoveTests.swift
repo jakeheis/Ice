@@ -10,11 +10,6 @@ import XCTest
 
 class RemoveTests: XCTestCase {
     
-    static var allTests = [
-        ("testBasicRemove", testBasicRemove),
-        ("testRemoveDifferentName", testRemoveDifferentName),
-    ]
-    
     func testBasicRemove() {
         let icebox = IceBox(template: .exec)
         

@@ -15,12 +15,6 @@ import TestingUtilities
 
 class PackageLoaderTests: XCTestCase {
     
-    static var allTests = [
-        ("testBasic", testBasic),
-        ("testComplex", testComplex),
-        ("testComplex4_2", testComplex4_2),
-    ]
-    
     func testBasic() throws {
         let icebox = IceBox(template: .json)
         

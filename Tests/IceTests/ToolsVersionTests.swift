@@ -10,11 +10,6 @@ import TestingUtilities
 import XCTest
 
 class ToolsVersionTests: XCTestCase {
-    
-    static var allTests = [
-        ("testGet", testGet),
-        ("testUpdate", testUpdate),
-    ]
 
     func testGet() {
         let icebox = IceBox(template: .lib)

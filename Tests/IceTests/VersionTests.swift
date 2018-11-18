@@ -9,10 +9,6 @@ import TestingUtilities
 import XCTest
 
 class VersionTests: XCTestCase {
-
-    static var allTests = [
-        ("testVersion", testVersion),
-    ]
     
     func testVersion() {
         let buildResult = IceBox(template: .exec).run("--version")

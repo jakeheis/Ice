@@ -10,11 +10,6 @@ import XCTest
 
 class InitTransformTests: XCTestCase {
     
-    static var allTests = [
-        ("testCreatePackage", testCreatePackage),
-        ("testCreateFiles", testCreateFiles),
-    ]
-    
     func testCreatePackage() {
         let build = createTest()
         build.send("""

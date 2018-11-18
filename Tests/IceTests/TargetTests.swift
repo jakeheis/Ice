@@ -10,13 +10,6 @@ import XCTest
 
 class TargetTests: XCTestCase {
     
-    static var allTests = [
-        ("testBasicAdd", testBasicAdd),
-        ("testDependAdd", testDependAdd),
-        ("testTargetRemove", testTargetRemove),
-        ("testSystemAdd", testSystemAdd),
-    ]
-    
     func testBasicAdd() {
         let icebox = IceBox(template: .lib)
         

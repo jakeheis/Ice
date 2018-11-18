@@ -10,11 +10,6 @@ import XCTest
 
 class RunTests: XCTestCase {
     
-    static var allTests = [
-        ("testBasicRun", testBasicRun),
-        ("testWatchRun", testWatchRun),
-    ]
-    
     func testBasicRun() {
         let icebox = IceBox(template: .exec)
         

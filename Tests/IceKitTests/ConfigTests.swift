@@ -11,11 +11,6 @@ import PathKit
 
 class ConfigTests: XCTestCase {
     
-    static var allTests = [
-        ("testGet", testGet),
-        ("testSet", testSet),
-    ]
-    
     let directory = Path("/tmp/ice_config")
     var globalPath: Path {  return directory + "config.json" }
     var localPath: Path {  return directory + "ice.json" }

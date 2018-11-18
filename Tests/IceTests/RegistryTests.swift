@@ -11,13 +11,6 @@ import XCTest
 
 class RegistryTests: XCTestCase {
     
-    static var allTests = [
-        ("testAdd", testAdd),
-        ("testSharedLookup", testSharedLookup),
-        ("testLocalLookup", testLocalLookup),
-        ("testRemove", testRemove),
-    ]
-    
     func testAdd() throws {
         let icebox = IceBox(template: .empty)
         XCTAssertFalse(icebox.fileExists("global/Registry/local.json"))

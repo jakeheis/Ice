@@ -10,16 +10,6 @@ import XCTest
 
 class BuildTests: XCTestCase {
     
-    static var allTests = [
-        ("testSimpleBuild", testSimpleBuild),
-        ("testCleanBuild", testCleanBuild),
-        ("testReleaseBuild", testReleaseBuild),
-        ("testWatchBuild", testWatchBuild),
-        ("testBuildErrors", testBuildErrors),
-        ("testBuildTarget", testBuildTarget),
-        ("testBuildProduct", testBuildProduct),
-    ]
-    
     func testSimpleBuild() {
         let icebox = IceBox(template: .exec)
         let result = icebox.run("build")

@@ -10,10 +10,6 @@ import XCTest
 
 class XcTransformTests: XCTestCase {
     
-    static var allTests = [
-        ("testGenerate", testGenerate),
-    ]
-    
     func testGenerate() {
         let test = TransformerTest(transformer: Xc(), isStdout: true)
         test.send("""

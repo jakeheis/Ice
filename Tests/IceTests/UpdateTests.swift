@@ -10,11 +10,6 @@ import XCTest
 
 class UpdateTests: XCTestCase {
     
-    static var allTests = [
-        ("testUpdate", testUpdate),
-        ("testUpdateSingle", testUpdateSingle)
-    ]
-    
     func testUpdate() {
         let icebox = IceBox(template: .exec)
         

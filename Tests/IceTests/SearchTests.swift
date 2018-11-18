@@ -10,12 +10,6 @@ import XCTest
 
 class SearchTests: XCTestCase {
     
-    static var allTests = [
-        ("testFullSearch", testFullSearch),
-        ("testNameSearch", testNameSearch),
-        ("testNoResults", testNoResults),
-    ]
-    
     func testFullSearch() {
         let result = IceBox(template: .empty).run("search", "RxSwift")
         XCTAssertEqual(result.exitStatus, 0)

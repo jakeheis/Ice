@@ -10,16 +10,6 @@ import XCTest
 
 class AddTests: XCTestCase {
 
-    static var allTests = [
-        ("testBasicAdd", testBasicAdd),
-        ("testTargetAdd", testTargetAdd),
-        ("testVersionedAdd", testVersionedAdd),
-        ("testSingleTargetAdd", testSingleTargetAdd),
-        ("testBranchAdd", testBranchAdd),
-        ("testSHAAdd", testSHAAdd),
-        ("testDifferentNamedLib", testDifferentNamedLib),
-    ]
-    
     func testBasicAdd() {
         let icebox = IceBox(template: .lib)
         
