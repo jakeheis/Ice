@@ -113,7 +113,12 @@ public class SPM {
         }
     }
     
-    public func generateTests() throws {
+    public func generateTests(removing files: [String] = [], verbose: Bool = false) throws {
+        if verbose {
+            try SwiftCLI.run("rm" , arguments: ["Tests/LinuxMain.swift"] + files)
+        } else {
+            _ = try capture("rm", arguments: ["Tests/LinuxMain.swift"] + files)
+        }
         try runSwift(args: ["test", "--generate-linuxmain"])
     }
     

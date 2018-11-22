@@ -8,7 +8,7 @@
 import IceKit
 import SwiftCLI
 
-class TestCommand: Command {
+class TestCommand: IceObject, Command {
     
     let name = "test"
     let shortDescription = "Tests the current package"
@@ -22,7 +22,14 @@ class TestCommand: Command {
     
     func execute() throws {
         if generate.value {
-            try SPM().generateTests()
+            let package = try loadPackage()
+            var testTargets: [String] = []
+            for t in package.targets {
+                if t.type == .test {
+                    testTargets.append(t.name)
+                }
+            }
+            try SPM().generateTests(removing: testTargets.map({ $0 + "XCTestManifests.swift" }), verbose: verbose.value)
         } else {
             try SPM().test(filter: filter.value)
         }
