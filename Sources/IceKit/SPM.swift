@@ -103,7 +103,7 @@ public class SPM {
     public func update() throws {
         try runSwift(args: ["package", "update"], transformer: .resolve)
     }
-
+    
     public func generateXcodeProject(codeCoverage: Bool) throws {
         if codeCoverage {
             try runSwift(args: ["package", "generate-xcodeproj", "--enable-code-coverage"], transformer: .xc)
@@ -111,6 +111,15 @@ public class SPM {
         else {
             try runSwift(args: ["package", "generate-xcodeproj"], transformer: .xc)
         }
+    }
+    
+    public func generateTests(removing files: [String] = [], verbose: Bool = false) throws {
+        if verbose {
+            try SwiftCLI.run("rm" , arguments: ["Tests/LinuxMain.swift"] + files)
+        } else {
+            _ = try capture("rm", arguments: ["Tests/LinuxMain.swift"] + files)
+        }
+        try runSwift(args: ["test", "--generate-linuxmain"])
     }
     
     public func showBinPath(release: Bool = false) throws -> String {
@@ -132,7 +141,7 @@ public class SPM {
         }
         return data
     }
-
+    
     // MARK: - Helpers
     
     private func runSwift(args: [String], transformer: TransformerPair? = nil) throws {
@@ -168,7 +177,7 @@ public class SPM {
     
     private func formArgumentsForRun(release: Bool, executable: [String]) throws -> [String] {
         try build(release: release)
-
+        
         var args = ["run", "--skip-build"]
         if release {
             args += ["-c", "release"]
