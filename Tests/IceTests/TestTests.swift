@@ -5,50 +5,23 @@
 //  Created by Jake Heiser on 9/14/17.
 //
 
-import Icebox
+import TestingUtilities
 import XCTest
 
 class TestTests: XCTestCase {
     
-    // TODO: figure out why this test doesn't work on Linux or within Xcode
-    func testStructure() {
-//        let icebox = IceBox(template: .lib)
-//
-//        let result = icebox.run("test")
-//        XCTAssertEqual(result.exitStatus, 0)
-//
-//        #if os(macOS)
-//        result.assertStdout { (v) in
-//            v.equals("Compile Lib (1 sources)")
-//            v.equals("Compile LibTests (1 sources)")
-//            v.matches("^Link \\./\\.build/.*/LibPackageTests$")
-//            v.empty()
-//            v.done()
-//        }
-//        #else
-//        result.assertStdout { (v) in
-//            v.equals("Compile Lib (1 sources)")
-//            v.equals("Compile LibTests (1 sources)")
-//            v.equals("Compile LibPackageTests (1 sources)")
-//            v.matches("^Link \\./\\.build/.*/LibPackageTests.xctest$")
-//            v.empty()
-//            v.done()
-//        }
-//        #endif
-//
-//        result.assertStderr { (v) in
-//            v.empty()
-//            v.equals("LibPackageTests:")
-//            v.empty()
-//            v.equals(" RUNS  LibTests.LibTests")
-//            v.equals(" PASS  LibTests.LibTests")
-//            v.empty()
-//            v.equals("Tests:\t1 passed, 1 total")
-//            v.matches("^Time:\t[0-9\\.]+s$")
-//            v.empty()
-//            v.empty()
-//            v.done()
-//        }
+    func testGenerateList() {
+        let icebox = IceBox(template: .lib)
+        
+        let result = icebox.run("test", "--generate-list")
+        XCTAssertEqual(result.exitStatus, 0)
+        XCTAssertEqual(result.stderr, "")
+        XCTAssertEqual(result.stdout, """
+        Compile Lib (1 sources)
+        Compile LibTests (1 sources)
+        Link ./.build/x86_64-apple-macosx10.10/debug/LibPackageTests.xctest/Contents/MacOS/LibPackageTests
+        
+        """)
     }
     
 }

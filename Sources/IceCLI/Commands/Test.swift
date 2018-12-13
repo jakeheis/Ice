@@ -17,19 +17,14 @@ class TestCommand: IceObject, Command {
     form [<test-target>].[<test-case>][/<test>] (e.g. `ice test IceKitTests.AddTests/testTargetAdd`)
     """
     
-    let generate = Flag("--generate-list", description: "Generate Linux tests instead of testing", defaultValue: false)
     let filter = OptionalParameter()
+    
+    let generate = Flag("--generate-list", description: "Generate Linux test list instead of testing")
     
     func execute() throws {
         if generate.value {
             let package = try loadPackage()
-            var testTargets: [String] = []
-            for t in package.targets {
-                if t.type == .test {
-                    testTargets.append(t.name)
-                }
-            }
-            try SPM().generateTests(removing: testTargets.map({ $0 + "XCTestManifests.swift" }), verbose: verbose.value)
+            try SPM().generateTests(for: package.targets)
         } else {
             try SPM().test(filter: filter.value)
         }

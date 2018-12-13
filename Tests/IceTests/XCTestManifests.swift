@@ -45,6 +45,12 @@ extension DumpTests {
     ]
 }
 
+extension GenerateTestListTests {
+    static let __allTests = [
+        ("testGenerate", testGenerate),
+    ]
+}
+
 extension InitTests {
     static let __allTests = [
         ("testExec", testExec),
@@ -122,7 +128,7 @@ extension TargetTests {
 
 extension TestTests {
     static let __allTests = [
-        ("testStructure", testStructure),
+        ("testGenerateList", testGenerateList),
     ]
 }
 
@@ -160,6 +166,7 @@ public func __allTests() -> [XCTestCaseEntry] {
         testCase(CleanTests.__allTests),
         testCase(ConfigTests.__allTests),
         testCase(DumpTests.__allTests),
+        testCase(GenerateTestListTests.__allTests),
         testCase(InitTests.__allTests),
         testCase(NewTests.__allTests),
         testCase(OutdatedTests.__allTests),
