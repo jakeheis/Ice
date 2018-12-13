@@ -11,6 +11,7 @@ import XCTest
 class TestTests: XCTestCase {
     
     func testGenerateList() {
+        #if os(macOS)
         let icebox = IceBox(template: .lib)
         
         let result = icebox.run("test", "--generate-list")
@@ -22,6 +23,7 @@ class TestTests: XCTestCase {
         Link ./.build/x86_64-apple-macosx10.10/debug/LibPackageTests.xctest/Contents/MacOS/LibPackageTests
         
         """)
+        #endif
     }
     
 }

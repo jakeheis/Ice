@@ -11,6 +11,7 @@ import XCTest
 class GenerateTestListTests: XCTestCase {
 
     func testGenerate() {
+        #if os(macOS)
         let icebox = IceBox(template: .lib)
         
         let result = icebox.run("generate-test-list")
@@ -35,7 +36,7 @@ class GenerateTestListTests: XCTestCase {
 
         """)
         
-        XCTAssertEqual(icebox.fileContents("Tests/LibTests/XCTestManifests.swift")!, """
+        XCTAssertEqual(icebox.fileContents("Tests/LibTests/XCTestManifests.swift"), """
         import XCTest
 
         extension LibTests {
@@ -53,6 +54,7 @@ class GenerateTestListTests: XCTestCase {
         #endif
         
         """)
+        #endif
     }
 
 }
