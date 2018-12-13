@@ -15,6 +15,8 @@ class TestTests: XCTestCase {
         let icebox = IceBox(template: .lib)
         
         let result = icebox.run("test", "--generate-list")
+        
+        #if swift(>=4.1)
         XCTAssertEqual(result.exitStatus, 0)
         XCTAssertEqual(result.stderr, "")
         XCTAssertEqual(result.stdout, """
@@ -23,6 +25,16 @@ class TestTests: XCTestCase {
         Link ./.build/x86_64-apple-macosx10.10/debug/LibPackageTests.xctest/Contents/MacOS/LibPackageTests
         
         """)
+        #else
+        XCTAssertEqual(result.exitStatus, 1)
+        XCTAssertEqual(result.stdout, "")
+        XCTAssertEqual(result.stderr, """
+        
+        Error: test list generation only supported for Swift 4.1 and above
+        
+        
+        """)
+        #endif
         #endif
     }
     
