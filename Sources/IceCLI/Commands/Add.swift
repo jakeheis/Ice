@@ -90,10 +90,14 @@ class AddCommand: IceObject, Command {
                 }
                 stdout <<< ""
                 
-                let targetString = Input.readLine(prompt: "> ", validation: { (input) -> Bool in
+                func isTarget(_ input: String) -> Bool {
                     let allowed = CharacterSet(charactersIn: ids + ", ")
                     return input.rangeOfCharacter(from: allowed.inverted) == nil
-                })
+                }
+                let targetString = Input.readLine(prompt: "> ", validation: [
+                    .custom("must be a letter or number corresponding to a target", isTarget)
+                ])
+                
                 let distances = targetString.compactMap { ids.index(of: $0) }
                 let targets = distances.map { possibleTargets[ids.distance(from: ids.startIndex, to: $0)] }
                 try targets.forEach { try package.depend(target: $0.name, on: lib) }

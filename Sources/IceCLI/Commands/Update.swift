@@ -77,7 +77,7 @@ class UpdateCommand: IceObject, Command {
             stdout <<< ""
         }
         
-        let chosen: Version = Input.readObject(prompt: ">", errorResponse: { (_) in
+        let chosen: Version = Input.readObject(prompt: ">", errorResponse: { (_, _) in
             self.stdout <<< "Version must be of the form 'major.minor.patch'"
         })
         stdout <<< ""
