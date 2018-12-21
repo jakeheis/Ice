@@ -96,36 +96,38 @@ class TargetTests: XCTestCase {
     }
     
     func testSystemAdd() {
-        #if swift(>=4.1.50)
-        let icebox = IceBox(template: .lib)
-        
-        icebox.execute(with: "tools-version", "update", "4.2")
-        
-        let result = icebox.run("target", "add", "CSSH", "-s")
-        XCTAssertEqual(result.exitStatus, 0)
-        XCTAssertEqual(result.stdout, "")
-        XCTAssertEqual(result.stderr, "")
-        
-        XCTAssertEqual(icebox.fileContents("Package.swift"), """
-        // swift-tools-version:4.2
-        // Managed by ice
+        Differentiate.byVersion(swift4_2AndAbove: {
+            let icebox = IceBox(template: .lib)
+            
+            icebox.execute(with: "tools-version", "update", "4.2")
+            
+            let result = icebox.run("target", "add", "CSSH", "-s")
+            XCTAssertEqual(result.exitStatus, 0)
+            XCTAssertEqual(result.stdout, "")
+            XCTAssertEqual(result.stderr, "")
+            
+            XCTAssertEqual(icebox.fileContents("Package.swift"), """
+            // swift-tools-version:4.2
+            // Managed by ice
 
-        import PackageDescription
+            import PackageDescription
 
-        let package = Package(
-            name: "Lib",
-            products: [
-                .library(name: "Lib", targets: ["Lib"]),
-            ],
-            targets: [
-                .target(name: "Lib", dependencies: []),
-                .testTarget(name: "LibTests", dependencies: ["Lib"]),
-                .systemLibrary(name: \"CSSH\"),
-            ]
-        )
+            let package = Package(
+                name: "Lib",
+                products: [
+                    .library(name: "Lib", targets: ["Lib"]),
+                ],
+                targets: [
+                    .target(name: "Lib", dependencies: []),
+                    .testTarget(name: "LibTests", dependencies: ["Lib"]),
+                    .systemLibrary(name: \"CSSH\"),
+                ]
+            )
 
-        """)
-        #endif
+            """)
+        }, swift4_0AndAbove: {
+            print("Skipping /testSystemAdd (Swift < 4.2)")
+        })
     }
     
 }

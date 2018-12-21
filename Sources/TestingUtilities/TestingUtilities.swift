@@ -28,70 +28,67 @@ public class IceConfig: IceboxConfig {
 
 public typealias IceBox = Icebox<IceConfig>
 
-enum SupportedPlatforms {
-    case mac
-    case linux
-}
-
-enum SupportedSwiftVersions {
-    case v4_0
-    case v4_1
-    case v4_2
-}
-
 public typealias Assertion = () -> ()
 
-public func differentiatedAssert(swift4_2AndAbove: Assertion? = nil, swift4_1AndAbove: Assertion? = nil, swift4_0AndAbove: Assertion) {
-    // TODO: swift(>=4.2) doesn't work here for some reason, so using 4.1.4 even though that version doesn't exist
-    #if swift(>=4.1.50)
-    if let swift4_2AndAbove = swift4_2AndAbove {
-        swift4_2AndAbove()
-    } else if let swift4_1AndAbove = swift4_1AndAbove {
-        swift4_1AndAbove()
-    } else {
-        swift4_0AndAbove()
-    }
-    #elseif swift(>=4.1)
-    if let swift4_1AndAbove = swift4_1AndAbove {
-        swift4_1AndAbove()
-    } else {
-        swift4_0AndAbove()
-    }
-    #else
-    swift4_0AndAbove()
-    #endif
-}
-
-public func differentiatedAssertEquality<T: Equatable>(_ value: T, swift4_2AndAbove: T? = nil, swift4_1AndAbove: T? = nil, swift4_0AndAbove: T, file: StaticString = #file, line: UInt = #line) {
-    differentiatedAssert(swift4_2AndAbove: {
-        XCTAssertEqual(value, swift4_2AndAbove ?? swift4_1AndAbove ?? swift4_0AndAbove, file: file, line: line)
-    }, swift4_1AndAbove: {
-        XCTAssertEqual(value, swift4_1AndAbove ?? swift4_0AndAbove, file: file, line: line)
-    }, swift4_0AndAbove: {
-        XCTAssertEqual(value, swift4_0AndAbove, file: file, line: line)
-    })
-}
-
-public func differentiatedAssertEquality<T: Equatable>(_ value: T?, swift4_2AndAbove: T? = nil, swift4_1AndAbove: T? = nil, swift4_0AndAbove: T, file: StaticString = #file, line: UInt = #line) {
-    if let value = value {
-        differentiatedAssertEquality(value, swift4_2AndAbove: swift4_2AndAbove, swift4_1AndAbove: swift4_1AndAbove, swift4_0AndAbove: swift4_0AndAbove, file: file, line: line)
-        return
-    }
-    differentiatedAssert(swift4_2AndAbove: {
-        XCTAssertEqual(value, swift4_2AndAbove ?? swift4_1AndAbove ?? swift4_0AndAbove, file: file, line: line)
-    }, swift4_1AndAbove: {
-        XCTAssertEqual(value, swift4_1AndAbove ?? swift4_0AndAbove, file: file, line: line)
-    }, swift4_0AndAbove: {
-        XCTAssertEqual(value, swift4_0AndAbove, file: file, line: line)
-    })
-}
-
-struct Expected {
+public class Differentiate {
     
-    let platform: SupportedPlatforms
-    let version: SupportedSwiftVersions
-    let text: String
+    public static func byPlatform(mac: Assertion, linux: Assertion) {
+        differentiate.byPlatform(mac: mac, linux: linux)
+    }
     
-//    init(platform: SupportedPlatforms, version: SupportedSwiftVersions, text: String)
+    public static func byVersion(swift4_2AndAbove: Assertion? = nil, swift4_1AndAbove: Assertion? = nil, swift4_0AndAbove: Assertion) {
+        differentiate.byVersion(swift4_2AndAbove: swift4_2AndAbove, swift4_1AndAbove: swift4_1AndAbove, swift4_0AndAbove: swift4_0AndAbove)
+    }
+    
+    private static let differentiate = Differentiate()
+    
+    private init() {
+        let platform: String
+        #if os(macOS)
+        platform = "macOS"
+        #else
+        platform = "Linux"
+        #endif
+        
+        let version: String
+        #if swift(>=4.1.50)
+        version = "4.2 (and above)"
+        #elseif swift(>=4.1)
+        version = "4.1"
+        #else
+        version = "4.0"
+        #endif
+        
+        print("Running tests on \(platform), Swift version \(version)")
+    }
+    
+    private func byPlatform(mac: Assertion, linux: Assertion) {
+        #if os(macOS)
+        mac()
+        #else
+        linux()
+        #endif
+    }
+    
+    private func byVersion(swift4_2AndAbove: Assertion?, swift4_1AndAbove: Assertion?, swift4_0AndAbove: Assertion) {
+        // TODO: swift(>=4.2) doesn't work here for some reason, so using 4.1.4 even though that version doesn't exist
+        #if swift(>=4.1.50)
+        if let swift4_2AndAbove = swift4_2AndAbove {
+            swift4_2AndAbove()
+        } else if let swift4_1AndAbove = swift4_1AndAbove {
+            swift4_1AndAbove()
+        } else {
+            swift4_0AndAbove()
+        }
+        #elseif swift(>=4.1)
+        if let swift4_1AndAbove = swift4_1AndAbove {
+        swift4_1AndAbove()
+        } else {
+        swift4_0AndAbove()
+        }
+        #else
+        swift4_0AndAbove()
+        #endif
+    }
     
 }

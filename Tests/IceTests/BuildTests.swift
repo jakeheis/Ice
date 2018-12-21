@@ -71,48 +71,46 @@ class BuildTests: XCTestCase {
     func testWatchBuild() {
         let icebox = IceBox(template: .lib)
         
-        #if os(macOS)
-        
-        DispatchQueue.global().asyncAfter(deadline: .now() + 4) {
-            icebox.createFile(path: "Sources/Lib/Lib.swift", contents: "\nprint(\"hey world\")\n")
-        }
+        Differentiate.byPlatform(mac: {
+            #if os(macOS)
+            DispatchQueue.global().asyncAfter(deadline: .now() + 4) {
+                icebox.createFile(path: "Sources/Lib/Lib.swift", contents: "\nprint(\"hey world\")\n")
+            }
+            
+            DispatchQueue.global().asyncAfter(deadline: .now() + 6) {
+                icebox.interrupt()
+            }
+            
+            let result = icebox.run("build", "-w")
+            
+            XCTAssertEqual(result.exitStatus, 2)
+            XCTAssertEqual(result.stderr, "")
+            XCTAssertEqual(result.stdout, """
+            [ice] rebuilding due to changes...
+            Compile Lib (1 sources)
+            [ice] rebuilding due to changes...
+            Compile Lib (1 sources)
+            
+              ● Error: expressions are not allowed at the top level
 
-        DispatchQueue.global().asyncAfter(deadline: .now() + 6) {
-            icebox.interrupt()
-        }
-        
-        let result = icebox.run("build", "-w")
-        
-        XCTAssertEqual(result.exitStatus, 2)
-        XCTAssertEqual(result.stderr, "")
-        XCTAssertEqual(result.stdout, """
-        [ice] rebuilding due to changes...
-        Compile Lib (1 sources)
-        [ice] rebuilding due to changes...
-        Compile Lib (1 sources)
-        
-          ● Error: expressions are not allowed at the top level
+                print("hey world")
+                ^
+                at Sources/Lib/Lib.swift:2
+            
+            
+            """)
+            #endif
+        }, linux: {
+            let result = icebox.run("build", "-w")
+            XCTAssertEqual(result.exitStatus, 1)
+            XCTAssertEqual(result.stdout, "")
+            XCTAssertEqual(result.stderr, """
 
-            print("hey world")
-            ^
-            at Sources/Lib/Lib.swift:2
-        
-        
-        """)
-        
-        #else
-        
-        let result = icebox.run("build", "-w")
-        XCTAssertEqual(result.exitStatus, 1)
-        XCTAssertEqual(result.stdout, "")
-        XCTAssertEqual(result.stderr, """
-
-        Error: -w is not supported on Linux
+            Error: -w is not supported on Linux
 
 
-        """)
-        
-        #endif
+            """)
+        })
     }
     
     func testBuildErrors() {
@@ -131,97 +129,101 @@ class BuildTests: XCTestCase {
         XCTAssertEqual(result.exitStatus, 1)
         XCTAssertEqual(result.stderr, "")
         
-        differentiatedAssertEquality(result.stdout, swift4_2AndAbove: """
-        Fetch https://github.com/jakeheis/SwiftCLI
-        Clone https://github.com/jakeheis/SwiftCLI
-        Resolve https://github.com/jakeheis/SwiftCLI at 4.1.2
-        Compile SwiftCLI (23 sources)
-        Compile Exec (1 sources)
+        Differentiate.byVersion(swift4_2AndAbove: {
+            XCTAssertEqual(result.stdout, """
+            Fetch https://github.com/jakeheis/SwiftCLI
+            Clone https://github.com/jakeheis/SwiftCLI
+            Resolve https://github.com/jakeheis/SwiftCLI at 4.1.2
+            Compile SwiftCLI (23 sources)
+            Compile Exec (1 sources)
 
-          ● Warning: expression implicitly coerced from 'String?' to 'Any'
+              ● Warning: expression implicitly coerced from 'String?' to 'Any'
 
-            print(str)
-                  ^^^
-            at Sources/Exec/main.swift:2
+                print(str)
+                      ^^^
+                at Sources/Exec/main.swift:2
 
-            Note: provide a default value to avoid this warning
+                Note: provide a default value to avoid this warning
 
-            print(str)
-                  ^^^
-                      ?? <#default value#>
+                print(str)
+                      ^^^
+                          ?? <#default value#>
 
-            at Sources/Exec/main.swift:2
+                at Sources/Exec/main.swift:2
 
-            Note: force-unwrap the value to avoid this warning
+                Note: force-unwrap the value to avoid this warning
 
-            print(str)
-                  ^^^
-                     !
+                print(str)
+                      ^^^
+                         !
 
-            at Sources/Exec/main.swift:2
+                at Sources/Exec/main.swift:2
 
-            Note: explicitly cast to 'Any' with 'as Any' to silence this warning
+                Note: explicitly cast to 'Any' with 'as Any' to silence this warning
 
-            print(str)
-                  ^^^
-                      as Any
+                print(str)
+                      ^^^
+                          as Any
 
-            at Sources/Exec/main.swift:2
-
-
-          ● Error: cannot convert value of type 'String' to specified type 'Int'
-
-            let int: Int = "hello world"
-                           ^^^^^^^^^^^^^
-            at Sources/Exec/main.swift:4
-        
-        
-        """, swift4_0AndAbove: """
-        Fetch https://github.com/jakeheis/SwiftCLI
-        Clone https://github.com/jakeheis/SwiftCLI
-        Resolve https://github.com/jakeheis/SwiftCLI at 4.1.2
-        Compile SwiftCLI (23 sources)
-        Compile Exec (1 sources)
-
-          ● Warning: expression implicitly coerced from 'String?' to Any
-
-            print(str)
-                  ^^^
-            at Sources/Exec/main.swift:2
-
-            Note: provide a default value to avoid this warning
-
-            print(str)
-                  ^^^
-                      ?? <#default value#>
-
-            at Sources/Exec/main.swift:2
-
-            Note: force-unwrap the value to avoid this warning
-
-            print(str)
-                  ^^^
-                     !
-
-            at Sources/Exec/main.swift:2
-
-            Note: explicitly cast to Any with 'as Any' to silence this warning
-
-            print(str)
-                  ^^^
-                      as Any
-
-            at Sources/Exec/main.swift:2
+                at Sources/Exec/main.swift:2
 
 
-          ● Error: cannot convert value of type 'String' to specified type 'Int'
+              ● Error: cannot convert value of type 'String' to specified type 'Int'
 
-            let int: Int = "hello world"
-                           ^^^^^^^^^^^^^
-            at Sources/Exec/main.swift:4
-        
-        
-        """)
+                let int: Int = "hello world"
+                               ^^^^^^^^^^^^^
+                at Sources/Exec/main.swift:4
+            
+            
+            """)
+        }, swift4_0AndAbove: {
+            XCTAssertEqual(result.stdout, """
+            Fetch https://github.com/jakeheis/SwiftCLI
+            Clone https://github.com/jakeheis/SwiftCLI
+            Resolve https://github.com/jakeheis/SwiftCLI at 4.1.2
+            Compile SwiftCLI (23 sources)
+            Compile Exec (1 sources)
+
+              ● Warning: expression implicitly coerced from 'String?' to Any
+
+                print(str)
+                      ^^^
+                at Sources/Exec/main.swift:2
+
+                Note: provide a default value to avoid this warning
+
+                print(str)
+                      ^^^
+                          ?? <#default value#>
+
+                at Sources/Exec/main.swift:2
+
+                Note: force-unwrap the value to avoid this warning
+
+                print(str)
+                      ^^^
+                         !
+
+                at Sources/Exec/main.swift:2
+
+                Note: explicitly cast to Any with 'as Any' to silence this warning
+
+                print(str)
+                      ^^^
+                          as Any
+
+                at Sources/Exec/main.swift:2
+
+
+              ● Error: cannot convert value of type 'String' to specified type 'Int'
+
+                let int: Int = "hello world"
+                               ^^^^^^^^^^^^^
+                at Sources/Exec/main.swift:4
+            
+            
+            """)
+        })
     }
     
     func testBuildTarget() {

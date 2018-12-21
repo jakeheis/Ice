@@ -5,8 +5,9 @@
 //  Created by Jake Heiser on 9/18/17.
 //
 
-import XCTest
 @testable import IceKit
+import TestingUtilities
+import XCTest
 
 class TestTransformTests: XCTestCase {
     
@@ -15,369 +16,372 @@ class TestTransformTests: XCTestCase {
     func testSuitePass() {
         let test = createTest(TestSuite(mode: .all))
 
-        #if os(macOS)
-        let testCase = "-[CLITests.AddTests testBasicAdd]"
-        test.send("""
-        Test Suite 'AddTests' started at 2017-09-18 10:18:14.163
-        Test Case '\(testCase)' started.
-        Test Case '\(testCase)' passed (0.716 seconds)
-        Test Suite 'AddTests' passed at 2017-09-18 10:18:15.728.
-             Executed 3 tests, with 0 failures (0 unexpected) in 1.564 (1.564) seconds
-        """)
-        
-        test.expect("""
-         RUNS  CLITests.AddTests
-         PASS  CLITests.AddTests
-        
-        """)
-        #else
-        let testCase = "AddTests.testBasicAdd"
-        test.send("""
-            Test Suite 'AddTests' started at 2017-09-18 10:18:14.163
-            Test Case '\(testCase)' started at 2018-08-05 15:56:37.983
-            Test Case '\(testCase)' passed (0.716 seconds)
-            Test Suite 'AddTests' passed at 2017-09-18 10:18:15.728.
-            Executed 3 tests, with 0 failures (0 unexpected) in 1.564 (1.564) seconds
+        Differentiate.byPlatform(mac: {
+            let testCase = "-[CLITests.AddTests testBasicAdd]"
+            test.send("""
+                Test Suite 'AddTests' started at 2017-09-18 10:18:14.163
+                Test Case '\(testCase)' started.
+                Test Case '\(testCase)' passed (0.716 seconds)
+                Test Suite 'AddTests' passed at 2017-09-18 10:18:15.728.
+                Executed 3 tests, with 0 failures (0 unexpected) in 1.564 (1.564) seconds
+                """)
+            
+            test.expect("""
+             RUNS  CLITests.AddTests
+             PASS  CLITests.AddTests
+            
             """)
-        
-        test.expect("""
-         RUNS  AddTests
-         PASS  AddTests
-        
-        """)
-        #endif
+        }, linux: {
+            let testCase = "AddTests.testBasicAdd"
+            test.send("""
+                Test Suite 'AddTests' started at 2017-09-18 10:18:14.163
+                Test Case '\(testCase)' started at 2018-08-05 15:56:37.983
+                Test Case '\(testCase)' passed (0.716 seconds)
+                Test Suite 'AddTests' passed at 2017-09-18 10:18:15.728.
+                Executed 3 tests, with 0 failures (0 unexpected) in 1.564 (1.564) seconds
+                """)
+            
+            test.expect("""
+             RUNS  AddTests
+             PASS  AddTests
+            
+            """)
+        })
     }
     
     func testAllTests() {
         let test = createTest(TestMain())
-        #if os(macOS)
-        test.send("""
-        Test Suite 'All tests' started at 2017-09-18 21:46:20.406
-        Test Suite 'IcePackageTests.xctest' started at 2017-09-18 21:46:20.406
-        Test Suite 'OtherTests' started at 2017-09-18 21:46:20.406
-        Test Case '-[IceTests.OtherTests testOne]' started.
-        Test Case '-[IceTests.OtherTests testOne]' passed (0.080 seconds).
-        Test Case '-[IceTests.OtherTests testTwo]' started.
-        Test Case '-[IceTests.OtherTests testTwo]' passed (0.000 seconds).
-        Test Suite 'OtherTests' passed at 2017-09-18 21:46:20.487.
-             Executed 2 tests, with 0 failures (0 unexpected) in 0.080 (0.080) seconds
-        Test Suite 'SomeTests' started at 2017-09-18 21:46:20.487
-        Test Case '-[IceTests.SomeTests testOne]' started.
-        Test Case '-[IceTests.SomeTests testOne]' passed (0.000 seconds).
-        Test Case '-[IceTests.SomeTests testTwo]' started.
-        /IceIce/Tests/IceTests/IceTests.swift:11: error: -[IceTests.SomeTests testTwo] : failed - \n\
-        /IceIce/Tests/IceTests/IceTests.swift:12: error: -[IceTests.SomeTests testTwo] : failed - \n\
-        Test Case '-[IceTests.SomeTests testTwo]' failed (0.001 seconds).
-        Test Suite 'SomeTests' failed at 2017-09-18 21:46:20.488.
-             Executed 2 tests, with 2 failures (0 unexpected) in 0.001 (0.001) seconds
-        Test Suite 'IcePackageTests.xctest' failed at 2017-09-18 21:46:20.488.
-             Executed 4 tests, with 2 failures (0 unexpected) in 0.082 (0.082) seconds
-        Test Suite 'All tests' failed at 2017-09-18 21:46:20.488.
-             Executed 4 tests, with 2 failures (0 unexpected) in 0.082 (0.082) seconds
-        """)
-        test.expect("""
-
-        IcePackageTests:
-
-         RUNS  IceTests.OtherTests
-         PASS  IceTests.OtherTests
-         RUNS  IceTests.SomeTests
-         FAIL  IceTests.SomeTests
-
-         ● testTwo
-
-        \tXCTFail
-
-        \tat /IceIce/Tests/IceTests/IceTests.swift:11
-
-
-        \tXCTFail
-
-        \tat /IceIce/Tests/IceTests/IceTests.swift:12
         
-        
-        Tests:\t1 failed, 3 passed, 4 total
-        Time:\t0.082s
-        
-        
-        """)
-        #else
-        test.send("""
-        Test Suite 'All tests' started at 2017-09-18 21:46:20.406
-        Test Suite 'debug.xctest' started at 2018-08-05 22:49:08.274
-        Test Suite 'OtherTests' started at 2017-09-18 21:46:20.406
-        Test Case 'OtherTests.testOne' started at 2018-08-05 15:56:37.983
-        Test Case 'OtherTests.testOne' passed (0.080 seconds).
-        Test Case 'OtherTests.testTwo' started at 2018-08-05 15:56:37.983
-        Test Case 'OtherTests.testTwo' passed (0.000 seconds).
-        Test Suite 'OtherTests' passed at 2017-09-18 21:46:20.487.
-             Executed 2 tests, with 0 failures (0 unexpected) in 0.080 (0.080) seconds
-        Test Suite 'SomeTests' started at 2017-09-18 21:46:20.487
-        Test Case 'SomeTests.testOne' started at 2018-08-05 15:56:37.983
-        Test Case 'SomeTests.testOne' passed (0.000 seconds).
-        Test Case 'SomeTests.testTwo' started at 2018-08-05 15:56:37.983
-        /IceIce/Tests/IceTests/IceTests.swift:11: error: SomeTests.testTwo : failed - \n\
-        /IceIce/Tests/IceTests/IceTests.swift:12: error: SomeTests.testTwo : failed - \n\
-        Test Case 'SomeTests.testTwo' failed (0.001 seconds).
-        Test Suite 'SomeTests' failed at 2017-09-18 21:46:20.488.
-             Executed 2 tests, with 2 failures (0 unexpected) in 0.001 (0.001) seconds
-        Test Suite 'debug.xctest' passed at 2018-08-05 22:49:08.280
-            Executed 1 test, with 0 failures (0 unexpected) in 0.001 (0.001) seconds
-        Test Suite 'All tests' failed at 2017-09-18 21:46:20.488.
-             Executed 4 tests, with 2 failures (0 unexpected) in 0.082 (0.082) seconds
-        """)
-        test.expect("""
+        Differentiate.byPlatform(mac: {
+            test.send("""
+            Test Suite 'All tests' started at 2017-09-18 21:46:20.406
+            Test Suite 'IcePackageTests.xctest' started at 2017-09-18 21:46:20.406
+            Test Suite 'OtherTests' started at 2017-09-18 21:46:20.406
+            Test Case '-[IceTests.OtherTests testOne]' started.
+            Test Case '-[IceTests.OtherTests testOne]' passed (0.080 seconds).
+            Test Case '-[IceTests.OtherTests testTwo]' started.
+            Test Case '-[IceTests.OtherTests testTwo]' passed (0.000 seconds).
+            Test Suite 'OtherTests' passed at 2017-09-18 21:46:20.487.
+                 Executed 2 tests, with 0 failures (0 unexpected) in 0.080 (0.080) seconds
+            Test Suite 'SomeTests' started at 2017-09-18 21:46:20.487
+            Test Case '-[IceTests.SomeTests testOne]' started.
+            Test Case '-[IceTests.SomeTests testOne]' passed (0.000 seconds).
+            Test Case '-[IceTests.SomeTests testTwo]' started.
+            /IceIce/Tests/IceTests/IceTests.swift:11: error: -[IceTests.SomeTests testTwo] : failed - \n\
+            /IceIce/Tests/IceTests/IceTests.swift:12: error: -[IceTests.SomeTests testTwo] : failed - \n\
+            Test Case '-[IceTests.SomeTests testTwo]' failed (0.001 seconds).
+            Test Suite 'SomeTests' failed at 2017-09-18 21:46:20.488.
+                 Executed 2 tests, with 2 failures (0 unexpected) in 0.001 (0.001) seconds
+            Test Suite 'IcePackageTests.xctest' failed at 2017-09-18 21:46:20.488.
+                 Executed 4 tests, with 2 failures (0 unexpected) in 0.082 (0.082) seconds
+            Test Suite 'All tests' failed at 2017-09-18 21:46:20.488.
+                 Executed 4 tests, with 2 failures (0 unexpected) in 0.082 (0.082) seconds
+            """)
+            test.expect("""
 
-         RUNS  OtherTests
-         PASS  OtherTests
-         RUNS  SomeTests
-         FAIL  SomeTests
+            IcePackageTests:
 
-         ● testTwo
+             RUNS  IceTests.OtherTests
+             PASS  IceTests.OtherTests
+             RUNS  IceTests.SomeTests
+             FAIL  IceTests.SomeTests
 
-        \tXCTFail
+             ● testTwo
 
-        \tat /IceIce/Tests/IceTests/IceTests.swift:11
+            \tXCTFail
+
+            \tat /IceIce/Tests/IceTests/IceTests.swift:11
 
 
-        \tXCTFail
+            \tXCTFail
 
-        \tat /IceIce/Tests/IceTests/IceTests.swift:12
-        
-        
-        Tests:\t1 failed, 3 passed, 4 total
-        Time:\t0.082s
-        
-        
-        """)
-        #endif
+            \tat /IceIce/Tests/IceTests/IceTests.swift:12
+            
+            
+            Tests:\t1 failed, 3 passed, 4 total
+            Time:\t0.082s
+            
+            
+            """)
+        }, linux: {
+            test.send("""
+            Test Suite 'All tests' started at 2017-09-18 21:46:20.406
+            Test Suite 'debug.xctest' started at 2018-08-05 22:49:08.274
+            Test Suite 'OtherTests' started at 2017-09-18 21:46:20.406
+            Test Case 'OtherTests.testOne' started at 2018-08-05 15:56:37.983
+            Test Case 'OtherTests.testOne' passed (0.080 seconds).
+            Test Case 'OtherTests.testTwo' started at 2018-08-05 15:56:37.983
+            Test Case 'OtherTests.testTwo' passed (0.000 seconds).
+            Test Suite 'OtherTests' passed at 2017-09-18 21:46:20.487.
+                 Executed 2 tests, with 0 failures (0 unexpected) in 0.080 (0.080) seconds
+            Test Suite 'SomeTests' started at 2017-09-18 21:46:20.487
+            Test Case 'SomeTests.testOne' started at 2018-08-05 15:56:37.983
+            Test Case 'SomeTests.testOne' passed (0.000 seconds).
+            Test Case 'SomeTests.testTwo' started at 2018-08-05 15:56:37.983
+            /IceIce/Tests/IceTests/IceTests.swift:11: error: SomeTests.testTwo : failed - \n\
+            /IceIce/Tests/IceTests/IceTests.swift:12: error: SomeTests.testTwo : failed - \n\
+            Test Case 'SomeTests.testTwo' failed (0.001 seconds).
+            Test Suite 'SomeTests' failed at 2017-09-18 21:46:20.488.
+                 Executed 2 tests, with 2 failures (0 unexpected) in 0.001 (0.001) seconds
+            Test Suite 'debug.xctest' passed at 2018-08-05 22:49:08.280
+                Executed 1 test, with 0 failures (0 unexpected) in 0.001 (0.001) seconds
+            Test Suite 'All tests' failed at 2017-09-18 21:46:20.488.
+                 Executed 4 tests, with 2 failures (0 unexpected) in 0.082 (0.082) seconds
+            """)
+            test.expect("""
+
+             RUNS  OtherTests
+             PASS  OtherTests
+             RUNS  SomeTests
+             FAIL  SomeTests
+
+             ● testTwo
+
+            \tXCTFail
+
+            \tat /IceIce/Tests/IceTests/IceTests.swift:11
+
+
+            \tXCTFail
+
+            \tat /IceIce/Tests/IceTests/IceTests.swift:12
+            
+            
+            Tests:\t1 failed, 3 passed, 4 total
+            Time:\t0.082s
+            
+            
+            """)
+        })
     }
     
     func testSelectedTests() {
         let test = createTest(TestMain())
-        #if os(macOS)
-        test.send("""
-        Test Suite 'Selected tests' started at 2017-09-18 21:53:48.479
-        Test Suite 'IcePackageTests.xctest' started at 2017-09-18 21:53:48.479
-        Test Suite 'OtherTests' started at 2017-09-18 21:53:48.480
-        Test Case '-[IceTests.OtherTests testOne]' started.
-        Test Case '-[IceTests.OtherTests testOne]' passed (0.079 seconds).
-        Test Suite 'OtherTests' passed at 2017-09-18 21:53:48.558.
-             Executed 1 test, with 0 failures (0 unexpected) in 0.079 (0.079) seconds
-        Test Suite 'IcePackageTests.xctest' passed at 2017-09-18 21:53:48.559.
-             Executed 1 test, with 0 failures (0 unexpected) in 0.079 (0.079) seconds
-        Test Suite 'Selected tests' passed at 2017-09-18 21:53:48.559.
-             Executed 1 test, with 0 failures (0 unexpected) in 0.079 (0.080) seconds
-        Test Suite 'Selected tests' started at 2017-09-18 21:53:48.607
-        Test Suite 'IcePackageTests.xctest' started at 2017-09-18 21:53:48.607
-        Test Suite 'OtherTests' started at 2017-09-18 21:53:48.607
-        Test Case '-[IceTests.OtherTests testTwo]' started.
-        Test Case '-[IceTests.OtherTests testTwo]' passed (0.072 seconds).
-        Test Suite 'OtherTests' passed at 2017-09-18 21:53:48.679.
-             Executed 1 test, with 0 failures (0 unexpected) in 0.072 (0.072) seconds
-        Test Suite 'IcePackageTests.xctest' passed at 2017-09-18 21:53:48.679.
-             Executed 1 test, with 0 failures (0 unexpected) in 0.072 (0.072) seconds
-        Test Suite 'Selected tests' passed at 2017-09-18 21:53:48.679.
-             Executed 1 test, with 0 failures (0 unexpected) in 0.072 (0.073) seconds
-        Test Suite 'Selected tests' started at 2017-09-18 21:53:48.729
-        Test Suite 'IcePackageTests.xctest' started at 2017-09-18 21:53:48.729
-        Test Suite 'SomeTests' started at 2017-09-18 21:53:48.729
-        Test Case '-[IceTests.SomeTests testOne]' started.
-        Test Case '-[IceTests.SomeTests testOne]' passed (0.082 seconds).
-        Test Suite 'SomeTests' passed at 2017-09-18 21:53:48.811.
-             Executed 1 test, with 0 failures (0 unexpected) in 0.082 (0.082) seconds
-        Test Suite 'IcePackageTests.xctest' passed at 2017-09-18 21:53:48.811.
-             Executed 1 test, with 0 failures (0 unexpected) in 0.082 (0.082) seconds
-        Test Suite 'Selected tests' passed at 2017-09-18 21:53:48.811.
-             Executed 1 test, with 0 failures (0 unexpected) in 0.082 (0.082) seconds
-        Test Suite 'Selected tests' started at 2017-09-18 21:53:48.859
-        Test Suite 'IcePackageTests.xctest' started at 2017-09-18 21:53:48.859
-        Test Suite 'SomeTests' started at 2017-09-18 21:53:48.859
-        Test Case '-[IceTests.SomeTests testTwo]' started.
-        /IceIce/Tests/IceTests/IceTests.swift:11: error: -[IceTests.SomeTests testTwo] : failed - \n\
-        /IceIce/Tests/IceTests/IceTests.swift:12: error: -[IceTests.SomeTests testTwo] : failed - \n\
-        Test Case '-[IceTests.SomeTests testTwo]' failed (0.077 seconds).
-        Test Suite 'SomeTests' failed at 2017-09-18 21:53:48.936.
-             Executed 1 test, with 2 failures (0 unexpected) in 0.077 (0.077) seconds
-        Test Suite 'IcePackageTests.xctest' failed at 2017-09-18 21:53:48.936.
-             Executed 1 test, with 2 failures (0 unexpected) in 0.077 (0.077) seconds
-        Test Suite 'Selected tests' failed at 2017-09-18 21:53:48.936.
-             Executed 1 test, with 2 failures (0 unexpected) in 0.077 (0.077) seconds
-        """)
-        test.expect("""
-
-        IcePackageTests:
-
-         RUNS  IceTests.OtherTests/testOne
-         PASS  IceTests.OtherTests/testOne
-
-        Tests:\t1 passed, 1 total
-        Time:\t0.080s
-
-         RUNS  IceTests.OtherTests/testTwo
-         PASS  IceTests.OtherTests/testTwo
-
-        Tests:\t1 passed, 1 total
-        Time:\t0.073s
-
-         RUNS  IceTests.SomeTests/testOne
-         PASS  IceTests.SomeTests/testOne
-
-        Tests:\t1 passed, 1 total
-        Time:\t0.082s
-
-         RUNS  IceTests.SomeTests/testTwo
-         FAIL  IceTests.SomeTests/testTwo
-
-         ● testTwo
-
-        \tXCTFail
-
-        \tat /IceIce/Tests/IceTests/IceTests.swift:11
-
-
-        \tXCTFail
-
-        \tat /IceIce/Tests/IceTests/IceTests.swift:12
-
-
-        Tests:\t1 failed, 1 total
-        Time:\t0.077s
         
-        
-        """)
-        #else
-        test.send("""
-        Test Suite 'Selected tests' started at 2017-09-18 21:53:48.479
-        Test Suite 'OtherTests' started at 2017-09-18 21:53:48.480
-        Test Case 'OtherTests.testOne' started at 2018-08-05 16:13:48.631
-        Test Case 'OtherTests.testOne' passed (0.079 seconds)
-        Test Suite 'OtherTests' passed at 2017-09-18 21:53:48.558
-             Executed 1 test, with 0 failures (0 unexpected) in 0.079 (0.079) seconds
-        Test Suite 'Selected tests' passed at 2017-09-18 21:53:48.559
-             Executed 1 test, with 0 failures (0 unexpected) in 0.079 (0.080) seconds
-        Test Suite 'Selected tests' started at 2017-09-18 21:53:48.607
-        Test Suite 'OtherTests' started at 2017-09-18 21:53:48.607
-        Test Case 'OtherTests.testTwo' started at 2018-08-05 15:56:37.983
-        Test Case 'OtherTests.testTwo' passed (0.072 seconds).
-        Test Suite 'OtherTests' passed at 2017-09-18 21:53:48.679.
-             Executed 1 test, with 0 failures (0 unexpected) in 0.072 (0.072) seconds
-        Test Suite 'Selected tests' passed at 2017-09-18 21:53:48.679.
-             Executed 1 test, with 0 failures (0 unexpected) in 0.072 (0.073) seconds
-        Test Suite 'Selected tests' started at 2017-09-18 21:53:48.729
-        Test Suite 'SomeTests' started at 2017-09-18 21:53:48.729
-        Test Case 'SomeTests.testOne' started at 2018-08-05 15:56:37.983
-        Test Case 'SomeTests.testOne' passed (0.082 seconds).
-        Test Suite 'SomeTests' passed at 2017-09-18 21:53:48.811.
-             Executed 1 test, with 0 failures (0 unexpected) in 0.082 (0.082) seconds
-        Test Suite 'Selected tests' passed at 2017-09-18 21:53:48.811.
-             Executed 1 test, with 0 failures (0 unexpected) in 0.082 (0.082) seconds
-        Test Suite 'Selected tests' started at 2017-09-18 21:53:48.859
-        Test Suite 'SomeTests' started at 2017-09-18 21:53:48.859
-        Test Case 'SomeTests.testTwo' started at 2018-08-05 15:56:37.983
-        /IceIce/Tests/IceTests/IceTests.swift:11: error: SomeTests.testTwo : failed - \n\
-        /IceIce/Tests/IceTests/IceTests.swift:12: error: SomeTests.testTwo : failed - \n\
-        Test Case 'SomeTests.testTwo' failed (0.077 seconds).
-        Test Suite 'SomeTests' failed at 2017-09-18 21:53:48.936.
-             Executed 1 test, with 2 failures (0 unexpected) in 0.077 (0.077) seconds
-        Test Suite 'Selected tests' failed at 2017-09-18 21:53:48.936.
-             Executed 1 test, with 2 failures (0 unexpected) in 0.077 (0.077) seconds
-        """)
-        test.expect("""
+        Differentiate.byPlatform(mac: {
+            test.send("""
+            Test Suite 'Selected tests' started at 2017-09-18 21:53:48.479
+            Test Suite 'IcePackageTests.xctest' started at 2017-09-18 21:53:48.479
+            Test Suite 'OtherTests' started at 2017-09-18 21:53:48.480
+            Test Case '-[IceTests.OtherTests testOne]' started.
+            Test Case '-[IceTests.OtherTests testOne]' passed (0.079 seconds).
+            Test Suite 'OtherTests' passed at 2017-09-18 21:53:48.558.
+                 Executed 1 test, with 0 failures (0 unexpected) in 0.079 (0.079) seconds
+            Test Suite 'IcePackageTests.xctest' passed at 2017-09-18 21:53:48.559.
+                 Executed 1 test, with 0 failures (0 unexpected) in 0.079 (0.079) seconds
+            Test Suite 'Selected tests' passed at 2017-09-18 21:53:48.559.
+                 Executed 1 test, with 0 failures (0 unexpected) in 0.079 (0.080) seconds
+            Test Suite 'Selected tests' started at 2017-09-18 21:53:48.607
+            Test Suite 'IcePackageTests.xctest' started at 2017-09-18 21:53:48.607
+            Test Suite 'OtherTests' started at 2017-09-18 21:53:48.607
+            Test Case '-[IceTests.OtherTests testTwo]' started.
+            Test Case '-[IceTests.OtherTests testTwo]' passed (0.072 seconds).
+            Test Suite 'OtherTests' passed at 2017-09-18 21:53:48.679.
+                 Executed 1 test, with 0 failures (0 unexpected) in 0.072 (0.072) seconds
+            Test Suite 'IcePackageTests.xctest' passed at 2017-09-18 21:53:48.679.
+                 Executed 1 test, with 0 failures (0 unexpected) in 0.072 (0.072) seconds
+            Test Suite 'Selected tests' passed at 2017-09-18 21:53:48.679.
+                 Executed 1 test, with 0 failures (0 unexpected) in 0.072 (0.073) seconds
+            Test Suite 'Selected tests' started at 2017-09-18 21:53:48.729
+            Test Suite 'IcePackageTests.xctest' started at 2017-09-18 21:53:48.729
+            Test Suite 'SomeTests' started at 2017-09-18 21:53:48.729
+            Test Case '-[IceTests.SomeTests testOne]' started.
+            Test Case '-[IceTests.SomeTests testOne]' passed (0.082 seconds).
+            Test Suite 'SomeTests' passed at 2017-09-18 21:53:48.811.
+                 Executed 1 test, with 0 failures (0 unexpected) in 0.082 (0.082) seconds
+            Test Suite 'IcePackageTests.xctest' passed at 2017-09-18 21:53:48.811.
+                 Executed 1 test, with 0 failures (0 unexpected) in 0.082 (0.082) seconds
+            Test Suite 'Selected tests' passed at 2017-09-18 21:53:48.811.
+                 Executed 1 test, with 0 failures (0 unexpected) in 0.082 (0.082) seconds
+            Test Suite 'Selected tests' started at 2017-09-18 21:53:48.859
+            Test Suite 'IcePackageTests.xctest' started at 2017-09-18 21:53:48.859
+            Test Suite 'SomeTests' started at 2017-09-18 21:53:48.859
+            Test Case '-[IceTests.SomeTests testTwo]' started.
+            /IceIce/Tests/IceTests/IceTests.swift:11: error: -[IceTests.SomeTests testTwo] : failed - \n\
+            /IceIce/Tests/IceTests/IceTests.swift:12: error: -[IceTests.SomeTests testTwo] : failed - \n\
+            Test Case '-[IceTests.SomeTests testTwo]' failed (0.077 seconds).
+            Test Suite 'SomeTests' failed at 2017-09-18 21:53:48.936.
+                 Executed 1 test, with 2 failures (0 unexpected) in 0.077 (0.077) seconds
+            Test Suite 'IcePackageTests.xctest' failed at 2017-09-18 21:53:48.936.
+                 Executed 1 test, with 2 failures (0 unexpected) in 0.077 (0.077) seconds
+            Test Suite 'Selected tests' failed at 2017-09-18 21:53:48.936.
+                 Executed 1 test, with 2 failures (0 unexpected) in 0.077 (0.077) seconds
+            """)
+            test.expect("""
 
-         RUNS  OtherTests/testOne
-         PASS  OtherTests/testOne
+            IcePackageTests:
 
-        Tests:\t1 passed, 1 total
-        Time:\t0.080s
+             RUNS  IceTests.OtherTests/testOne
+             PASS  IceTests.OtherTests/testOne
 
-         RUNS  OtherTests/testTwo
-         PASS  OtherTests/testTwo
+            Tests:\t1 passed, 1 total
+            Time:\t0.080s
 
-        Tests:\t1 passed, 1 total
-        Time:\t0.073s
+             RUNS  IceTests.OtherTests/testTwo
+             PASS  IceTests.OtherTests/testTwo
 
-         RUNS  SomeTests/testOne
-         PASS  SomeTests/testOne
+            Tests:\t1 passed, 1 total
+            Time:\t0.073s
 
-        Tests:\t1 passed, 1 total
-        Time:\t0.082s
+             RUNS  IceTests.SomeTests/testOne
+             PASS  IceTests.SomeTests/testOne
 
-         RUNS  SomeTests/testTwo
-         FAIL  SomeTests/testTwo
+            Tests:\t1 passed, 1 total
+            Time:\t0.082s
 
-         ● testTwo
+             RUNS  IceTests.SomeTests/testTwo
+             FAIL  IceTests.SomeTests/testTwo
 
-        \tXCTFail
+             ● testTwo
 
-        \tat /IceIce/Tests/IceTests/IceTests.swift:11
+            \tXCTFail
 
-
-        \tXCTFail
-
-        \tat /IceIce/Tests/IceTests/IceTests.swift:12
+            \tat /IceIce/Tests/IceTests/IceTests.swift:11
 
 
-        Tests:\t1 failed, 1 total
-        Time:\t0.077s
-        
-        
-        """)
-        #endif
+            \tXCTFail
+
+            \tat /IceIce/Tests/IceTests/IceTests.swift:12
+
+
+            Tests:\t1 failed, 1 total
+            Time:\t0.077s
+            
+            
+            """)
+        }, linux: {
+            test.send("""
+            Test Suite 'Selected tests' started at 2017-09-18 21:53:48.479
+            Test Suite 'OtherTests' started at 2017-09-18 21:53:48.480
+            Test Case 'OtherTests.testOne' started at 2018-08-05 16:13:48.631
+            Test Case 'OtherTests.testOne' passed (0.079 seconds)
+            Test Suite 'OtherTests' passed at 2017-09-18 21:53:48.558
+                 Executed 1 test, with 0 failures (0 unexpected) in 0.079 (0.079) seconds
+            Test Suite 'Selected tests' passed at 2017-09-18 21:53:48.559
+                 Executed 1 test, with 0 failures (0 unexpected) in 0.079 (0.080) seconds
+            Test Suite 'Selected tests' started at 2017-09-18 21:53:48.607
+            Test Suite 'OtherTests' started at 2017-09-18 21:53:48.607
+            Test Case 'OtherTests.testTwo' started at 2018-08-05 15:56:37.983
+            Test Case 'OtherTests.testTwo' passed (0.072 seconds).
+            Test Suite 'OtherTests' passed at 2017-09-18 21:53:48.679.
+                 Executed 1 test, with 0 failures (0 unexpected) in 0.072 (0.072) seconds
+            Test Suite 'Selected tests' passed at 2017-09-18 21:53:48.679.
+                 Executed 1 test, with 0 failures (0 unexpected) in 0.072 (0.073) seconds
+            Test Suite 'Selected tests' started at 2017-09-18 21:53:48.729
+            Test Suite 'SomeTests' started at 2017-09-18 21:53:48.729
+            Test Case 'SomeTests.testOne' started at 2018-08-05 15:56:37.983
+            Test Case 'SomeTests.testOne' passed (0.082 seconds).
+            Test Suite 'SomeTests' passed at 2017-09-18 21:53:48.811.
+                 Executed 1 test, with 0 failures (0 unexpected) in 0.082 (0.082) seconds
+            Test Suite 'Selected tests' passed at 2017-09-18 21:53:48.811.
+                 Executed 1 test, with 0 failures (0 unexpected) in 0.082 (0.082) seconds
+            Test Suite 'Selected tests' started at 2017-09-18 21:53:48.859
+            Test Suite 'SomeTests' started at 2017-09-18 21:53:48.859
+            Test Case 'SomeTests.testTwo' started at 2018-08-05 15:56:37.983
+            /IceIce/Tests/IceTests/IceTests.swift:11: error: SomeTests.testTwo : failed - \n\
+            /IceIce/Tests/IceTests/IceTests.swift:12: error: SomeTests.testTwo : failed - \n\
+            Test Case 'SomeTests.testTwo' failed (0.077 seconds).
+            Test Suite 'SomeTests' failed at 2017-09-18 21:53:48.936.
+                 Executed 1 test, with 2 failures (0 unexpected) in 0.077 (0.077) seconds
+            Test Suite 'Selected tests' failed at 2017-09-18 21:53:48.936.
+                 Executed 1 test, with 2 failures (0 unexpected) in 0.077 (0.077) seconds
+            """)
+            test.expect("""
+
+             RUNS  OtherTests/testOne
+             PASS  OtherTests/testOne
+
+            Tests:\t1 passed, 1 total
+            Time:\t0.080s
+
+             RUNS  OtherTests/testTwo
+             PASS  OtherTests/testTwo
+
+            Tests:\t1 passed, 1 total
+            Time:\t0.073s
+
+             RUNS  SomeTests/testOne
+             PASS  SomeTests/testOne
+
+            Tests:\t1 passed, 1 total
+            Time:\t0.082s
+
+             RUNS  SomeTests/testTwo
+             FAIL  SomeTests/testTwo
+
+             ● testTwo
+
+            \tXCTFail
+
+            \tat /IceIce/Tests/IceTests/IceTests.swift:11
+
+
+            \tXCTFail
+
+            \tat /IceIce/Tests/IceTests/IceTests.swift:12
+
+
+            Tests:\t1 failed, 1 total
+            Time:\t0.077s
+            
+            
+            """)
+        })
     }
     
     func testInterleavedOutput() {
         let test = createTest(TestMain())
-        #if os(macOS)
-        test.send("""
-        Test Suite 'Selected tests' started at 2017-09-23 08:49:17.352
-        Test Suite 'IcePackageTests.xctest' started at 2017-09-23 08:49:17.353
-        Test Suite 'RegistryTests' started at 2017-09-23 08:49:17.353
-        Test Case '-[CoreTests.RegistryTests testRefresh]' started.
-        Cloning into 'Registry/shared'...
-        Test Case '-[CoreTests.RegistryTests testRefresh]' passed (0.936 seconds).
-        Test Suite 'RegistryTests' passed at 2017-09-23 08:49:18.289.
-             Executed 1 test, with 0 failures (0 unexpected) in 0.936 (0.936) seconds
-        Test Suite 'IcePackageTests.xctest' passed at 2017-09-23 08:49:18.289.
-             Executed 1 test, with 0 failures (0 unexpected) in 0.936 (0.936) seconds
-        Test Suite 'Selected tests' passed at 2017-09-23 08:49:18.289.
-             Executed 1 test, with 0 failures (0 unexpected) in 0.936 (0.936) seconds
-        """)
-        test.expect("""
         
-        IcePackageTests:
+        Differentiate.byPlatform(mac: {
+            test.send("""
+            Test Suite 'Selected tests' started at 2017-09-23 08:49:17.352
+            Test Suite 'IcePackageTests.xctest' started at 2017-09-23 08:49:17.353
+            Test Suite 'RegistryTests' started at 2017-09-23 08:49:17.353
+            Test Case '-[CoreTests.RegistryTests testRefresh]' started.
+            Cloning into 'Registry/shared'...
+            Test Case '-[CoreTests.RegistryTests testRefresh]' passed (0.936 seconds).
+            Test Suite 'RegistryTests' passed at 2017-09-23 08:49:18.289.
+                 Executed 1 test, with 0 failures (0 unexpected) in 0.936 (0.936) seconds
+            Test Suite 'IcePackageTests.xctest' passed at 2017-09-23 08:49:18.289.
+                 Executed 1 test, with 0 failures (0 unexpected) in 0.936 (0.936) seconds
+            Test Suite 'Selected tests' passed at 2017-09-23 08:49:18.289.
+                 Executed 1 test, with 0 failures (0 unexpected) in 0.936 (0.936) seconds
+            """)
+            test.expect("""
+            
+            IcePackageTests:
 
-         RUNS  CoreTests.RegistryTests/testRefresh
-         PASS  CoreTests.RegistryTests/testRefresh
+             RUNS  CoreTests.RegistryTests/testRefresh
+             PASS  CoreTests.RegistryTests/testRefresh
 
-        Tests:\t1 passed, 1 total
-        Time:\t0.936s
-        
-        
-        """)
-        #else
-        test.send("""
-        Test Suite 'Selected tests' started at 2017-09-23 08:49:17.352
-        Test Suite 'RegistryTests' started at 2017-09-23 08:49:17.353
-        Test Case 'RegistryTests.testRefresh' started.
-        Cloning into 'Registry/shared'...
-        Test Case 'RegistryTests.testRefresh' passed (0.936 seconds).
-        Test Suite 'RegistryTests' passed at 2017-09-23 08:49:18.289.
-             Executed 1 test, with 0 failures (0 unexpected) in 0.936 (0.936) seconds
-        Test Suite 'Selected tests' passed at 2017-09-23 08:49:18.289.
-             Executed 1 test, with 0 failures (0 unexpected) in 0.936 (0.936) seconds
-        """)
-        test.expect("""
-        
-         RUNS  RegistryTests/testRefresh
-         PASS  RegistryTests/testRefresh
+            Tests:\t1 passed, 1 total
+            Time:\t0.936s
+            
+            
+            """)
+        }, linux: {
+            test.send("""
+            Test Suite 'Selected tests' started at 2017-09-23 08:49:17.352
+            Test Suite 'RegistryTests' started at 2017-09-23 08:49:17.353
+            Test Case 'RegistryTests.testRefresh' started.
+            Cloning into 'Registry/shared'...
+            Test Case 'RegistryTests.testRefresh' passed (0.936 seconds).
+            Test Suite 'RegistryTests' passed at 2017-09-23 08:49:18.289.
+                 Executed 1 test, with 0 failures (0 unexpected) in 0.936 (0.936) seconds
+            Test Suite 'Selected tests' passed at 2017-09-23 08:49:18.289.
+                 Executed 1 test, with 0 failures (0 unexpected) in 0.936 (0.936) seconds
+            """)
+            test.expect("""
+            
+             RUNS  RegistryTests/testRefresh
+             PASS  RegistryTests/testRefresh
 
-        Tests:\t1 passed, 1 total
-        Time:\t0.936s
-        
-        
-        """)
-        #endif
+            Tests:\t1 passed, 1 total
+            Time:\t0.936s
+            
+            
+            """)
+        })
     }
     
     // MARK: - Special cases

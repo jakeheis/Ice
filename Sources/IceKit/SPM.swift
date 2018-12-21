@@ -128,6 +128,7 @@ public class SPM {
     }
     
     public func generateTests(for packageTargets: [Package.Target]) throws {
+        #if os(macOS)
         guard let version = version, version >= Version(4, 1, 0) else {
             throw IceError(message: "test list generation only supported for Swift 4.1 and above")
         }
@@ -146,6 +147,12 @@ public class SPM {
         }
         
         try runSwift(args: ["test", "--generate-linuxmain"], transformer: .build)
+        
+        #else
+        
+        throw IceError(message: "test list generation is not supported on Linux")
+
+        #endif
     }
     
     public func showBinPath(release: Bool = false) throws -> String {

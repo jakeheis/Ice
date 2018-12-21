@@ -16,43 +16,47 @@ class NewTests: XCTestCase {
         let result = icebox.run("new", "MyNewLib", "--lib")
         XCTAssertEqual(result.exitStatus, 0)
         XCTAssertEqual(result.stderr, "")
+        
+        Differentiate.byVersion(swift4_1AndAbove: {
+            XCTAssertEqual(result.stdout, """
+            
+            Creating library package: MyNewLib
 
-        differentiatedAssertEquality(result.stdout, swift4_1AndAbove: """
-        
-        Creating library package: MyNewLib
+                create Package.swift
+                create README.md
+                create .gitignore
+                create Sources/
+                create Sources/MyNewLib/MyNewLib.swift
+                create Tests/
+                create Tests/LinuxMain.swift
+                create Tests/MyNewLibTests/
+                create Tests/MyNewLibTests/MyNewLibTests.swift
+                create Tests/MyNewLibTests/XCTestManifests.swift
 
-            create Package.swift
-            create README.md
-            create .gitignore
-            create Sources/
-            create Sources/MyNewLib/MyNewLib.swift
-            create Tests/
-            create Tests/LinuxMain.swift
-            create Tests/MyNewLibTests/
-            create Tests/MyNewLibTests/MyNewLibTests.swift
-            create Tests/MyNewLibTests/XCTestManifests.swift
-
-        Run: cd MyNewLib && ice build
-        
-        
-        """, swift4_0AndAbove: """
-        
-        Creating library package: MyNewLib
-        
-            create Package.swift
-            create README.md
-            create .gitignore
-            create Sources/
-            create Sources/MyNewLib/MyNewLib.swift
-            create Tests/
-            create Tests/LinuxMain.swift
-            create Tests/MyNewLibTests/
-            create Tests/MyNewLibTests/MyNewLibTests.swift
-        
-        Run: cd MyNewLib && ice build
-        
-        
-        """)
+            Run: cd MyNewLib && ice build
+            
+            
+            """)
+        }, swift4_0AndAbove: {
+            XCTAssertEqual(result.stdout, """
+            
+            Creating library package: MyNewLib
+            
+                create Package.swift
+                create README.md
+                create .gitignore
+                create Sources/
+                create Sources/MyNewLib/MyNewLib.swift
+                create Tests/
+                create Tests/LinuxMain.swift
+                create Tests/MyNewLibTests/
+                create Tests/MyNewLibTests/MyNewLibTests.swift
+            
+            Run: cd MyNewLib && ice build
+            
+            
+            """)
+        })
         
         XCTAssertTrue(icebox.fileExists("MyNewLib"))
         XCTAssertTrue(icebox.fileExists("MyNewLib/Package.swift"))
@@ -65,39 +69,43 @@ class NewTests: XCTestCase {
         XCTAssertEqual(result.exitStatus, 0)
         XCTAssertEqual(result.stderr, "")
         
-        differentiatedAssertEquality(result.stdout, swift4_2AndAbove: """
-        
-        Creating executable package: MyNewExec
+        Differentiate.byVersion(swift4_2AndAbove: {
+            XCTAssertEqual(result.stdout, """
+            
+            Creating executable package: MyNewExec
 
-            create Package.swift
-            create README.md
-            create .gitignore
-            create Sources/
-            create Sources/MyNewExec/main.swift
-            create Tests/
-            create Tests/LinuxMain.swift
-            create Tests/MyNewExecTests/
-            create Tests/MyNewExecTests/MyNewExecTests.swift
-            create Tests/MyNewExecTests/XCTestManifests.swift
+                create Package.swift
+                create README.md
+                create .gitignore
+                create Sources/
+                create Sources/MyNewExec/main.swift
+                create Tests/
+                create Tests/LinuxMain.swift
+                create Tests/MyNewExecTests/
+                create Tests/MyNewExecTests/MyNewExecTests.swift
+                create Tests/MyNewExecTests/XCTestManifests.swift
 
-        Run: cd MyNewExec && ice build
-        
-        
-        """, swift4_0AndAbove: """
-        
-        Creating executable package: MyNewExec
-        
-            create Package.swift
-            create README.md
-            create .gitignore
-            create Sources/
-            create Sources/MyNewExec/main.swift
-            create Tests/
-        
-        Run: cd MyNewExec && ice build
-        
-        
-        """)
+            Run: cd MyNewExec && ice build
+            
+            
+            """)
+        }, swift4_0AndAbove: {
+            XCTAssertEqual(result.stdout, """
+            
+            Creating executable package: MyNewExec
+
+                create Package.swift
+                create README.md
+                create .gitignore
+                create Sources/
+                create Sources/MyNewExec/main.swift
+                create Tests/
+
+            Run: cd MyNewExec && ice build
+            
+            
+            """)
+        })
         
         XCTAssertTrue(icebox.fileExists("MyNewExec"))
         XCTAssertTrue(icebox.fileExists("MyNewExec/Package.swift"))

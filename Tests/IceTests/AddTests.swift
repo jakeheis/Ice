@@ -127,7 +127,7 @@ class AddTests: XCTestCase {
         XCTAssertEqual(result.exitStatus, 0)
         XCTAssertEqual(result.stderr, "")
         
-        differentiatedAssert(swift4_2AndAbove: {
+        Differentiate.byVersion(swift4_2AndAbove: {
             result.assertStdout { (t) in
                 t.equals("Fetch https://github.com/jakeheis/SwiftCLI")
                 t.equals("Fetch https://github.com/jakeheis/Spawn")
@@ -257,7 +257,7 @@ class AddTests: XCTestCase {
         XCTAssertEqual(result.exitStatus, 0)
         XCTAssertEqual(result.stderr, "")
         
-        differentiatedAssert(swift4_2AndAbove: {
+        Differentiate.byVersion(swift4_2AndAbove: {
             result.assertStdout { (t) in
                 t.equals("Fetch https://github.com/jakeheis/SwiftCLI")
                 t.equals("Fetch https://github.com/jakeheis/IceLibTest")

@@ -15,81 +15,85 @@ class DumpTests: XCTestCase {
         XCTAssertEqual(result.exitStatus, 0)
         XCTAssertEqual(result.stderr, "")
         
-        differentiatedAssertEquality(result.stdout, swift4_2AndAbove: """
-        {
-          "cLanguageStandard": null,
-          "cxxLanguageStandard": null,
-          "dependencies": [
+        Differentiate.byVersion(swift4_2AndAbove: {
+            XCTAssertEqual(result.stdout, """
             {
-              "requirement": {
-                "lowerBound": "4.0.3",
-                "type": "range",
-                "upperBound": "5.0.0"
-              },
-              "url": "https://github.com/jakeheis/SwiftCLI"
-            }
-          ],
-          "name": "Exec",
-          "products": [
-
-          ],
-          "targets": [
-            {
+              "cLanguageStandard": null,
+              "cxxLanguageStandard": null,
               "dependencies": [
                 {
-                  "name": "SwiftCLI",
-                  "type": "byname"
+                  "requirement": {
+                    "lowerBound": "4.0.3",
+                    "type": "range",
+                    "upperBound": "5.0.0"
+                  },
+                  "url": "https://github.com/jakeheis/SwiftCLI"
                 }
               ],
-              "exclude": [
+              "name": "Exec",
+              "products": [
 
               ],
-              "name": "Exec",
-              "path": null,
-              "publicHeadersPath": null,
-              "sources": null,
-              "type": "regular"
-            }
-          ]
-        }
-        """, swift4_0AndAbove: """
-        {
-          "cLanguageStandard": null,
-          "cxxLanguageStandard": null,
-          "dependencies": [
-            {
-              "requirement": {
-                "lowerBound": "4.0.3",
-                "type": "range",
-                "upperBound": "5.0.0"
-              },
-              "url": "https://github.com/jakeheis/SwiftCLI"
-            }
-          ],
-          "name": "Exec",
-          "products": [
+              "targets": [
+                {
+                  "dependencies": [
+                    {
+                      "name": "SwiftCLI",
+                      "type": "byname"
+                    }
+                  ],
+                  "exclude": [
 
-          ],
-          "targets": [
+                  ],
+                  "name": "Exec",
+                  "path": null,
+                  "publicHeadersPath": null,
+                  "sources": null,
+                  "type": "regular"
+                }
+              ]
+            }
+            """)
+        }, swift4_0AndAbove: {
+            XCTAssertEqual(result.stdout, """
             {
+              "cLanguageStandard": null,
+              "cxxLanguageStandard": null,
               "dependencies": [
                 {
-                  "name": "SwiftCLI",
-                  "type": "byname"
+                  "requirement": {
+                    "lowerBound": "4.0.3",
+                    "type": "range",
+                    "upperBound": "5.0.0"
+                  },
+                  "url": "https://github.com/jakeheis/SwiftCLI"
                 }
               ],
-              "exclude": [
+              "name": "Exec",
+              "products": [
 
               ],
-              "isTest": false,
-              "name": "Exec",
-              "path": null,
-              "publicHeadersPath": null,
-              "sources": null
+              "targets": [
+                {
+                  "dependencies": [
+                    {
+                      "name": "SwiftCLI",
+                      "type": "byname"
+                    }
+                  ],
+                  "exclude": [
+
+                  ],
+                  "isTest": false,
+                  "name": "Exec",
+                  "path": null,
+                  "publicHeadersPath": null,
+                  "sources": null
+                }
+              ]
             }
-          ]
-        }
-        """)
+            """)
+        })
     }
     
 }
