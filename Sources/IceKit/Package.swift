@@ -204,7 +204,7 @@ public struct Package {
         guard let fileStream = WriteStream.for(path: path.string, appending: false) else  {
             throw IceError(message: "couldn't write to \(path)")
         }
-        try write(to: fileStream)
+        try write(to: fileStream, format: format)
         fileStream.truncateRemaining()
         dirty = false
     }
