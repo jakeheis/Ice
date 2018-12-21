@@ -28,11 +28,7 @@ public struct Config {
         
         public static var all: [Keys] = [.reformat, openAfterXc]
     }
-    
-    public static func load(for directory: Path) -> Config {
-        return ConfigManager(global: Ice.defaultRoot, local: directory).resolved
-    }
-    
+   
     public let reformat: Bool
     public let openAfterXc: Bool
     
