@@ -6,7 +6,6 @@
 //
 
 import IceKit
-import Regex
 import SwiftCLI
 
 class VersionCommand: Command {

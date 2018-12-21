@@ -6,7 +6,6 @@
 //
 
 import XCTest
-import Regex
 @testable import IceKit
 
 class LineTests: XCTestCase {

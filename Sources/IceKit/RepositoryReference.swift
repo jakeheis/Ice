@@ -6,8 +6,6 @@
 //  Created by Jake Heiser on 7/21/17.
 //
 
-import Regex
-
 public struct RepositoryReference {
     
     public let url: String

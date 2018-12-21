@@ -5,7 +5,6 @@
 //  Created by Jake Heiser on 9/14/17.
 //
 
-import Regex
 import SwiftCLI
 
 protocol XCTMatchable: Matchable {

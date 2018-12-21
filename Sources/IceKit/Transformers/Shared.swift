@@ -8,7 +8,6 @@
 import Foundation
 import PathKit
 import Rainbow
-import Regex
 import SwiftCLI
 
 // MARK: - Extensions

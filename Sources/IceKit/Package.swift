@@ -7,7 +7,6 @@
 
 import Foundation
 import PathKit
-import Regex
 import SwiftCLI
 
 public struct Package {

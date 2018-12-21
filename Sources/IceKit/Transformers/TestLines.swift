@@ -5,7 +5,6 @@
 //  Created by Jake Heiser on 9/20/17.
 //
 
-import Regex
 import SwiftCLI
 
 final class AllTestsStartLine: Matcher, Matchable {

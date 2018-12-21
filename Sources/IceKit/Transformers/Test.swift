@@ -7,7 +7,6 @@
 
 import Foundation
 import Rainbow
-import Regex
 import SwiftCLI
 
 extension TransformerPair {

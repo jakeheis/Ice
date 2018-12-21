@@ -7,7 +7,6 @@
 
 import Foundation
 import Rainbow
-import Regex
 import SwiftCLI
 
 extension TransformerPair {
@@ -110,7 +109,7 @@ private class Error: Transformer {
         }
         
         let highlights = stream.require(HighlightsLine.self)
-        out <<< indentation + String(highlights.highlights[startIndex...]).replacingAll(matching: "~", with: "^").applyingColor(color)
+        out <<< indentation + String(highlights.highlights[startIndex...]).replacingOccurrences(of: "~", with: "^").applyingColor(color)
         
         while !stream.nextIs(in: stopLines) && stream.isOpen() {
             if stream.match(WhitespaceLine.self) != nil { continue }

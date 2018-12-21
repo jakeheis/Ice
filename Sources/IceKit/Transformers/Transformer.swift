@@ -6,7 +6,6 @@
 //
 
 import Dispatch
-import Regex
 import SwiftCLI
 
 // MARK: -

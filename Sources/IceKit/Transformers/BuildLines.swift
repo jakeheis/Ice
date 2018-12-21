@@ -6,7 +6,6 @@
 //
 
 import Rainbow
-import Regex
 import SwiftCLI
 
 final class CompileSwiftLine: Matcher, Matchable {

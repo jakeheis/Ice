@@ -5,8 +5,6 @@
 //  Created by Jake Heiser on 9/11/17.
 //
 
-import Regex
-
 class Matcher: CustomStringConvertible {
     
     let captures: Captures
