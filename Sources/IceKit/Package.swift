@@ -105,7 +105,7 @@ public struct Package {
     // MARK: - Targets
     
     public mutating func addTarget(name: String, type: Package.Target.TargetType, dependencies: [String]) {
-        let dependencies = dependencies.map { Package.Target.Dependency(name: $0) }
+        let dependencies = dependencies.map { Package.Target.Dependency.byName($0) }
         data.targets.append(.init(
             name: name,
             type: type,
@@ -126,7 +126,7 @@ public struct Package {
         if data.targets[targetIndex].dependencies.contains(where: { $0.name == lib }) {
             return
         }
-        data.targets[targetIndex].dependencies.append(.init(name: lib))
+        data.targets[targetIndex].dependencies.append(.byName(lib))
     }
     
     public mutating func removeTarget(named name: String) throws {

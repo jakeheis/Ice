@@ -58,8 +58,17 @@ public struct PackageDataV4_2: Codable {
     }
     
     public struct Target: Codable {
+                
         public struct Dependency: Codable {
+            public enum DependencyType: String, Codable {
+                case byname
+                case target
+                case product
+            }
+            
             public let name: String
+            public let package: String?
+            public let type: DependencyType
         }
         
         public typealias TargetType = PackageDataV5_0.Target.TargetType
@@ -137,7 +146,14 @@ public struct PackageDataV4_2: Codable {
                     name: target.name,
                     type: target.type,
                     dependencies: target.dependencies.map { (oldDep) in
-                        return .init(name: oldDep.name)
+                        switch oldDep.type {
+                        case .byname:
+                            return .byName(oldDep.name)
+                        case .product:
+                            return .product(oldDep.name, oldDep.package)
+                        case .target:
+                            return .target(oldDep.name)
+                        }
                     },
                     path: target.path,
                     exclude: target.exclude,

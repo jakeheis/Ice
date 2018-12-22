@@ -146,20 +146,20 @@ class PackageWriterTests: XCTestCase {
         let result = with4_0 { $0.addTargets(to: &$1) }
         XCTAssertEqual(result, """
             targets: [
-                .target(name: "CLI", dependencies: ["Core", "FileKit"]),
-                .testTarget(name: "CLITests", dependencies: ["CLI", "Core"]),
+                .target(name: "CLI", dependencies: ["Core", .product(name: "FileKit")]),
+                .testTarget(name: "CLITests", dependencies: [.target(name: "CLI"), "Core"]),
                 .target(name: "Core", dependencies: [], path: "Sources/Diff", exclude: ["ignore.swift"]),
-                .target(name: "Exclusive", dependencies: ["Core", "Flock"], sources: ["only.swift"], publicHeadersPath: "headers.h"),
+                .target(name: "Exclusive", dependencies: ["Core", .product(name: "Flock", package: "Flock")], sources: ["only.swift"], publicHeadersPath: "headers.h"),
             ]
         """)
         
         let result2 = with4_2 { $0.addTargets(to: &$1) }
         XCTAssertEqual(result2, """
             targets: [
-                .target(name: "CLI", dependencies: ["Core", "FileKit"]),
-                .testTarget(name: "CLITests", dependencies: ["CLI", "Core"]),
+                .target(name: "CLI", dependencies: ["Core", .product(name: "FileKit")]),
+                .testTarget(name: "CLITests", dependencies: [.target(name: "CLI"), "Core"]),
                 .target(name: "Core", dependencies: [], path: "Sources/Diff", exclude: ["ignore.swift"]),
-                .target(name: "Exclusive", dependencies: ["Core", "Flock"], sources: ["only.swift"], publicHeadersPath: "headers.h"),
+                .target(name: "Exclusive", dependencies: ["Core", .product(name: "Flock", package: "Flock")], sources: ["only.swift"], publicHeadersPath: "headers.h"),
                 .systemLibrary(name: "Clibssh2", path: "aPath", pkgConfig: "pc", providers: [
                     .brew(["libssh2"]),
                     .apt(["libssh2-1-dev", "libssh2-2-dev"]),

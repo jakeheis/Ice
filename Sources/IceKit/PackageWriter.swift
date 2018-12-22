@@ -168,7 +168,24 @@ extension PackageWriterImpl {
                 functionCall.addQuoted(key: "name", value: target.name)
                 switch target.type {
                 case .regular, .test:
-                    functionCall.addSingleLineArray(key: "dependencies", children: target.dependencies.map({ $0.name.quoted }))
+                    let children: [Component] = target.dependencies.map { (dep) in
+                        switch dep {
+                        case let .byName(name):
+                            return ValueComponent(value: name.quoted)
+                        case let .product(product, package):
+                            var productFunc = FunctionCallComponent(staticMember: "product")
+                            productFunc.addQuoted(key: "name", value: product)
+                            if let package = package {
+                                productFunc.addQuoted(key: "package", value: package)
+                            }
+                            return productFunc
+                        case let .target(target):
+                            var targetFunc = FunctionCallComponent(staticMember: "target")
+                            targetFunc.addQuoted(key: "name", value: target)
+                            return targetFunc
+                        }
+                    }
+                    functionCall.addSingleLineArray(key: "dependencies", children: children)
                 case .system: break
                 }
                 if let path = target.path {

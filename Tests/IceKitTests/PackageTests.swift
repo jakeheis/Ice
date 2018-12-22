@@ -68,7 +68,7 @@ class PackageTests: XCTestCase {
         assertEqualCodings(package.dependencies, expectedDependencies)
         
         var expectedTargets = Fixtures.targets
-        expectedTargets[3].dependencies = [.init(name: "Core")]
+        expectedTargets[3].dependencies = [.byName("Core")]
         assertEqualCodings(package.targets, expectedTargets)
         
         XCTAssertThrowsError(try package.removeDependency(named: "not-real"))
@@ -80,7 +80,7 @@ class PackageTests: XCTestCase {
         package.addTarget(name: "CoreTests", type: .test, dependencies: ["Core"])
         
         let expectedTargets = Fixtures.targets + [
-            .init(name: "CoreTests", type: .test, dependencies: [.init(name: "Core")], path: nil, exclude: [], sources: nil, publicHeadersPath: nil, pkgConfig: nil, providers: nil)
+            .init(name: "CoreTests", type: .test, dependencies: [.byName("Core")], path: nil, exclude: [], sources: nil, publicHeadersPath: nil, pkgConfig: nil, providers: nil)
         ]
         assertEqualCodings(package.targets, expectedTargets)
     }
@@ -92,8 +92,8 @@ class PackageTests: XCTestCase {
         try package.depend(target: "Exclusive", on: "CLI")
         
         var expectedTargets = Fixtures.targets
-        expectedTargets[2].dependencies = [.init(name: "SwiftCLI")]
-        expectedTargets[3].dependencies += [.init(name: "CLI")]
+        expectedTargets[2].dependencies = [.byName("SwiftCLI")]
+        expectedTargets[3].dependencies += [.byName("CLI")]
         assertEqualCodings(package.targets, expectedTargets)
         
         XCTAssertThrowsError(try package.depend(target: "not-real", on: "SwiftCLI"))

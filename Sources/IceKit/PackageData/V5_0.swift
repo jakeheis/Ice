@@ -78,10 +78,6 @@ public struct PackageDataV5_0: Codable {
                     return name
                 }
             }
-            
-            public init(name: String) {
-                self = .byName(name)
-            }
         }
         
         public enum TargetType: String, Codable {

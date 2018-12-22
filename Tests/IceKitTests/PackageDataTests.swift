@@ -18,8 +18,8 @@ class PackageDataTests: XCTestCase {
             products: [.init(name: "product", product_type: "type", targets: ["targ1"], type: "library")],
             dependencies: [.init(url: "https://github.com/jakeheis/SwiftCLI", requirement: .init(version: Version(5, 0, 0)))],
             targets: [
-                .init(name: "targ1", isTest: false, dependencies: [.init(name: "SwiftCLI")], path: nil, exclude: [], sources: nil, publicHeadersPath: nil),
-                .init(name: "targ1Tests", isTest: true, dependencies: [.init(name: "targ1")], path: nil, exclude: [], sources: nil, publicHeadersPath: nil)
+            .init(name: "targ1", isTest: false, dependencies: [.init(name: "SwiftCLI", package: nil, type: .byname)], path: nil, exclude: [], sources: nil, publicHeadersPath: nil),
+                .init(name: "targ1Tests", isTest: true, dependencies: [.init(name: "targ1", package: nil, type: .byname)], path: nil, exclude: [], sources: nil, publicHeadersPath: nil)
             ],
             swiftLanguageVersions: [3, 4],
             cLanguageStandard: "c-lang",
@@ -34,8 +34,8 @@ class PackageDataTests: XCTestCase {
             products: [.init(name: "product", targets: ["targ1"], type: .library(.automatic))],
             dependencies: [.init(url: "https://github.com/jakeheis/SwiftCLI", requirement: .init(version: Version(5, 0, 0)))],
             targets: [
-                .init(name: "targ1", type: .regular, dependencies: [.init(name: "SwiftCLI")], path: nil, exclude: [], sources: nil, publicHeadersPath: nil, pkgConfig: nil, providers: nil),
-                .init(name: "targ1Tests", type: .test, dependencies: [.init(name: "targ1")], path: nil, exclude: [], sources: nil, publicHeadersPath: nil, pkgConfig: nil, providers: nil)
+                .init(name: "targ1", type: .regular, dependencies: [.byName("SwiftCLI")], path: nil, exclude: [], sources: nil, publicHeadersPath: nil, pkgConfig: nil, providers: nil),
+                .init(name: "targ1Tests", type: .test, dependencies: [.byName("targ1")], path: nil, exclude: [], sources: nil, publicHeadersPath: nil, pkgConfig: nil, providers: nil)
             ],
             swiftLanguageVersions: ["3", "4"],
             cLanguageStandard: "c-lang",

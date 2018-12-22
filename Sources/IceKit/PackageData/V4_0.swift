@@ -12,9 +12,7 @@ public struct PackageDataV4_0: Codable {
     public typealias Dependency = PackageDataV4_2.Dependency
     
     public struct Target: Codable {
-        public struct Dependency: Codable {
-            public let name: String
-        }
+        public typealias Dependency = PackageDataV4_2.Target.Dependency
         
         public let name: String
         public let isTest: Bool
@@ -52,7 +50,7 @@ public struct PackageDataV4_0: Codable {
                 return .init(
                     name: oldTarget.name,
                     type: oldTarget.isTest ? .test : .regular,
-                    dependencies: oldTarget.dependencies.map({ .init(name: $0.name) }),
+                    dependencies: oldTarget.dependencies,
                     path: oldTarget.path,
                     exclude: oldTarget.exclude,
                     sources: oldTarget.sources,

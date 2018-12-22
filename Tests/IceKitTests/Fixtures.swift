@@ -57,17 +57,17 @@ struct Fixtures {
     
     static let targets: [Package.Target] = [
         .init(name: "CLI", type: .regular, dependencies: [
-            .init(name: "Core"),
-            .init(name: "FileKit")
+            .byName("Core"),
+            .product("FileKit", nil)
         ], path: nil, exclude: [], sources: nil, publicHeadersPath: nil, pkgConfig: nil, providers: nil),
         .init(name: "CLITests", type: .test, dependencies: [
-            .init(name: "CLI"),
-            .init(name: "Core")
+            .target("CLI"),
+            .byName("Core")
         ], path: nil, exclude: [], sources: nil, publicHeadersPath: nil, pkgConfig: nil, providers: nil),
         .init(name: "Core", type: .regular, dependencies: [], path: "Sources/Diff", exclude: ["ignore.swift"], sources: nil, publicHeadersPath: nil, pkgConfig: nil, providers: nil),
         .init(name: "Exclusive", type: .regular, dependencies: [
-            .init(name: "Core"),
-            .init(name: "Flock")
+            .byName("Core"),
+            .product("Flock", "Flock")
         ], path: nil, exclude: [], sources: ["only.swift"], publicHeadersPath: "headers.h", pkgConfig: nil, providers: nil)
     ]
     
