@@ -41,9 +41,9 @@ class UpdateCommand: IceObject, Command {
         if let version = version.value {
             requirement = .init(version: version)
         } else if let branch = branch.value {
-            requirement = .init(type: .branch, lowerBound: nil, upperBound: nil, identifier: branch)
+            requirement = .branch(branch)
         } else if let sha = sha.value {
-            requirement = .init(type: .revision, lowerBound: nil, upperBound: nil, identifier: sha)
+            requirement = .revision(sha)
         } else {
             requirement = try inputVersion(for: dep)
         }
@@ -94,12 +94,16 @@ class UpdateCommand: IceObject, Command {
             } else {
                 return pin.state.revision
             }
-        } else if let lowerBound = dep.requirement.lowerBound {
-            return lowerBound
-        } else if let id = dep.requirement.identifier {
-            return id
         }
-        return "(none)"
+        
+        // If the package hasn't been resolved yet, just say what's in Package.swift
+        switch dep.requirement {
+        case let .range(lowerBound, _):
+            return lowerBound
+        case let .branch(id), let .revision(id), let .exact(id):
+            return id
+        default: return "(none)"
+        }
     }
     
 }

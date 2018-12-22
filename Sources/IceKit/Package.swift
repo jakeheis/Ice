@@ -63,31 +63,8 @@ public struct Package {
     
     // MARK: - Products
     
-    public enum ProductType {
-        case executable
-        case library
-        case staticLibrary
-        case dynamicLibrary
-    }
-    
-    public mutating func addProduct(name: String, type: ProductType, targets: [String]) {
-        let productType: String
-        switch type {
-        case .executable: productType = "executable"
-        case .library, .staticLibrary, .dynamicLibrary: productType = "library"
-        }
-        let libraryType: String?
-        switch type {
-        case .staticLibrary: libraryType = "static"
-        case .dynamicLibrary: libraryType = "dynamic"
-        case .library, .executable: libraryType = nil
-        }
-        data.products.append(.init(
-            name: name,
-            product_type: productType,
-            targets: targets,
-            type: libraryType)
-        )
+    public mutating func addProduct(name: String, type: ModernPackageData.Product.ProductType, targets: [String]) {
+        data.products.append(.init(name: name, targets: targets, type: type))
     }
     
     public mutating func removeProduct(name: String) throws {

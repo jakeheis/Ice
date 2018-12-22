@@ -38,11 +38,11 @@ class OutdatedCommand: IceObject, Command {
             
             let name = ref.name
             let wanted: String
-            switch dep.requirement.type {
-            case .range:
-                wanted = "\(dep.requirement.lowerBound!) ..< \(dep.requirement.upperBound!)"
-            case .branch, .exact, .revision:
-                wanted = dep.requirement.identifier!
+            switch dep.requirement {
+            case let .range(lowerBound, upperBound):
+                wanted = "\(lowerBound) ..< \(upperBound)"
+            case let .branch(id), let .exact(id), let .revision(id):
+                wanted = id
             case .localPackage:
                 table.addRow(values: [name, "(local)", "(local)", "(local)"])
                 continue

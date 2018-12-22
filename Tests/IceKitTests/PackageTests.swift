@@ -15,11 +15,11 @@ class PackageTests: XCTestCase {
         var package = createPackage()
         
         package.addProduct(name: "MyCLI", type: .executable, targets: ["Target3"])
-        package.addProduct(name: "MyLib", type: .dynamicLibrary, targets: ["Target4"])
+        package.addProduct(name: "MyLib", type: .library(.dynamic), targets: ["Target4"])
         
         let expectedProducts = Fixtures.products + [
-            .init(name: "MyCLI", product_type: "executable", targets: ["Target3"], type: nil),
-            .init(name: "MyLib", product_type: "library", targets: ["Target4"], type: "dynamic")
+            .init(name: "MyCLI", targets: ["Target3"], type: .executable),
+            .init(name: "MyLib", targets: ["Target4"], type: .library(.dynamic))
         ]
         assertEqualCodings(package.products, expectedProducts)
     }
@@ -43,7 +43,7 @@ class PackageTests: XCTestCase {
         package.addDependency(ref: ref, requirement: .init(version: Version(5, 2, 0)))
         
         let expectedDependencies = Fixtures.dependencies + [
-            .init(url: "https://github.com/jakeheis/SwiftCLI", requirement: .init(type: .range, lowerBound: "5.2.0", upperBound: "6.0.0", identifier: nil))
+            .init(url: "https://github.com/jakeheis/SwiftCLI", requirement: .range("5.2.0", "6.0.0"))
         ]
         assertEqualCodings(package.dependencies, expectedDependencies)
     }
@@ -51,10 +51,10 @@ class PackageTests: XCTestCase {
     func testUpdateDependency() throws {
         var package = createPackage()
         
-        try package.updateDependency(dependency: Fixtures.dependencies[3], to: .init(type: .branch, lowerBound: nil, upperBound: nil, identifier: "master"))
+        try package.updateDependency(dependency: Fixtures.dependencies[3], to: .branch("master"))
         
         var expectedDependencies = Fixtures.dependencies
-        expectedDependencies[3].requirement = .init(type: .branch, lowerBound: nil, upperBound: nil, identifier: "master")
+        expectedDependencies[3].requirement = .branch("master")
         assertEqualCodings(package.dependencies, expectedDependencies)
     }
     

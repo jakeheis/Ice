@@ -39,11 +39,11 @@ class AddCommand: IceObject, Command {
         if let version = version.value {
             requirement = .init(version: version)
         } else if let branch = branch.value {
-            requirement = .init(type: .branch, lowerBound: nil, upperBound: nil, identifier: branch)
+            requirement = .branch(branch)
         } else if let sha = sha.value {
-            requirement = .init(type: .revision, lowerBound: nil, upperBound: nil, identifier: sha)
+            requirement = .revision(sha)
         } else if local.value {
-            requirement = .init(type: .localPackage, lowerBound: nil, upperBound: nil, identifier: nil)
+            requirement = .localPackage
         } else if let latestVersion = try ref.latestVersion() {
             requirement = .init(version: latestVersion)
         } else {

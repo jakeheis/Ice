@@ -33,8 +33,10 @@ struct PackageLoader {
     
     static func load(from payload: Data, toolsVersion: SwiftToolsVersion, directory: Path, config: Config?) throws -> Package {
         let data: ModernPackageData
-        if let v4_2 = try? JSONDecoder().decode(PackageDataV4_2.self, from: payload) {
-            data = v4_2
+        if let v5_0 = try? JSONDecoder().decode(PackageDataV5_0.self, from: payload) {
+            data = v5_0
+        } else if let v4_2 = try? JSONDecoder().decode(PackageDataV4_2.self, from: payload) {
+            data = v4_2.convertToModern()
         } else if let v4_0 = try? JSONDecoder().decode(PackageDataV4_0.self, from: payload) {
             data = v4_0.convertToModern()
         } else {

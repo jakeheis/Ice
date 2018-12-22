@@ -21,71 +21,41 @@ func assertEqualCodings<T: Codable>(_ lhs: T, _ rhs: T, file: StaticString = #fi
 
 struct Fixtures {
     
-    static let products: [PackageDataV4_2.Product] = [
-        .init(name: "exec", product_type: "executable", targets: ["MyLib"], type: nil),
-        .init(name: "Lib", product_type: "library", targets: ["Core"], type: nil),
-        .init(name: "Static", product_type: "library", targets: ["MyLib"], type: "static"),
-        .init(name: "Dynamic", product_type: "library", targets: ["Core"], type: "dynamic")
+    static let products: [Package.Product] = [
+        .init(name: "exec", targets: ["MyLib"], type: .executable),
+        .init(name: "Lib", targets: ["Core"], type: .library(.automatic)),
+        .init(name: "Static", targets: ["MyLib"], type: .library(.static)),
+        .init(name: "Dynamic", targets: ["Core"], type: .library(.dynamic)),
     ]
     
-    static let dependencies: [PackageDataV4_2.Dependency] = [
+    static let dependencies: [Package.Dependency] = [
         .init(
             url: "https://github.com/jakeheis/SwiftCLI",
-            requirement: .init(
-                type: .branch,
-                lowerBound: nil,
-                upperBound: nil,
-                identifier: "swift4"
-            )
+            requirement: .branch("swift4")
         ),
         .init(
             url: "https://github.com/jakeheis/Spawn",
-            requirement: .init(
-                type: .exact,
-                lowerBound: nil,
-                upperBound: nil,
-                identifier: "0.0.4"
-            )
+            requirement: .exact("0.0.4")
         ),
         .init(
             url: "https://github.com/jakeheis/Flock",
-            requirement: .init(
-                type: .revision,
-                lowerBound: nil,
-                upperBound: nil,
-                identifier: "c57454ce053821d2fef8ad25d8918ae83506810c"
-            )
+            requirement: .revision("c57454ce053821d2fef8ad25d8918ae83506810c")
         ),
         .init(
             url: "https://github.com/jakeheis/FlockCLI",
-            requirement: .init(
-                type: .range,
-                lowerBound: "4.1.0",
-                upperBound: "5.0.0",
-                identifier: nil
-            )
+            requirement: .range("4.1.0", "5.0.0")
         ),
         .init(
             url: "https://github.com/jakeheis/FileKit",
-            requirement: .init(
-                type: .range,
-                lowerBound: "2.1.3",
-                upperBound: "2.2.0",
-                identifier: nil
-            )
+            requirement: .range("2.1.3", "2.2.0")
         ),
         .init(
             url: "https://github.com/jakeheis/Shout",
-            requirement: .init(
-                type: .range,
-                lowerBound: "0.6.4",
-                upperBound: "0.6.8",
-                identifier: nil
-            )
+            requirement: .range("0.6.4", "0.6.8")
         )
     ]
     
-    static let targets: [PackageDataV4_2.Target] = [
+    static let targets: [Package.Target] = [
         .init(name: "CLI", type: .regular, dependencies: [
             .init(name: "Core"),
             .init(name: "FileKit")
@@ -101,12 +71,12 @@ struct Fixtures {
         ], path: nil, exclude: [], sources: ["only.swift"], publicHeadersPath: "headers.h", pkgConfig: nil, providers: nil)
     ]
     
-    static let providers: [PackageDataV4_2.Provider] = [
+    static let providers: [Package.Provider] = [
         .init(name: "brew", values: ["libssh2"]),
         .init(name: "apt", values: ["libssh2-1-dev", "libssh2-2-dev"])
     ]
     
-    static var package = PackageDataV4_2(
+    static var package = ModernPackageData(
         name: "myPackage",
         pkgConfig: "config",
         providers: providers,
@@ -118,13 +88,13 @@ struct Fixtures {
         cxxLanguageStandard: "gnu++1z"
     )
     
-    static var package4_2 = PackageDataV4_2(
+    static var package4_2 = ModernPackageData(
         name: "myPackage",
         pkgConfig: "config",
         providers: providers,
         products: products,
         dependencies: dependencies + [
-            .init(url: "/Projects/PathKit", requirement: .init(type: .localPackage, lowerBound: nil, upperBound: nil, identifier: nil))
+            .init(url: "/Projects/PathKit", requirement: .localPackage)
         ],
         targets: targets  + [
             .init(name: "Clibssh2", type: .system, dependencies: [], path: "aPath", exclude: [], sources: nil, publicHeadersPath: nil, pkgConfig: "pc", providers: Fixtures.providers)

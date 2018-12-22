@@ -90,10 +90,15 @@ extension PackageWriterImpl {
         }
         
         function.addMultilineArray(key: "products", children: package.products.map { (product) in
-            var prodFunc = FunctionCallComponent(staticMember: product.product_type)
+            let funcName: String
+            switch product.type {
+            case .executable: funcName = "executable"
+            case .library(_): funcName = "library"
+            }
+            var prodFunc = FunctionCallComponent(staticMember: funcName)
             prodFunc.addQuoted(key: "name", value: product.name)
-            if let type = product.type {
-                prodFunc.addSimple(key: "type", value: "." + type)
+            if case let .library(libType) = product.type, libType != .automatic {
+                prodFunc.addSimple(key: "type", value: "." + libType.rawValue)
             }
             prodFunc.addSingleLineArray(key: "targets", children: product.targets.quoted())
             return prodFunc
@@ -107,17 +112,16 @@ extension PackageWriterImpl {
         
         function.addMultilineArray(key: "dependencies", children: package.dependencies.map { (dependency) in
             var depFunction = FunctionCallComponent(staticMember: "package")
-            switch dependency.requirement.type {
+            switch dependency.requirement {
             case .localPackage:
                 depFunction.addQuoted(key: "path", value: dependency.url)
             case .range, .branch, .exact, .revision:
                 depFunction.addQuoted(key: "url", value: dependency.url)
             }
             
-            switch dependency.requirement.type {
-            case .range:
-                guard let lowerBoundString = dependency.requirement.lowerBound, let lowerBound = Version(lowerBoundString),
-                    let upperBoundString = dependency.requirement.upperBound, let upperBound = Version(upperBoundString) else {
+            switch dependency.requirement {
+            case let .range(lowerBoundString, upperBoundString):
+                guard let lowerBound = Version(lowerBoundString), let upperBound = Version(upperBoundString) else {
                         fatalError("impossible dependency requirement; invalid range specified")
                 }
                 if upperBound == Version(lowerBound.major + 1, 0, 0) {
@@ -129,12 +133,17 @@ extension PackageWriterImpl {
                 } else {
                     depFunction.addSimple(key: nil, value: "\(lowerBoundString.quoted)..<\(upperBoundString.quoted)")
                 }
-            case .branch, .exact, .revision:
-                guard let identifier = dependency.requirement.identifier else {
-                    fatalError("impossible dependency requirement; \(dependency.requirement.type) specified, but no identifier given")
-                }
-                var idFunc = FunctionCallComponent(staticMember: dependency.requirement.type.rawValue)
-                idFunc.addQuoted(key: nil, value: identifier)
+            case let .branch(id):
+                var idFunc = FunctionCallComponent(staticMember: "branch")
+                idFunc.addQuoted(key: nil, value: id)
+                depFunction.addArgument(key: nil, component: idFunc)
+            case let .exact(id):
+                var idFunc = FunctionCallComponent(staticMember: "exact")
+                idFunc.addQuoted(key: nil, value: id)
+                depFunction.addArgument(key: nil, component: idFunc)
+            case let .revision(id):
+                var idFunc = FunctionCallComponent(staticMember: "revision")
+                idFunc.addQuoted(key: nil, value: id)
                 depFunction.addArgument(key: nil, component: idFunc)
             case .localPackage: break
             }
@@ -224,7 +233,13 @@ final class Version4_0Writer: PackageWriterImpl {
     }
     
     func canWrite() -> Bool {
-        if package.dependencies.contains(where:  { $0.requirement.type == .localPackage }) {
+        let containsLocal = package.dependencies.contains { (dep) in
+            if case .localPackage = dep.requirement {
+                return true
+            }
+            return false
+        }
+        if containsLocal {
             return false
         }
         if package.targets.contains(where:  { $0.type == .system }) {

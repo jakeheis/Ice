@@ -46,15 +46,15 @@ private class ProductAddCommand: IceObject, Command {
             throw IceError(message: "product \(productName.value) already exists")
         }
         
-        let type: Package.ProductType
+        let type: Package.Product.ProductType
         if executable.value {
             type = .executable
         } else if staticProduct.value {
-            type = .staticLibrary
+            type = .library(.static)
         } else if dynamicProduct.value {
-            type = .dynamicLibrary
+            type = .library(.dynamic)
         } else {
-            type = .library
+            type = .library(.automatic)
         }
         let productTargets = targets.value?.commaSeparated() ?? []
         package.addProduct(

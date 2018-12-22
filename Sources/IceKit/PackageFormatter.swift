@@ -37,16 +37,19 @@ public class PackageFormatter {
     func formatProduct(product: Package.Product) -> Package.Product {
         return .init(
             name: product.name,
-            product_type: product.product_type,
             targets: product.targets.sorted(),
             type: product.type
         )
     }
     
     func sortProduct(lhs: Package.Product, rhs: Package.Product) -> Bool {
-        if lhs.isExecutable && !rhs.isExecutable { return true }
-        if !lhs.isExecutable && rhs.isExecutable { return false }
-        return lhs.name < rhs.name
+        switch (lhs.type, rhs.type) {
+        case (.executable, .library(_)):
+            return true
+        case (.library(_), .executable):
+            return false
+        default: return lhs.name < rhs.name
+        }
     }
     
     func sortDependency(lhs: Package.Dependency, rhs: Package.Dependency) -> Bool {
