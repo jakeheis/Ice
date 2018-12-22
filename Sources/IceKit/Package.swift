@@ -109,13 +109,7 @@ public struct Package {
         data.targets.append(.init(
             name: name,
             type: type,
-            dependencies: dependencies,
-            path: nil,
-            exclude: [],
-            sources: nil,
-            publicHeadersPath: nil,
-            pkgConfig: nil,
-            providers: nil
+            dependencies: dependencies
         ))
     }
     

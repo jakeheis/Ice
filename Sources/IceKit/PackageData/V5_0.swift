@@ -86,6 +86,25 @@ public struct PackageDataV5_0: Codable {
             case system
         }
         
+        public struct Setting: Codable {
+            public struct Condition: Codable {
+                public let config: String?
+                public let platformNames: [String]
+            }
+            
+            public enum Tool: String, Codable {
+                case c
+                case cxx
+                case swift
+                case linker
+            }
+            
+            public let name: String
+            public let tool: Tool
+            public let condition: Condition?
+            public let value: [String]
+        }
+        
         public let name: String
         public let type: TargetType
         public var dependencies: [Dependency]
@@ -95,8 +114,9 @@ public struct PackageDataV5_0: Codable {
         public let publicHeadersPath: String?
         public let pkgConfig: String?
         public let providers: [Provider]?
+        public let settings: [Setting]
         
-        public init(name: String, type: TargetType, dependencies: [Dependency], path: String?, exclude: [String], sources: [String]?, publicHeadersPath: String?, pkgConfig: String?, providers: [Provider]?) {
+        public init(name: String, type: TargetType, dependencies: [Dependency], path: String? = nil, exclude: [String] = [], sources: [String]? = nil, publicHeadersPath: String? = nil, pkgConfig: String? = nil, providers: [Provider]? = nil, settings: [Setting] = []) {
             self.name = name
             self.type = type
             self.dependencies = dependencies
@@ -106,6 +126,7 @@ public struct PackageDataV5_0: Codable {
             self.publicHeadersPath = publicHeadersPath
             self.pkgConfig = pkgConfig
             self.providers = providers
+            self.settings = settings
         }
     }
     
@@ -203,11 +224,11 @@ extension PackageDataV5_0.Dependency.Requirement: Codable {
 
         if let ranges = try? container.decode([RequirementRange].self, forKey: .range), let range = ranges.first {
             self = .range(range.lowerBound, range.upperBound)
-        } else if let branch = try? container.decode(String.self, forKey: .branch) {
+        } else if let branchArray = try? container.decode([String].self, forKey: .branch), let branch = branchArray.first {
             self = .branch(branch)
-        } else if let exact = try? container.decode(String.self, forKey: .exact) {
+        } else if let exactArray = try? container.decode([String].self, forKey: .exact), let exact = exactArray.first {
             self = .exact(exact)
-        } else if let revision = try? container.decode(String.self, forKey: .revision) {
+        } else if let revisionArray = try? container.decode([String].self, forKey: .revision), let revision = revisionArray.first {
             self = .revision(revision)
         } else if container.contains(.localPackage) {
             self = .localPackage
@@ -253,7 +274,7 @@ extension PackageDataV5_0.Target.Dependency: Codable {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         if let targets = try? container.decode([String].self, forKey: .target), let target = targets.first {
             self = .target(target)
-        } else if let products = try? container.decode([String].self, forKey: .product), let product = products.first {
+        } else if let products = try? container.decode([String?].self, forKey: .product), let firstProduct = products.first, let product = firstProduct {
             let package = products.count > 1 ? products[1] : nil
             self = .product(product, package)
         } else if let byNames = try? container.decode([String].self, forKey: .byName), let byName = byNames.first {

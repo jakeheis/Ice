@@ -162,7 +162,8 @@ public struct PackageDataV4_2: Codable {
                     pkgConfig: target.pkgConfig,
                     providers: target.providers?.map { (oldProvider) in
                         return .init(name: oldProvider.name, values: oldProvider.values)
-                    }
+                    },
+                    settings: []
                 )
             },
             swiftLanguageVersions: swiftLanguageVersions,

@@ -59,16 +59,16 @@ struct Fixtures {
         .init(name: "CLI", type: .regular, dependencies: [
             .byName("Core"),
             .product("FileKit", nil)
-        ], path: nil, exclude: [], sources: nil, publicHeadersPath: nil, pkgConfig: nil, providers: nil),
+        ]),
         .init(name: "CLITests", type: .test, dependencies: [
             .target("CLI"),
             .byName("Core")
-        ], path: nil, exclude: [], sources: nil, publicHeadersPath: nil, pkgConfig: nil, providers: nil),
-        .init(name: "Core", type: .regular, dependencies: [], path: "Sources/Diff", exclude: ["ignore.swift"], sources: nil, publicHeadersPath: nil, pkgConfig: nil, providers: nil),
+        ]),
+        .init(name: "Core", type: .regular, dependencies: [], path: "Sources/Diff", exclude: ["ignore.swift"]),
         .init(name: "Exclusive", type: .regular, dependencies: [
             .byName("Core"),
             .product("Flock", "Flock")
-        ], path: nil, exclude: [], sources: ["only.swift"], publicHeadersPath: "headers.h", pkgConfig: nil, providers: nil)
+        ], sources: ["only.swift"], publicHeadersPath: "headers.h")
     ]
     
     static let providers: [Package.Provider] = [

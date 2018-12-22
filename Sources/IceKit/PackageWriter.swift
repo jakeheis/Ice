@@ -12,7 +12,9 @@ public class PackageWriter {
     private let writer: PackageWriterImpl
     
     public init(package: ModernPackageData, toolsVersion: SwiftToolsVersion) throws {
-        if toolsVersion >= SwiftToolsVersion.v4_2 {
+        if toolsVersion >= SwiftToolsVersion.v5_0 {
+            self.writer = Version5_0Writer(package: package, toolsVersion: toolsVersion)
+        } else if toolsVersion >= SwiftToolsVersion.v4_2 {
             self.writer = Version4_2Writer(package: package, toolsVersion: toolsVersion)
         } else if toolsVersion >= SwiftToolsVersion.v4 {
             self.writer = Version4_0Writer(package: package, toolsVersion: toolsVersion)
@@ -209,6 +211,54 @@ extension PackageWriterImpl {
                     if target.type == .regular, let publicHeadersPath = target.publicHeadersPath {
                         functionCall.addQuoted(key: "publicHeadersPath", value: publicHeadersPath)
                     }
+                    
+                    let settingComponents = target.settings.compactMap { (setting) -> (PackageDataV5_0.Target.Setting.Tool, FunctionCallComponent) in
+                        var settingFunc = FunctionCallComponent(staticMember: setting.name)
+                        if setting.name == "unsafeFlags" {
+                            settingFunc.addSingleLineArray(key: nil, children: setting.value.quoted())
+                        } else {
+                            settingFunc.addQuoted(key: nil, value: setting.value[0])
+                        }
+                        
+                        if let condition = setting.condition {
+                            var conditionFunc = FunctionCallComponent(staticMember: "when")
+                            if !condition.platformNames.isEmpty {
+                                let platformNames: [String] = condition.platformNames.map { (platform) in
+                                    var name = platform
+                                    if platform.hasSuffix("os") {
+                                        name = String(platform.prefix(platform.count - 2)) + "OS"
+                                    }
+                                    return "." + name
+                                }
+                                conditionFunc.addSingleLineArray(key: "platforms", children: platformNames)
+                                if let config = condition.config {
+                                    conditionFunc.addArgument(key: "configuration", component: ValueComponent(value: ".\(config)"))
+                                }
+                            }
+                            settingFunc.addArgument(key: nil, component: conditionFunc)
+                        }
+                        return (setting.tool, settingFunc)
+                    }
+                    
+                    let cSettings = settingComponents.compactMap { $0.0 == .c ? $0.1 : nil }
+                    if !cSettings.isEmpty {
+                        functionCall.addMultilineArray(key: "cSettings", children: cSettings)
+                    }
+                    
+                    let cxxSettings = settingComponents.compactMap { $0.0 == .cxx ? $0.1 : nil }
+                    if !cxxSettings.isEmpty {
+                        functionCall.addMultilineArray(key: "cxxSettings", children: cxxSettings)
+                    }
+                    
+                    let swiftSettings = settingComponents.compactMap { $0.0 == .swift ? $0.1 : nil }
+                    if !swiftSettings.isEmpty {
+                        functionCall.addMultilineArray(key: "swiftSettings", children: swiftSettings)
+                    }
+                    
+                    let linkerSettings = settingComponents.compactMap { $0.0 == .linker ? $0.1 : nil }
+                    if !linkerSettings.isEmpty {
+                        functionCall.addMultilineArray(key: "linkerSettings", children: linkerSettings)
+                    }
                 }
                 return functionCall
             })
@@ -239,44 +289,7 @@ extension PackageWriterImpl {
     
 }
 
-final class Version4_0Writer: PackageWriterImpl {
-    
-    let package: ModernPackageData
-    let toolsVersion: SwiftToolsVersion
-    
-    init(package: ModernPackageData, toolsVersion: SwiftToolsVersion) {
-        self.package = package
-        self.toolsVersion = toolsVersion
-    }
-    
-    func canWrite() -> Bool {
-        let containsLocal = package.dependencies.contains { (dep) in
-            if case .localPackage = dep.requirement {
-                return true
-            }
-            return false
-        }
-        if containsLocal {
-            return false
-        }
-        if package.targets.contains(where:  { $0.type == .system }) {
-            return false
-        }
-        if package.swiftLanguageVersions?.contains(where: { Int($0) == nil }) == true {
-            return false
-        }
-        return true
-    }
-    
-    func addSwiftLanguageVersions(to function: inout FunctionCallComponent) {
-        if let versions = package.swiftLanguageVersions {
-            function.addSingleLineArray(key: "swiftLanguageVersions", children: versions)
-        }
-    }
-    
-}
-
-final class Version4_2Writer: PackageWriterImpl {
+final class Version5_0Writer: PackageWriterImpl {
     
     let package: ModernPackageData
     let toolsVersion: SwiftToolsVersion
@@ -300,11 +313,89 @@ final class Version4_2Writer: PackageWriterImpl {
                     enumVersions.append(".v4")
                 } else if version == "4.2" {
                     enumVersions.append(".v4_2")
+                } else if version == "5" {
+                    enumVersions.append(".v5")
                 } else {
                     enumVersions.append(".version(\"\(version)\")")
                 }
             }
             function.addSingleLineArray(key: "swiftLanguageVersions", children: enumVersions)
+        }
+    }
+    
+}
+
+final class Version4_2Writer: PackageWriterImpl {
+    
+    let package: ModernPackageData
+    let toolsVersion: SwiftToolsVersion
+    
+    init(package: ModernPackageData, toolsVersion: SwiftToolsVersion) {
+        self.package = package
+        self.toolsVersion = toolsVersion
+    }
+    
+    func canWrite() -> Bool {
+        return !package.targets.contains(where: { $0.settings.count > 0 })
+    }
+    
+    func addSwiftLanguageVersions(to function: inout FunctionCallComponent) {
+        if let versions = package.swiftLanguageVersions {
+            var enumVersions: [String] = []
+            for version in versions {
+                if version == "3" {
+                    enumVersions.append(".v3")
+                } else if version == "4" {
+                    enumVersions.append(".v4")
+                } else if version == "4.2" {
+                    enumVersions.append(".v4_2")
+                } else {
+                    enumVersions.append(".version(\"\(version)\")")
+                }
+            }
+            function.addSingleLineArray(key: "swiftLanguageVersions", children: enumVersions)
+        }
+    }
+    
+}
+
+
+final class Version4_0Writer: PackageWriterImpl {
+    
+    let package: ModernPackageData
+    let toolsVersion: SwiftToolsVersion
+    
+    init(package: ModernPackageData, toolsVersion: SwiftToolsVersion) {
+        self.package = package
+        self.toolsVersion = toolsVersion
+    }
+    
+    func canWrite() -> Bool {
+        if package.targets.contains(where: { $0.settings.count > 0 }) {
+            return false
+        }
+        
+        let containsLocal = package.dependencies.contains { (dep) in
+            if case .localPackage = dep.requirement {
+                return true
+            }
+            return false
+        }
+        if containsLocal {
+            return false
+        }
+        if package.targets.contains(where:  { $0.type == .system }) {
+            return false
+        }
+        if package.swiftLanguageVersions?.contains(where: { Int($0) == nil }) == true {
+            return false
+        }
+        return true
+    }
+    
+    func addSwiftLanguageVersions(to function: inout FunctionCallComponent) {
+        if let versions = package.swiftLanguageVersions {
+            function.addSingleLineArray(key: "swiftLanguageVersions", children: versions)
         }
     }
     
