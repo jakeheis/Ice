@@ -9,7 +9,7 @@
 
 struct Fixtures {
     
-    static var package4_0 = PackageDataV4_0(
+    static let package4_0 = PackageDataV4_0(
         name: "myPackage",
         pkgConfig: "config",
         providers: [
@@ -68,7 +68,7 @@ struct Fixtures {
         cxxLanguageStandard: "gnu++1z"
     )
     
-    static var package4_2 = PackageDataV4_2(
+    static let package4_2 = PackageDataV4_2(
         name: "myPackage",
         pkgConfig: "config",
         providers: [
@@ -135,7 +135,7 @@ struct Fixtures {
         cxxLanguageStandard: "gnu++1z"
     )
     
-    static var package5_0 = PackageDataV5_0(
+    static let package5_0 = PackageDataV5_0(
         name: "myPackage",
         pkgConfig: "config",
         providers: [

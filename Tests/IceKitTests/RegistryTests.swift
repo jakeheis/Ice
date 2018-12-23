@@ -5,9 +5,9 @@
 //  Created by Jake Heiser on 9/22/17.
 //
 
+@testable import IceKit
 import PathKit
 import XCTest
-@testable import IceKit
 
 class RegistryTests: XCTestCase {
     

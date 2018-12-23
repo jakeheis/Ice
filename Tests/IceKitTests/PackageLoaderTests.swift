@@ -5,10 +5,8 @@
 //  Created by Jake Heiser on 9/11/17.
 //
 
-import Foundation
 import Icebox
 @testable import IceKit
-import PathKit
 import SwiftCLI
 import TestingUtilities
 import XCTest

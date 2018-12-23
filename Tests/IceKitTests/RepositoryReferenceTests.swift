@@ -3,8 +3,8 @@
 // IceKitTests
 //
 
-import XCTest
 import IceKit
+import XCTest
 
 class RepositoryReferenceTests: XCTestCase {
     

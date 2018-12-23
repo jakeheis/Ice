@@ -5,21 +5,21 @@
 //  Created by Jake Heiser on 9/16/17.
 //
 
-import XCTest
-import SwiftCLI
-import Rainbow
 @testable import IceKit
+import Rainbow
+import SwiftCLI
+import XCTest
 
 class TransformerTest {
     
     let transformStream: TransformStream
-    let primaryCapture: PipeStream
-    let secondaryCapture: PipeStream
+    let primaryCapture: CaptureStream
+    let secondaryCapture: CaptureStream
     
     init(transformer: Transformer, isStdout: Bool) {
         self.transformStream = TransformStream(transformer: transformer)
-        self.primaryCapture = PipeStream()
-        self.secondaryCapture = PipeStream()
+        self.primaryCapture = CaptureStream()
+        self.secondaryCapture = CaptureStream()
         
         TransformerConfig.rewindCharacter = "\n"
         Rainbow.enabled = false
