@@ -42,7 +42,7 @@ private class ProductAddCommand: IceObject, Command {
     func execute() throws {
         var package = try loadPackage()
         
-        if package.products.contains(where: { $0.name == productName.value }) {
+        if package.getProduct(named: productName.value) != nil {
             throw IceError(message: "product \(productName.value) already exists")
         }
         
@@ -56,11 +56,12 @@ private class ProductAddCommand: IceObject, Command {
         } else {
             type = .library(.automatic)
         }
+        
         let productTargets = targets.value?.commaSeparated() ?? []
         package.addProduct(
             name: productName.value,
-            type: type,
-            targets: productTargets
+            targets: productTargets,
+            type: type
         )
         try package.sync()
     }
@@ -75,9 +76,14 @@ private class ProductRemoveCommand: IceObject, Command {
     let product = Parameter()
     
     func execute() throws {
-        var project = try loadPackage()
-        try project.removeProduct(name: product.value)
-        try project.sync()
+        var package = try loadPackage()
+        
+        guard let product = package.getProduct(named: product.value) else {
+            throw IceError(message: "product '\(self.product.value)' not found")
+        }
+        
+        package.removeProduct(product)
+        try package.sync()
     }
     
 }

@@ -56,10 +56,11 @@ private class TargetAddCommand: IceObject, Command {
             }
         }
         
+        let targetDependencies = dependencies.value?.commaSeparated().map { Package.Target.Dependency.byName($0) } ?? []
         package.addTarget(
             name: targetName.value,
             type: targetType,
-            dependencies: dependencies.value?.commaSeparated() ?? []
+            dependencies: targetDependencies
         )
         try package.sync()
         
@@ -99,9 +100,12 @@ private class TargetRemoveCommand: IceObject, Command {
     let target = Parameter(completion: .function(.listTargets))
     
     func execute() throws {
-        var project = try loadPackage()
-        try project.removeTarget(named: target.value)
-        try project.sync()
+        var package = try loadPackage()
+        guard let target = package.getTarget(named: target.value) else {
+            throw IceError(message: "target '\(self.target.value)' not found")
+        }
+        package.removeTarget(target)
+        try package.sync()
     }
     
 }

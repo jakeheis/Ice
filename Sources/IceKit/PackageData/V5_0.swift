@@ -38,7 +38,7 @@ public struct PackageDataV5_0: Codable, Equatable {
         public var targets: [String]
         public let type: ProductType
         
-        public init(name: String, targets: [String], type: ProductType) {
+        init(name: String, targets: [String], type: ProductType) {
             self.name = name
             self.targets = targets
             self.type = type
@@ -62,7 +62,7 @@ public struct PackageDataV5_0: Codable, Equatable {
             return RepositoryReference(url: url).name
         }
         
-        public init(url: String, requirement: Requirement) {
+        init(url: String, requirement: Requirement) {
             self.url = url
             self.requirement = requirement
         }
@@ -139,7 +139,7 @@ public struct PackageDataV5_0: Codable, Equatable {
         public let providers: [Provider]?
         public let settings: [Setting]
         
-        public init(name: String, type: TargetType, dependencies: [Dependency], path: String? = nil, exclude: [String] = [], sources: [String]? = nil, publicHeadersPath: String? = nil, pkgConfig: String? = nil, providers: [Provider]? = nil, settings: [Setting] = []) {
+        init(name: String, type: TargetType, dependencies: [Dependency], path: String? = nil, exclude: [String] = [], sources: [String]? = nil, publicHeadersPath: String? = nil, pkgConfig: String? = nil, providers: [Provider]? = nil, settings: [Setting] = []) {
             self.name = name
             self.type = type
             self.dependencies = dependencies

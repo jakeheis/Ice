@@ -13,38 +13,40 @@ class PackageTests: XCTestCase {
     func testAddProduct() {
         var package = createPackage()
         
-        package.addProduct(name: "MyCLI", type: .executable, targets: ["Target3"])
-        package.addProduct(name: "MyLib", type: .library(.dynamic), targets: ["Target4"])
+        package.addProduct(name: "MyCLI", targets: ["Target3"], type: .executable)
+        package.addProduct(name: "MyLib", targets: ["Target4"], type: .library(.dynamic))
         
-        let expectedProducts = Fixtures.modernPackage.products + [
+        var expectedPackage = Fixtures.modernPackage
+        expectedPackage.products += [
             .init(name: "MyCLI", targets: ["Target3"], type: .executable),
             .init(name: "MyLib", targets: ["Target4"], type: .library(.dynamic))
         ]
-        XCTAssertEqual(package.products, expectedProducts)
+        XCTAssertEqual(package.data, expectedPackage)
     }
     
     func testRemoveProduct() throws {
         var package = createPackage()
         
-        try package.removeProduct(name: "Static")
+        guard let product = package.getProduct(named: "Static") else {
+            XCTFail()
+            return
+        }
         
-        var expectedProducts = Fixtures.modernPackage.products
-        expectedProducts.remove(at: 2)
-        XCTAssertEqual(package.products, expectedProducts)
+        package.removeProduct(product)
         
-        XCTAssertThrowsError(try package.removeProduct(name: "not-real"))
+        var expectedPackage = Fixtures.modernPackage
+        expectedPackage.products.remove(at: 2)
+        XCTAssertEqual(package.data, expectedPackage)
     }
     
     func testAddDependency() {
         var package = createPackage()
         
-        let ref = RepositoryReference(url: "https://github.com/jakeheis/SwiftCLI")
-        package.addDependency(ref: ref, requirement: .init(version: Version(5, 2, 0)))
+        package.addDependency(url: "https://github.com/jakeheis/SwiftCLI", requirement: .init(version: Version(5, 2, 0)))
         
-        let expectedDependencies = Fixtures.modernPackage.dependencies + [
-            .init(url: "https://github.com/jakeheis/SwiftCLI", requirement: .range("5.2.0", "6.0.0"))
-        ]
-        XCTAssertEqual(package.dependencies, expectedDependencies)
+        var expectedPackage = Fixtures.modernPackage
+        expectedPackage.dependencies.append(.init(url: "https://github.com/jakeheis/SwiftCLI", requirement: .range("5.2.0", "6.0.0")))
+        XCTAssertEqual(package.data, expectedPackage)
     }
     
     func testUpdateDependency() throws {
@@ -52,15 +54,20 @@ class PackageTests: XCTestCase {
         
         try package.updateDependency(dependency: Fixtures.modernPackage.dependencies[3], to: .branch("master"))
         
-        var expectedDependencies = Fixtures.modernPackage.dependencies
-        expectedDependencies[3].requirement = .branch("master")
-        XCTAssertEqual(package.dependencies, expectedDependencies)
+        var expectedPackage = Fixtures.modernPackage
+        expectedPackage.dependencies[3].requirement = .branch("master")
+        XCTAssertEqual(package.data, expectedPackage)
     }
     
     func testRemoveDependency() throws {
         var package = createPackage()
         
-        try package.removeDependency(named: "Flock")
+        guard let dependency = package.getDependency(named: "Flock") else {
+            XCTFail()
+            return
+        }
+        
+        package.removeDependency(dependency)
         
         var expectedDependencies = Fixtures.modernPackage.dependencies
         expectedDependencies.remove(at: 2)
@@ -68,49 +75,61 @@ class PackageTests: XCTestCase {
         
         var expectedTargets = Fixtures.modernPackage.targets
         expectedTargets[3].dependencies = [.byName("Core")]
-        XCTAssertEqual(package.targets, expectedTargets)
         
-        XCTAssertThrowsError(try package.removeDependency(named: "not-real"))
+        XCTAssertEqual(package.targets, expectedTargets)
+        XCTAssertEqual(package.targets[0], expectedTargets[0])
+        XCTAssertEqual(package.targets[1], expectedTargets[1])
+        XCTAssertEqual(package.targets[2], expectedTargets[2])
+        XCTAssertEqual(package.targets[3], expectedTargets[3])
     }
     
     func testAddTarget() {
         var package = createPackage()
         
-        package.addTarget(name: "CoreTests", type: .test, dependencies: ["Core"])
+        package.addTarget(name: "CoreTests", type: .test, dependencies: [.byName("Core")])
         
-        let expectedTargets = Fixtures.modernPackage.targets + [
-            .init(name: "CoreTests", type: .test, dependencies: [.byName("Core")])
-        ]
-        XCTAssertEqual(package.targets, expectedTargets)
+        var expectedPackage = Fixtures.modernPackage
+        expectedPackage.targets.append(.init(name: "CoreTests", type: .test, dependencies: [.byName("Core")]))
+        XCTAssertEqual(package.data, expectedPackage)
     }
     
     func testDepend() throws {
         var package = createPackage()
         
-        try package.depend(target: "Core", on: "SwiftCLI")
-        try package.depend(target: "Exclusive", on: "CLI")
+        guard let core = package.getTarget(named: "Core"), let exclusive = package.getTarget(named: "Exclusive") else {
+            XCTFail()
+            return
+        }
         
-        var expectedTargets = Fixtures.modernPackage.targets
-        expectedTargets[2].dependencies = [.byName("SwiftCLI")]
-        expectedTargets[3].dependencies += [.byName("CLI")]
-        XCTAssertEqual(package.targets, expectedTargets)
+        try package.addTargetDependency(for: core, on: .byName("SwiftCLI"))
+        try package.addTargetDependency(for: exclusive, on: .target("CLI"))
         
-        XCTAssertThrowsError(try package.depend(target: "not-real", on: "SwiftCLI"))
+        var expectedPackage = Fixtures.modernPackage
+        expectedPackage.targets[2].dependencies = [.byName("SwiftCLI")]
+        expectedPackage.targets[3].dependencies += [.target("CLI")]
+        XCTAssertEqual(package.data, expectedPackage)
     }
     
     func testRemoveTarget() throws {
         var package = createPackage()
         
-        try package.removeTarget(named: "Core")
+        guard let core = package.getTarget(named: "Core") else {
+            XCTFail()
+            return
+        }
         
-        var expectedTargets = Fixtures.modernPackage.targets
-        expectedTargets.remove(at: 2)
-        expectedTargets[0].dependencies.removeFirst()
-        expectedTargets[1].dependencies.remove(at: 1)
-        expectedTargets[2].dependencies.removeFirst()
-        XCTAssertEqual(package.targets, expectedTargets)
+        package.removeTarget(core)
         
-        XCTAssertThrowsError(try package.removeTarget(named: "not-real"))
+        var expectedPackage = Fixtures.modernPackage
+        expectedPackage.targets.remove(at: 2)
+        expectedPackage.targets[0].dependencies.removeFirst()
+        expectedPackage.targets[1].dependencies.remove(at: 1)
+        expectedPackage.targets[2].dependencies.removeFirst()
+        
+        XCTAssertEqual(package.data, expectedPackage)
+        XCTAssertEqual(package.data.targets[0], expectedPackage.targets[0])
+        XCTAssertEqual(package.data.targets[1], expectedPackage.targets[1])
+        XCTAssertEqual(package.data.targets[2], expectedPackage.targets[2])
     }
     
     private func createPackage() -> Package {

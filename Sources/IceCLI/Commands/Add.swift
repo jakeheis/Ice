@@ -60,12 +60,12 @@ class AddCommand: IceObject, Command {
         
         verboseOut <<< "Loaded package: \(package.name)"
         
-        package.addDependency(ref: ref, requirement: requirement)
+        let newDependency = package.addDependency(url: ref.url, requirement: requirement)
         try package.sync()
         
         try SPM().resolve()
         
-        let libs = package.retrieveLibrariesOfDependency(named: ref.name)
+        let libs = package.retrieveLibraries(ofDependency: newDependency)
         if libs.count > 1 {
             stdout <<< ""
             stdout <<< "Note: ".bold.blue + "this dependency offers multiple libraries (" + libs.joined(separator: ", ") + ")"
@@ -73,10 +73,14 @@ class AddCommand: IceObject, Command {
         
         for lib in libs {
             if let targetString = targets.value {
-                let targets = targetString.components(separatedBy: ",")
-                try targets.forEach { try package.depend(target: $0, on: lib) }
+                for targetName in targetString.commaSeparated() {
+                    guard let target = package.getTarget(named: targetName) else {
+                        throw IceError(message: "target '\(targetName)' not found")
+                    }
+                    try package.addTargetDependency(for: target, on: .byName(lib))
+                }
             } else if package.targets.count == 1 {
-                try package.depend(target: package.targets[0].name, on: lib)
+                try package.addTargetDependency(for: package.targets[0], on: .byName(lib))
             } else if !noInteractive.value {
                 stdout <<< ""
                 stdout <<< "Which targets depend on \(lib)?"
@@ -100,7 +104,9 @@ class AddCommand: IceObject, Command {
                 
                 let distances = targetString.compactMap { ids.index(of: $0) }
                 let targets = distances.map { possibleTargets[ids.distance(from: ids.startIndex, to: $0)] }
-                try targets.forEach { try package.depend(target: $0.name, on: lib) }
+                try targets.forEach {
+                    try package.addTargetDependency(for: $0, on: .byName(lib))
+                }
             }
         }
         

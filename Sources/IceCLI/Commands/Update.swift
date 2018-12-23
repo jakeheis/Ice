@@ -33,8 +33,8 @@ class UpdateCommand: IceObject, Command {
         }
         
         var package = try loadPackage()
-        guard let dep = package.dependencies.first(where: { RepositoryReference(url: $0.url).name == dependency }) else {
-            throw IceError(message: "No dependency found with that name")
+        guard let dep = package.getDependency(named: dependency) else {
+            throw IceError(message: "dependency '\(dependency)' not found")
         }
         
         let requirement: Package.Dependency.Requirement
