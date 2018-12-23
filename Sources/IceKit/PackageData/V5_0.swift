@@ -13,6 +13,10 @@ public struct PackageDataV5_0: Codable, Equatable {
             case brew
         }
         
+        public static func ==(lhs: Provider, rhs: Provider) -> Bool {
+            return lhs.kind == rhs.kind && lhs.values == rhs.values
+        }
+        
         public let kind: Kind
         public let values: [String]
         
@@ -23,7 +27,7 @@ public struct PackageDataV5_0: Codable, Equatable {
     }
     
     public struct Product: Equatable {
-        public enum ProductType: Equatable {
+        public enum ProductType {
             public enum LibraryType: String {
                 case automatic
                 case `static`
@@ -32,6 +36,17 @@ public struct PackageDataV5_0: Codable, Equatable {
             
             case executable
             case library(LibraryType)
+        }
+        
+        public static func ==(lhs: Product, rhs: Product) -> Bool {
+            guard lhs.name == rhs.name, lhs.targets == rhs.targets else {
+                return false
+            }
+            switch (lhs.type, rhs.type) {
+            case (.executable, .executable): return true
+            case let (.library(t1), .library(t2)) where t1 == t2: return true
+            default: return false
+            }
         }
         
         public let name: String
@@ -45,7 +60,7 @@ public struct PackageDataV5_0: Codable, Equatable {
         }
     }
     
-    public struct Dependency: Equatable {
+    public struct Dependency: Codable, Equatable {
         
         public enum Requirement: Equatable {
             case range(String, String)
@@ -53,6 +68,21 @@ public struct PackageDataV5_0: Codable, Equatable {
             case exact(String)
             case revision(String)
             case localPackage
+            
+            public static func ==(lhs: Requirement, rhs: Requirement) -> Bool {
+                switch (lhs, rhs) {
+                case let (.range(l1, u1), .range(l2, u2)) where l1 == l2 && u1 == u2 : return true
+                case let (.branch(b1), .branch(b2)) where b1 == b2: return true
+                case let (.exact(e1), .exact(e2)) where e1 == e2: return true
+                case let (.revision(r1), .revision(r2)) where r1 == r2: return true
+                case (.localPackage, .localPackage): return true
+                default: return false
+                }
+            }
+        }
+        
+        public static func ==(lhs: Dependency, rhs: Dependency) -> Bool {
+            return lhs.url == rhs.url && lhs.requirement == rhs.requirement
         }
         
         public let url: String
@@ -74,6 +104,15 @@ public struct PackageDataV5_0: Codable, Equatable {
             case target(String)
             case product(String, String?)
             case byName(String)
+            
+            public static func ==(lhs: Dependency, rhs: Dependency) -> Bool {
+                switch (lhs, rhs) {
+                case let (.target(t1), .target(t2)) where t1 == t2: return true
+                case let (.product(prod1, pac1), .product(prod2, pac2)) where prod1 == prod2 && pac1 == pac2: return true
+                case let (.byName(n1), .byName(n2)) where n1 == n2: return true
+                default: return false
+                }
+            }
             
             var targetName: String? {
                 switch self {
@@ -102,10 +141,18 @@ public struct PackageDataV5_0: Codable, Equatable {
                 public let config: String?
                 public let platformNames: [String]
                 
+                public static func ==(lhs: Condition, rhs: Condition) -> Bool {
+                    return lhs.config == rhs.config && lhs.platformNames == rhs.platformNames
+                }
+                
                 public init(config: String? = nil, platformNames: [String] = []) {
                     self.config = config
                     self.platformNames = platformNames
                 }
+            }
+            
+            public static func ==(lhs: Setting, rhs: Setting) -> Bool {
+                return lhs.name == rhs.name && lhs.tool == rhs.tool && lhs.condition == rhs.condition && lhs.value == rhs.value
             }
             
             public enum Tool: String, Codable {
@@ -126,6 +173,23 @@ public struct PackageDataV5_0: Codable, Equatable {
                 self.condition = condition
                 self.value = value
             }
+        }
+        
+        public static func ==(lhs: Target, rhs: Target) -> Bool {
+            guard lhs.name == rhs.name, lhs.type == rhs.type, lhs.dependencies == rhs.dependencies, lhs.path == rhs.path, lhs.exclude == rhs.exclude,
+                lhs.sources ?? [] == rhs.sources ?? [], lhs.publicHeadersPath == rhs.publicHeadersPath, lhs.pkgConfig == rhs.pkgConfig,
+                lhs.providers ?? [] == rhs.providers ?? [], lhs.settings == rhs.settings else {
+                return false
+            }
+            for (ld, rd) in zip(lhs.dependencies, rhs.dependencies) {
+                switch (ld, rd) {
+                case let (.target(t1), .target(t2)) where t1 == t2: continue
+                case let (.product(prod1, pac1), .product(prod2, pac2)) where prod1 == prod2 && pac1 == pac2: continue
+                case let (.byName(n1), .byName(n2)) where n1 == n2: continue
+                default: return false
+                }
+            }
+            return true
         }
         
         public let name: String
@@ -151,6 +215,10 @@ public struct PackageDataV5_0: Codable, Equatable {
             self.providers = providers
             self.settings = settings
         }
+    }
+    
+    public static func ==(lhs: PackageDataV5_0, rhs: PackageDataV5_0) -> Bool {
+        return lhs.name == rhs.name && lhs.pkgConfig == rhs.pkgConfig && lhs.providers ?? [] == rhs.providers ?? [] && lhs.products == rhs.products && lhs.dependencies == rhs.dependencies && lhs.targets == rhs.targets && lhs.swiftLanguageVersions ?? [] == rhs.swiftLanguageVersions ?? [] && lhs.cLanguageStandard == rhs.cLanguageStandard && lhs.cxxLanguageStandard == rhs.cxxLanguageStandard
     }
     
     public let name: String
@@ -233,8 +301,6 @@ extension PackageDataV5_0.Product: Codable {
     }
     
 }
-
-extension PackageDataV5_0.Dependency: Codable {}
 
 extension PackageDataV5_0.Dependency.Requirement: Codable {
     
