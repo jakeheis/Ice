@@ -70,7 +70,6 @@ extension PackageLoaderTests {
         ("test4_0", test4_0),
         ("test4_2", test4_2),
         ("test5_0", test5_0),
-        ("testBasic", testBasic),
     ]
 }
 
@@ -99,7 +98,9 @@ extension PackageWriterTests {
         ("testCLanguageStandard", testCLanguageStandard),
         ("testCxxLanguageStandard", testCxxLanguageStandard),
         ("testDependencies", testDependencies),
-        ("testFull", testFull),
+        ("testFull4_0", testFull4_0),
+        ("testFull4_2", testFull4_2),
+        ("testFull5_0", testFull5_0),
         ("testProducts", testProducts),
         ("testProviders", testProviders),
         ("testSwiftLanguageVersions", testSwiftLanguageVersions),

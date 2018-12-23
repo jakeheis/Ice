@@ -5,20 +5,25 @@
 //  Created by Jake Heiser on 12/21/18.
 //
 
-public struct PackageDataV5_0: Codable {
+public struct PackageDataV5_0: Codable, Equatable {
     
-    public struct Provider {
-        public let name: String
+    public struct Provider: Equatable {
+        public enum Kind: String, CodingKey {
+            case apt
+            case brew
+        }
+        
+        public let kind: Kind
         public let values: [String]
         
-        public init(name: String, values: [String]) {
-            self.name = name
+        public init(kind: Kind, values: [String]) {
+            self.kind = kind
             self.values = values
         }
     }
     
-    public struct Product {
-        public enum ProductType {
+    public struct Product: Equatable {
+        public enum ProductType: Equatable {
             public enum LibraryType: String {
                 case automatic
                 case `static`
@@ -40,9 +45,9 @@ public struct PackageDataV5_0: Codable {
         }
     }
     
-    public struct Dependency {
+    public struct Dependency: Equatable {
         
-        public enum Requirement {
+        public enum Requirement: Equatable {
             case range(String, String)
             case branch(String)
             case exact(String)
@@ -64,16 +69,24 @@ public struct PackageDataV5_0: Codable {
         
     }
     
-    public struct Target: Codable {
-        public enum Dependency {
+    public struct Target: Codable, Equatable {
+        public enum Dependency: Equatable {
             case target(String)
             case product(String, String?)
             case byName(String)
             
-            var name: String {
+            var targetName: String? {
                 switch self {
-                case let .target(name), let .product(name, _), let .byName(name):
-                    return name
+                case let .target(target), let .byName(target): return target
+                case .product(_, _): return nil
+                }
+            }
+            
+            var packageName: String? {
+                switch self {
+                case let .product(product, package): return package ?? product
+                case let .byName(package): return package
+                case .target(_): return nil
                 }
             }
         }
@@ -84,10 +97,15 @@ public struct PackageDataV5_0: Codable {
             case system
         }
         
-        public struct Setting: Codable {
-            public struct Condition: Codable {
+        public struct Setting: Codable, Equatable {
+            public struct Condition: Codable, Equatable {
                 public let config: String?
                 public let platformNames: [String]
+                
+                public init(config: String? = nil, platformNames: [String] = []) {
+                    self.config = config
+                    self.platformNames = platformNames
+                }
             }
             
             public enum Tool: String, Codable {
@@ -101,6 +119,13 @@ public struct PackageDataV5_0: Codable {
             public let tool: Tool
             public let condition: Condition?
             public let value: [String]
+            
+            public init(name: String, tool: Tool, condition: Condition?, value: [String]) {
+                self.name = name
+                self.tool = tool
+                self.condition = condition
+                self.value = value
+            }
         }
         
         public let name: String
@@ -140,32 +165,26 @@ public struct PackageDataV5_0: Codable {
     
 }
 
+// MARK: - Codable
+
 extension PackageDataV5_0.Provider: Codable {
     
-    enum CodingKeys: String, CodingKey {
-        case apt
-        case brew
-    }
-    
     public init(from decoder: Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self)
+        let container = try decoder.container(keyedBy: Kind.self)
         if let values = try? container.decode([[String]].self, forKey: .apt) {
-            self.name = CodingKeys.apt.rawValue
+            self.kind = .apt
             self.values = Array(values.joined())
         } else if let values = try? container.decode([[String]].self, forKey: .brew) {
-            self.name = CodingKeys.brew.rawValue
+            self.kind = .brew
             self.values = Array(values.joined())
         } else {
-            throw DecodingError.dataCorrupted(.init(codingPath: [], debugDescription: "providers type not recognized"))
+            throw DecodingError.dataCorrupted(.init(codingPath: decoder.codingPath, debugDescription: "providers type not recognized"))
         }
     }
     
     public func encode(to encoder: Encoder) throws {
-        var container = encoder.container(keyedBy: CodingKeys.self)
-        guard let key = CodingKeys(rawValue: name) else {
-            throw EncodingError.invalidValue(name, .init(codingPath: [], debugDescription: "invalid provider type '\(name)'"))
-        }
-        try container.encode([values], forKey: key)
+        var container = encoder.container(keyedBy: Kind.self)
+        try container.encode([values], forKey: kind)
     }
     
 }
@@ -194,7 +213,7 @@ extension PackageDataV5_0.Product: Codable {
         } else if type.contains(.executable) {
             self.type = .executable
         } else {
-            throw DecodingError.dataCorrupted(.init(codingPath: [], debugDescription: "product type not recognized"))
+            throw DecodingError.dataCorrupted(.init(codingPath: decoder.codingPath, debugDescription: "product type not recognized"))
         }
     }
     
@@ -246,7 +265,7 @@ extension PackageDataV5_0.Dependency.Requirement: Codable {
         } else if container.contains(.localPackage) {
             self = .localPackage
         } else {
-            throw DecodingError.dataCorrupted(.init(codingPath: [], debugDescription: "requirement type not recognized"))
+            throw DecodingError.dataCorrupted(.init(codingPath: decoder.codingPath, debugDescription: "requirement type not recognized"))
         }
     }
     
@@ -291,7 +310,7 @@ extension PackageDataV5_0.Target.Dependency: Codable {
         } else if let byNames = try? container.decode([String].self, forKey: .byName), let byName = byNames.first {
             self = .byName(byName)
         } else {
-            throw DecodingError.dataCorrupted(.init(codingPath: [], debugDescription: "target dependency type not recognized"))
+            throw DecodingError.dataCorrupted(.init(codingPath: decoder.codingPath, debugDescription: "target dependency type not recognized"))
         }
     }
     

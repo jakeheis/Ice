@@ -13,7 +13,7 @@ public struct SwiftToolsVersion {
     
     public static let v4 = SwiftToolsVersion(major: 4, minor: 0, patch: 0)
     public static let v4_2 = SwiftToolsVersion(major: 4, minor: 2, patch: 0)
-    public static let v5_0 = SwiftToolsVersion(major: 5, minor: 0, patch: 0)
+    public static let v5 = SwiftToolsVersion(major: 5, minor: 0, patch: 0)
     
     public let version: Version
     

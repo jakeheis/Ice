@@ -12,7 +12,7 @@ public class PackageWriter {
     private let writer: PackageWriterImpl
     
     public init(package: ModernPackageData, toolsVersion: SwiftToolsVersion) throws {
-        if toolsVersion >= SwiftToolsVersion.v5_0 {
+        if toolsVersion >= SwiftToolsVersion.v5 {
             self.writer = Version5_0Writer(package: package, toolsVersion: toolsVersion)
         } else if toolsVersion >= SwiftToolsVersion.v4_2 {
             self.writer = Version4_2Writer(package: package, toolsVersion: toolsVersion)
@@ -282,7 +282,7 @@ extension PackageWriterImpl {
     }
     
     private func providerComponent(for provider: Package.Provider) -> Component {
-        var provFunc = FunctionCallComponent(staticMember: provider.name)
+        var provFunc = FunctionCallComponent(staticMember: provider.kind.rawValue)
         provFunc.addSingleLineArray(key: nil, children: provider.values.quoted())
         return provFunc
     }

@@ -55,6 +55,11 @@ public struct PackageDataV4_2: Codable {
         public var name: String {
             return RepositoryReference(url: url).name
         }
+        
+        public init(url: String, requirement: Requirement) {
+            self.url = url
+            self.requirement = requirement
+        }
     }
     
     public struct Target: Codable {
@@ -99,7 +104,7 @@ public struct PackageDataV4_2: Codable {
             name: name,
             pkgConfig: pkgConfig,
             providers: providers?.map { (oldProvider) in
-                return .init(name: oldProvider.name, values: oldProvider.values)
+                return .init(kind: PackageDataV5_0.Provider.Kind(rawValue: oldProvider.name)!, values: oldProvider.values)
             },
             products: products.map { (oldProduct) in
                 let type: PackageDataV5_0.Product.ProductType
@@ -161,7 +166,7 @@ public struct PackageDataV4_2: Codable {
                     publicHeadersPath: target.publicHeadersPath,
                     pkgConfig: target.pkgConfig,
                     providers: target.providers?.map { (oldProvider) in
-                        return .init(name: oldProvider.name, values: oldProvider.values)
+                        return .init(kind: PackageDataV5_0.Provider.Kind(rawValue: oldProvider.name)!, values: oldProvider.values)
                     },
                     settings: []
                 )

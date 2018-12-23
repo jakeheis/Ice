@@ -9,7 +9,35 @@ public struct PackageDataV4_0: Codable {
     
     public typealias Provider = PackageDataV4_2.Provider
     public typealias Product = PackageDataV4_2.Product
-    public typealias Dependency = PackageDataV4_2.Dependency
+    
+    public struct Dependency: Codable {
+        public struct Requirement: Codable {
+            public enum RequirementType: String, Codable {
+                case range
+                case branch
+                case exact
+                case revision
+            }
+            public let type: RequirementType
+            public let lowerBound: String?
+            public let upperBound: String?
+            public let identifier: String?
+            
+            public init(type: RequirementType, lowerBound: String?, upperBound: String?, identifier: String?) {
+                self.type = type
+                self.lowerBound = lowerBound
+                self.upperBound = upperBound
+                self.identifier = identifier
+            }
+        }
+        
+        public let url: String
+        public var requirement: Requirement
+        
+        public var name: String {
+            return RepositoryReference(url: url).name
+        }
+    }
     
     public struct Target: Codable {
         public typealias Dependency = PackageDataV4_2.Target.Dependency
@@ -45,7 +73,16 @@ public struct PackageDataV4_0: Codable {
             pkgConfig: pkgConfig,
             providers: providers,
             products: products,
-            dependencies: dependencies,
+            dependencies: dependencies.map { (oldDependency) in
+                let reqType: PackageDataV4_2.Dependency.Requirement.RequirementType
+                switch oldDependency.requirement.type {
+                case .branch: reqType = .branch
+                case .revision: reqType = .revision
+                case .exact: reqType = .exact
+                case .range: reqType = .range
+                }
+                return .init(url: oldDependency.url, requirement: .init(type: reqType, lowerBound: oldDependency.requirement.lowerBound, upperBound: oldDependency.requirement.upperBound, identifier: oldDependency.requirement.identifier))
+            },
             targets: targets.map { (oldTarget) in
                 return .init(
                     name: oldTarget.name,

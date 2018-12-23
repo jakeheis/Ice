@@ -29,7 +29,7 @@ public class PackageFormatter {
     
     func formatProvider(provider: Package.Provider) -> Package.Provider {
         return .init(
-            name: provider.name,
+            kind: provider.kind,
             values: provider.values.sorted()
         )
     }
@@ -60,7 +60,21 @@ public class PackageFormatter {
         return .init(
             name: target.name,
             type: target.type,
-            dependencies: target.dependencies.sorted { $0.name < $1.name },
+            dependencies: target.dependencies.sorted { (lhs, rhs) in
+                let lName: String
+                switch lhs {
+                case let .target(name): lName = name
+                case let .product(name, _): lName = name
+                case let .byName(name): lName = name
+                }
+                let rName: String
+                switch rhs {
+                case let .target(name): rName = name
+                case let .product(name, _): rName = name
+                case let .byName(name): rName = name
+                }
+                return lName < rName
+            },
             path: target.path,
             exclude: target.exclude.sorted(),
             sources: target.sources?.sorted(),

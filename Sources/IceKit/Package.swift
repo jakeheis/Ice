@@ -117,7 +117,7 @@ public struct Package {
         guard let targetIndex = data.targets.index(where: { $0.name == target }) else {
             throw IceError(message: "target '\(target)' not found")
         }
-        if data.targets[targetIndex].dependencies.contains(where: { $0.name == lib }) {
+        if data.targets[targetIndex].dependencies.contains(where: { $0.packageName == lib || $0.targetName == lib }) {
             return
         }
         data.targets[targetIndex].dependencies.append(.byName(lib))
@@ -143,7 +143,7 @@ public struct Package {
     private mutating func removeDependencyFromTargets(named name: String) {
         data.targets = data.targets.map { (oldTarget) in
             var newTarget = oldTarget
-            newTarget.dependencies = newTarget.dependencies.filter { $0.name != name }
+            newTarget.dependencies = newTarget.dependencies.filter { $0.packageName != name }
             return newTarget
         }
     }

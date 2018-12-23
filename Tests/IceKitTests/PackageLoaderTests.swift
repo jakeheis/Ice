@@ -15,39 +15,6 @@ import XCTest
 
 class PackageLoaderTests: XCTestCase {
     
-    func testBasic() throws {
-        let icebox = IceBox(template: .json)
-        
-        let data: Data = icebox.fileContents("SwiftCLI.json")!
-        let package = try PackageLoader.load(from: data, toolsVersion: .v4, directory: .current, config: mockConfig)
-        
-        XCTAssertEqual(package.toolsVersion, .v4)
-        XCTAssertEqual(package.dirty, false)
-        
-        let captureStream = CaptureStream()
-        try package.write(to: captureStream)
-        captureStream.closeWrite()
-        
-        XCTAssertEqual(captureStream.readAll(), """
-        // swift-tools-version:4.0
-        // Managed by ice
-
-        import PackageDescription
-
-        let package = Package(
-            name: "SwiftCLI",
-            products: [
-                .library(name: "SwiftCLI", targets: ["SwiftCLI"]),
-            ],
-            targets: [
-                .target(name: "SwiftCLI", dependencies: []),
-                .testTarget(name: "SwiftCLITests", dependencies: ["SwiftCLI"]),
-            ]
-        )
-        
-        """)
-    }
-    
     func test4_0() throws {
         let icebox = IceBox(template: .json)
         
