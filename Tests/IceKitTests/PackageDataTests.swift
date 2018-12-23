@@ -14,7 +14,7 @@ class PackageDataTests: XCTestCase {
         let v4_0 = PackageDataV4_0(
             name: "MyPackage",
             pkgConfig: "config",
-            providers: [.init(name: "provider", values: ["provider-name"])],
+            providers: [.init(name: "apt", values: ["provider-name"])],
             products: [.init(name: "product", product_type: "type", targets: ["targ1"], type: "library")],
             dependencies: [.init(url: "https://github.com/jakeheis/SwiftCLI", requirement: .init(version: Version(5, 0, 0)))],
             targets: [
@@ -30,7 +30,42 @@ class PackageDataTests: XCTestCase {
         let expectedModern = ModernPackageData(
             name: "MyPackage",
             pkgConfig: "config",
-            providers: [.init(name: "provider", values: ["provider-name"])],
+            providers: [.init(name: "apt", values: ["provider-name"])],
+            products: [.init(name: "product", targets: ["targ1"], type: .library(.automatic))],
+            dependencies: [.init(url: "https://github.com/jakeheis/SwiftCLI", requirement: .init(version: Version(5, 0, 0)))],
+            targets: [
+                .init(name: "targ1", type: .regular, dependencies: [.byName("SwiftCLI")], path: nil, exclude: [], sources: nil, publicHeadersPath: nil, pkgConfig: nil, providers: nil),
+                .init(name: "targ1Tests", type: .test, dependencies: [.byName("targ1")], path: nil, exclude: [], sources: nil, publicHeadersPath: nil, pkgConfig: nil, providers: nil)
+            ],
+            swiftLanguageVersions: ["3", "4"],
+            cLanguageStandard: "c-lang",
+            cxxLanguageStandard: "c++-lang"
+        )
+        
+        assertEqualCodings(modern, expectedModern)
+    }
+    
+    func testModernize4_2() {
+        let v4_2 = PackageDataV4_2(
+            name: "MyPackage",
+            pkgConfig: "config",
+            providers: [.init(name: "apt", values: ["provider-name"])],
+            products: [.init(name: "product", product_type: "type", targets: ["targ1"], type: "library")],
+            dependencies: [.init(url: "https://github.com/jakeheis/SwiftCLI", requirement: .init(version: Version(5, 0, 0)))],
+            targets: [
+                .init(name: "targ1", type: .regular, dependencies: [.init(name: "SwiftCLI", package: nil, type: .byname)], path: nil, exclude: [], sources: nil, publicHeadersPath: nil, pkgConfig: nil, providers: nil),
+                .init(name: "targ1Tests", type: .test, dependencies: [.init(name: "targ1", package: nil, type: .byname)], path: nil, exclude: [], sources: nil, publicHeadersPath: nil, pkgConfig: nil, providers: nil)
+            ],
+            swiftLanguageVersions: ["3", "4"],
+            cLanguageStandard: "c-lang",
+            cxxLanguageStandard: "c++-lang"
+        )
+        let modern = v4_2.convertToModern()
+        
+        let expectedModern = ModernPackageData(
+            name: "MyPackage",
+            pkgConfig: "config",
+            providers: [.init(name: "apt", values: ["provider-name"])],
             products: [.init(name: "product", targets: ["targ1"], type: .library(.automatic))],
             dependencies: [.init(url: "https://github.com/jakeheis/SwiftCLI", requirement: .init(version: Version(5, 0, 0)))],
             targets: [

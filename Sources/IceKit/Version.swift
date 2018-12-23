@@ -69,4 +69,3 @@ extension Version: CustomStringConvertible {
 }
 
 extension Version: LosslessStringConvertible, ConvertibleFromString {}
-

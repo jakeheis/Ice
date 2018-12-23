@@ -48,7 +48,7 @@ class PackageLoaderTests: XCTestCase {
         """)
     }
     
-    func testComplex() throws {
+    func test4_0() throws {
         let icebox = IceBox(template: .json)
         
         let data: Data = icebox.fileContents("full_4_0.json")!
@@ -94,7 +94,7 @@ class PackageLoaderTests: XCTestCase {
         """)
     }
     
-    func testComplex4_2() throws {
+    func test4_2() throws {
         let icebox = IceBox(template: .json)
         
         let data: Data = icebox.fileContents("full_4_2.json")!
@@ -150,7 +150,7 @@ class PackageLoaderTests: XCTestCase {
         """)
     }
     
-    func testComplex5() throws {
+    func test5_0() throws {
         let icebox = IceBox(template: .json)
         
         let data: Data = icebox.fileContents("full_5_0.json")!

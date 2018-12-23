@@ -15,7 +15,7 @@ public class SPM {
     
     public lazy var version: Version? = {
         if let content = try? captureSwift(args: ["--version"]).stdout,
-            let match = Regex("Swift version ([0-9]\\.[0-9](\\.[0-9])?) ").firstMatch(in: content),
+            let match = Regex("Swift version ([0-9]\\.[0-9](\\.[0-9])?)(-dev)? ").firstMatch(in: content),
             var versionString = match.captures[0] {
             if versionString.components(separatedBy: ".").count != 3 { // Two part version outputed by spm; assume patch of 0
                 versionString += ".0"

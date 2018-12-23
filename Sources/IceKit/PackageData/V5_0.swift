@@ -5,8 +5,6 @@
 //  Created by Jake Heiser on 12/21/18.
 //
 
-import Foundation
-
 public struct PackageDataV5_0: Codable {
     
     public struct Provider {
@@ -163,7 +161,11 @@ extension PackageDataV5_0.Provider: Codable {
     }
     
     public func encode(to encoder: Encoder) throws {
-        
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        guard let key = CodingKeys(rawValue: name) else {
+            throw EncodingError.invalidValue(name, .init(codingPath: [], debugDescription: "invalid provider type '\(name)'"))
+        }
+        try container.encode([values], forKey: key)
     }
     
 }
@@ -197,7 +199,18 @@ extension PackageDataV5_0.Product: Codable {
     }
     
     public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
         
+        try container.encode(name, forKey: .name)
+        try container.encode(targets, forKey: .targets)
+        
+        var typeContainer = container.nestedContainer(keyedBy: ProductTypeCodingKeys.self, forKey: .type)
+        switch type {
+        case .executable:
+            try typeContainer.encodeNil(forKey: .executable)
+        case let .library(libType):
+            try typeContainer.encode([libType.rawValue], forKey: .library)
+        }
     }
     
 }
@@ -243,18 +256,16 @@ extension PackageDataV5_0.Dependency.Requirement: Codable {
     
     public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
+        
         switch self {
-        case .range(_, _):
-            break
-            //                    var rangeContainer = container.nestedContainer(keyedBy: Range.CodingKeys.self, forKey: .range)
-            //                    try rangeContainer.encode(lower, forKey: .lowerBound)
-        //                    try rangeContainer.encode(upper, forKey: .upperBound)
+        case let .range(lower, upper):
+            try container.encode([RequirementRange(lowerBound: lower, upperBound: upper)], forKey: .range)
         case let .branch(branch):
-            try container.encode(branch, forKey: .branch)
+            try container.encode([branch], forKey: .branch)
         case let .exact(exact):
-            try container.encode(exact, forKey: .exact)
+            try container.encode([exact], forKey: .exact)
         case let .revision(revision):
-            try container.encode(revision, forKey: .revision)
+            try container.encode([revision], forKey: .revision)
         case .localPackage:
             try container.encodeNil(forKey: .localPackage)
         }
@@ -285,7 +296,16 @@ extension PackageDataV5_0.Target.Dependency: Codable {
     }
     
     public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
         
+        switch self {
+        case let .byName(name):
+            try container.encode([name], forKey: .byName)
+        case let .product(product, package):
+            try container.encode([product, package], forKey: .product)
+        case let .target(target):
+            try container.encode([target], forKey: .target)
+        }
     }
     
 }
