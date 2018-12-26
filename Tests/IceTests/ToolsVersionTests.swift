@@ -68,4 +68,73 @@ class ToolsVersionTests: XCTestCase {
         """)
     }
 
+    func testTaggedUpdate() {
+        let icebox = IceBox(template: .lib)
+        
+        icebox.createFile(path: "Package.swift", contents: """
+        // swift-tools-version:4.0
+        // Managed by ice
+
+        import PackageDescription
+
+        let package = Package(
+            name: "Lib",
+            products: [
+                .library(name: "Lib", targets: ["Lib"]),
+            ],
+            targets: [
+                .target(name: "Lib", dependencies: []),
+                .testTarget(name: "LibTests", dependencies: ["Lib"]),
+            ],
+            swiftLanguageVersions: [4, 5]
+        )
+        
+        """)
+        
+        let result = icebox.run("tools-version", "update", "4.2", "-t")
+        XCTAssertEqual(result.exitStatus, 0)
+        XCTAssertEqual(result.stderr, "")
+        XCTAssertEqual(result.stdout, "")
+        
+        XCTAssertEqual(icebox.fileContents("Package.swift"), """
+        // swift-tools-version:4.0
+        // Managed by ice
+
+        import PackageDescription
+
+        let package = Package(
+            name: "Lib",
+            products: [
+                .library(name: "Lib", targets: ["Lib"]),
+            ],
+            targets: [
+                .target(name: "Lib", dependencies: []),
+                .testTarget(name: "LibTests", dependencies: ["Lib"]),
+            ],
+            swiftLanguageVersions: [4, 5]
+        )
+        
+        """)
+        
+        XCTAssertEqual(icebox.fileContents("Package@swift-4.2.swift"), """
+        // swift-tools-version:4.2
+        // Managed by ice
+
+        import PackageDescription
+
+        let package = Package(
+            name: "Lib",
+            products: [
+                .library(name: "Lib", targets: ["Lib"]),
+            ],
+            targets: [
+                .target(name: "Lib", dependencies: []),
+                .testTarget(name: "LibTests", dependencies: ["Lib"]),
+            ],
+            swiftLanguageVersions: [.v4, .version("5")]
+        )
+        
+        """)
+    }
+    
 }

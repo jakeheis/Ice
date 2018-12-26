@@ -7,17 +7,20 @@
 
 import Icebox
 @testable import IceKit
+import PathKit
 import SwiftCLI
 import TestingUtilities
 import XCTest
 
 class PackageLoaderTests: XCTestCase {
     
+    let packagePath = Path.current + "Package.swift"
+    
     func test4_0() throws {
         let icebox = IceBox(template: .json)
         
         let data: Data = icebox.fileContents("full_4_0.json")!
-        let package = try PackageLoader.load(from: data, toolsVersion: SwiftToolsVersion(major: 4, minor: 0, patch: 0), directory: .current, config: mockConfig)
+        let package = try PackageLoader.load(from: data, toolsVersion: SwiftToolsVersion(major: 4, minor: 0, patch: 0), path: packagePath, config: mockConfig)
         
         XCTAssertEqual(package.toolsVersion, SwiftToolsVersion(major: 4, minor: 0, patch: 0))
         XCTAssertEqual(package.dirty, false)
@@ -63,7 +66,7 @@ class PackageLoaderTests: XCTestCase {
         let icebox = IceBox(template: .json)
         
         let data: Data = icebox.fileContents("full_4_2.json")!
-        let package = try PackageLoader.load(from: data, toolsVersion: SwiftToolsVersion(major: 4, minor: 2, patch: 0), directory: .current, config: mockConfig)
+        let package = try PackageLoader.load(from: data, toolsVersion: SwiftToolsVersion(major: 4, minor: 2, patch: 0), path: packagePath, config: mockConfig)
         
         XCTAssertEqual(package.toolsVersion, SwiftToolsVersion(major: 4, minor: 2, patch: 0))
         XCTAssertEqual(package.dirty, false)
@@ -119,7 +122,7 @@ class PackageLoaderTests: XCTestCase {
         let icebox = IceBox(template: .json)
         
         let data: Data = icebox.fileContents("full_5_0.json")!
-        let package = try PackageLoader.load(from: data, toolsVersion: SwiftToolsVersion(major: 5, minor: 0, patch: 0), directory: .current, config: mockConfig)
+        let package = try PackageLoader.load(from: data, toolsVersion: SwiftToolsVersion(major: 5, minor: 0, patch: 0), path: packagePath, config: mockConfig)
         
         XCTAssertEqual(package.toolsVersion, SwiftToolsVersion(major: 5, minor: 0, patch: 0))
         XCTAssertEqual(package.dirty, false)
@@ -181,6 +184,68 @@ class PackageLoaderTests: XCTestCase {
         )
 
         """)
+    }
+    
+    func testFormPackagePath() {
+        XCTAssertEqual(PackageLoader.formPackagePath(in: .current), .current + "Package.swift")
+        XCTAssertEqual(PackageLoader.formPackagePath(in: .current, toolsVersion: "4.0"), .current + "Package@swift-4.0.swift")
+        XCTAssertEqual(PackageLoader.formPackagePath(in: .current, toolsVersion: "4.1.2"), .current + "Package@swift-4.1.2.swift")
+    }
+    
+    func testFindPackageRoot() {
+        let icebox = IceBox(template: .lib)
+        
+        icebox.inside {
+            let root = Path.current
+            
+            XCTAssertEqual(PackageLoader.findPackageRoot(directory: .current), root)
+            
+            (root + "Sources").chdir {
+                XCTAssertEqual(PackageLoader.findPackageRoot(directory: .current), root)
+            }
+        }
+    }
+    
+    func testVersionedPackage() {
+        let icebox = IceBox(template: .lib)
+        
+        icebox.createFile(path: "Package@swift-4.2.swift", contents: """
+        // swift-tools-version:4.2
+        // The swift-tools-version declares the minimum version of Swift required to build this package.
+
+        import PackageDescription
+
+        let package = Package(
+            name: "Lib4_2",
+            products: [
+                .library(name: "Lib", targets: ["Lib"]),
+            ],
+            dependencies: [],
+            targets: [
+                .target(name: "Lib", dependencies: []),
+                .testTarget(name: "LibTests", dependencies: ["Lib"]),
+            ]
+        )
+
+        """)
+        
+        icebox.inside {
+            let base = Path.current + "Package.swift"
+            let specific = Path.current + "Package@swift-4.2.swift"
+            
+            XCTAssertEqual(PackageLoader.findPackageFile(in: .current, toolsVersion: .v4), base)
+            XCTAssertEqual(PackageLoader.findPackageFile(in: .current, toolsVersion: .v4_2), specific)
+            XCTAssertEqual(PackageLoader.findPackageFile(in: .current, toolsVersion: .v5), base)
+            XCTAssertNil(PackageLoader.findPackageFile(in: .current + "Sources", toolsVersion: .v5))
+            
+            let package = try PackageLoader.load(directory: .current, config: nil)
+            
+            Differentiate.byVersion(swift4_2AndAbove: {
+                XCTAssertEqual(package.name, "Lib4_2")
+            }, swift4_0AndAbove: {
+                XCTAssertEqual(package.name, "Lib")
+            })
+        }
     }
     
 }

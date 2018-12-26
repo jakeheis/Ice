@@ -16,7 +16,7 @@ class VersionCommand: Command {
     func execute() throws {
         stdout <<< "Ice version: \(Ice.version)"
         
-        if let swiftVersion = SPM().version?.string {
+        if let swiftVersion = SPM().version?.description {
             stdout <<< "Swift version: " + swiftVersion
         } else {
             throw IceError(message: "couldn't retrieve Swift version")

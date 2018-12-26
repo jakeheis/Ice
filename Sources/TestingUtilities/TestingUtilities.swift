@@ -36,8 +36,8 @@ public class Differentiate {
         differentiate.byPlatform(mac: mac, linux: linux)
     }
     
-    public static func byVersion(swift4_2AndAbove: Assertion? = nil, swift4_1AndAbove: Assertion? = nil, swift4_0AndAbove: Assertion) {
-        differentiate.byVersion(swift4_2AndAbove: swift4_2AndAbove, swift4_1AndAbove: swift4_1AndAbove, swift4_0AndAbove: swift4_0AndAbove)
+    public static func byVersion(swift5AndAbove: Assertion? = nil, swift4_2AndAbove: Assertion? = nil, swift4_1AndAbove: Assertion? = nil, swift4_0AndAbove: Assertion) {
+        differentiate.byVersion(swift5AndAbove: swift5AndAbove, swift4_2AndAbove: swift4_2AndAbove, swift4_1AndAbove: swift4_1AndAbove, swift4_0AndAbove: swift4_0AndAbove)
     }
     
     private static let differentiate = Differentiate()
@@ -59,7 +59,9 @@ public class Differentiate {
         version = "4.0"
         #endif
         
-        print("Running tests on \(platform), Swift version \(version)")
+        print()
+        print("Differentiate: running tests on \(platform), Swift version \(version)")
+        print()
     }
     
     private func byPlatform(mac: Assertion, linux: Assertion) {
@@ -70,9 +72,19 @@ public class Differentiate {
         #endif
     }
     
-    private func byVersion(swift4_2AndAbove: Assertion?, swift4_1AndAbove: Assertion?, swift4_0AndAbove: Assertion) {
-        // TODO: swift(>=4.2) doesn't work here for some reason, so using 4.1.4 even though that version doesn't exist
-        #if swift(>=4.1.50)
+    private func byVersion(swift5AndAbove: Assertion? = nil, swift4_2AndAbove: Assertion?, swift4_1AndAbove: Assertion?, swift4_0AndAbove: Assertion) {
+        // TODO: swift(>=4.2) doesn't work here for some reason, so using 4.1.50 even though that version doesn't exist
+        #if swift(>=5.0)
+        if let swift5AndAbove = swift5AndAbove {
+            swift5AndAbove()
+        } else if let swift4_2AndAbove = swift4_2AndAbove {
+            swift4_2AndAbove()
+        } else if let swift4_1AndAbove = swift4_1AndAbove {
+            swift4_1AndAbove()
+        } else {
+            swift4_0AndAbove()
+        }
+        #elseif swift(>=4.1.50)
         if let swift4_2AndAbove = swift4_2AndAbove {
             swift4_2AndAbove()
         } else if let swift4_1AndAbove = swift4_1AndAbove {

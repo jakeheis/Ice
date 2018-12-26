@@ -13,16 +13,12 @@ public class SPM {
     
     public let directory: Path
     
-    public lazy var version: Version? = {
+    public lazy var version: SwiftToolsVersion? = {
         if let content = try? captureSwift(args: ["--version"]).stdout,
             let match = Regex("Swift version ([0-9]\\.[0-9](\\.[0-9])?)(-dev)? ").firstMatch(in: content),
-            var versionString = match.captures[0] {
-            if versionString.components(separatedBy: ".").count != 3 { // Two part version outputed by spm; assume patch of 0
-                versionString += ".0"
-            }
-            if let version = Version(versionString) {
+            let versionString = match.captures[0],
+            let version = SwiftToolsVersion(versionString) {
                 return version
-            }
         }
         return nil
     }()
@@ -128,7 +124,7 @@ public class SPM {
     
     public func generateTests(for packageTargets: [Package.Target]) throws {
         #if os(macOS)
-        guard let version = version, version >= Version(4, 1, 0) else {
+        guard let version = version, version >= SwiftToolsVersion(major: 4, minor: 1, patch: 0) else {
             throw IceError(message: "test list generation only supported for Swift 4.1 and above")
         }
         

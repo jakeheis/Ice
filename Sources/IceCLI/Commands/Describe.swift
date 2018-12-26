@@ -44,7 +44,7 @@ class DescribeCommand: IceObject, Command {
     
     func printDetail(title: String, value: String) {
         let padding = String(repeating: " ", count: 11 - title.count)
-        print("\(padding)\(title): ".blue + value)
+        stdout <<< "\(padding)\(title): ".blue + value
     }
     
 }

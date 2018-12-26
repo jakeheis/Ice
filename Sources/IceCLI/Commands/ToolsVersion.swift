@@ -6,6 +6,7 @@
 //
 
 import IceKit
+import PathKit
 import SwiftCLI
 
 class ToolsVersionGroup: IceObject, CommandGroup {
@@ -34,6 +35,8 @@ class UpdateToolsVersion: IceObject, Command {
     let name = "update"
     let shortDescription = "Update the current project's Swift tools version and migrate Package.swift to the new version"
     
+    let tagged = Flag("-t", "--tagged", description: "Tag the new package file with the version (e.g. Package@swift-5.0.swift) rather than just Package.swift")
+    
     let version = Parameter(completion: .values([
         ("4.0", ""),
         ("4.2", "")
@@ -46,6 +49,10 @@ class UpdateToolsVersion: IceObject, Command {
         
         var package = try loadPackage()
         package.toolsVersion = toolsVersion
+        
+        let toolsVersionString = tagged.value ? toolsVersion.description : nil
+        package.path = PackageLoader.formPackagePath(in: package.path.parent(), toolsVersion: toolsVersionString)
+        
         try package.sync()
     }
     

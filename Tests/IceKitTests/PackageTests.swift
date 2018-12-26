@@ -6,6 +6,7 @@
 //
 
 @testable import IceKit
+import PathKit
 import XCTest
 
 class PackageTests: XCTestCase {
@@ -133,7 +134,7 @@ class PackageTests: XCTestCase {
     }
     
     private func createPackage() -> Package {
-        return Package(data: Fixtures.modernPackage, toolsVersion: Fixtures.modernToolsVersion, directory: .current, config: mockConfig)
+        return Package(data: Fixtures.modernPackage, toolsVersion: Fixtures.modernToolsVersion, path: .current + "Package.swift", config: mockConfig)
     }
 
 }

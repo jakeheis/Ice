@@ -16,7 +16,6 @@ public struct Package {
     public typealias Dependency = ModernPackageData.Dependency
     public typealias Target = ModernPackageData.Target
     
-    public static let fileName = Path("Package.swift")
     private static let libRegex = Regex("\\.library\\( *name: *\"([^\"]*)\"")
     
     public static func load(directory: Path, config: Config? = nil) throws -> Package {
@@ -49,16 +48,23 @@ public struct Package {
             dirty = true
         }
     }
-    public let directory: Path
+    public var path: Path {
+        didSet {
+            dirty = true
+        }
+    }
+    
     public let config: Config
     
     public var dirty = false
     
-    public init(data: ModernPackageData, toolsVersion: SwiftToolsVersion, directory: Path, config: Config?) {
+    public init(data: ModernPackageData, toolsVersion: SwiftToolsVersion, path: Path, config: Config?) {
         self.data = data
         self.toolsVersion = toolsVersion
-        self.directory = directory
+        self.path = path
         self.config = config ?? Config()
+        
+        Logger.verbose <<< "Parsed package: \(data.name)"
     }
     
     // MARK: - Products
@@ -172,9 +178,10 @@ public struct Package {
     // MARK: -
     
     public func retrieveLibraries(ofDependency dependency: Dependency) -> [String] {
-        let glob = (directory + ".build" + "checkouts").glob("\(dependency.name)*")
-        guard let path = glob.first,
-            let contents: String = try? (path + Package.fileName).read().replacingOccurrences(of: "\n", with: " ") else {
+        let glob = (path.parent() + ".build" + "checkouts").glob("\(dependency.name)*")
+        guard let dependencyDirectory = glob.first,
+            let dependencyPackageFile = PackageLoader.findPackageFile(in: dependencyDirectory, toolsVersion: toolsVersion),
+            let contents: String = try? dependencyPackageFile.read().replacingOccurrences(of: "\n", with: " ") else {
                 return [dependency.name]
         }
         let matches = Package.libRegex.allMatches(in: contents)
@@ -191,7 +198,6 @@ public struct Package {
             return
         }
         
-        let path = directory + Package.fileName
         guard let fileStream = WriteStream.for(path: path.string, appending: false) else  {
             throw IceError(message: "couldn't write to \(path)")
         }
