@@ -27,22 +27,26 @@ public struct PackageLoader {
         return directory + file
     }
     
-    public static func findPackageRoot(directory: Path) -> Path? {
+    public let root: Path
+    
+    public init(directory: Path, crawlUp: Bool = true) throws {
         var current = directory
         while true {
-            let path = formPackagePath(in: current)
+            let path = PackageLoader.formPackagePath(in: current)
             if path.exists {
-                return current
+                self.root = current
+                return
             }
             let parent = current.parent()
-            if current == parent { // Root; can't go up any farther, no Package.swift
-                return nil
+            if current == parent || crawlUp == false { // Root; can't go up any farther, no Package.swift
+                throw IceError(message: "couldn't find Package.swift")
             }
             current = parent
         }
+        fatalError()
     }
     
-    public static func findPackageFile(in root: Path, toolsVersion: SwiftToolsVersion?) -> Path? {
+    public func packageFilePath(for toolsVersion: SwiftToolsVersion?) -> Path {
         if let version = toolsVersion?.version {
             let tags = [
                 "\(version.major).\(version.minor).\(version.patch)",
@@ -50,27 +54,21 @@ public struct PackageLoader {
                 "\(version.major)",
             ]
             for tag in tags {
-                let path = formPackagePath(in: root, toolsVersion: tag)
+                let path = PackageLoader.formPackagePath(in: root, toolsVersion: tag)
                 if path.exists {
                     return path
                 }
             }
         }
-        let nonSpecific = formPackagePath(in: root)
-        if nonSpecific.exists {
-            return nonSpecific
-        }
-        return nil
+        let nonSpecific = PackageLoader.formPackagePath(in: root)
+        return nonSpecific
     }
     
-    public static func load(directory: Path, config: Config?) throws -> Package {
-        let spm = SPM(directory: directory)
+    public func loadPackage(config: Config?) throws -> Package {
+        let spm = SPM(directory: root)
         let data = try spm.dumpPackage()
         
-        guard let root = findPackageRoot(directory: directory),
-            let path = findPackageFile(in: root, toolsVersion: spm.version) else {
-            throw IceError(message: "couldn't find Package.swift")
-        }
+        let path = packageFilePath(for: spm.version)
         
         Logger.verbose <<< "Identified Package.swift location: " + path.string
 
@@ -81,10 +79,10 @@ public struct PackageLoader {
                 throw IceError(message: "couldn't read Package.swift")
         }
         
-        return try load(from: data, toolsVersion: toolsVersion, path: path, config: config)
+        return try loadPackage(from: data, toolsVersion: toolsVersion, path: path, config: config)
     }
     
-    public static func load(from payload: Data, toolsVersion: SwiftToolsVersion, path: Path, config: Config?) throws -> Package {
+    public func loadPackage(from payload: Data, toolsVersion: SwiftToolsVersion, path: Path, config: Config?) throws -> Package {
         let data: ModernPackageData
         if let v5_0 = try? JSONDecoder().decode(PackageDataV5_0.self, from: payload) {
             Logger.verbose <<< "Parsing package output as from SPM v5.0"
@@ -101,6 +99,4 @@ public struct PackageLoader {
         return Package(data: data, toolsVersion: toolsVersion, path: path, config: config)
     }
     
-    private init() {}
-
 }
