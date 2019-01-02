@@ -1,10 +1,10 @@
 import XCTest
 
-import IceKitTests
 import IceTests
+import IceKitTests
 
 var tests = [XCTestCaseEntry]()
-tests += IceKitTests.__allTests()
 tests += IceTests.__allTests()
+tests += IceKitTests.__allTests()
 
 XCTMain(tests)
