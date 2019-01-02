@@ -51,7 +51,7 @@ class UpdateToolsVersion: IceObject, Command {
         package.toolsVersion = toolsVersion
         
         let toolsVersionString = tagged.value ? toolsVersion.description : nil
-        package.path = PackageLoader.formPackagePath(in: package.path.parent(), toolsVersion: toolsVersionString)
+        package.path = PackageFile.formPackagePath(in: package.path.parent(), versionTag: toolsVersionString)
         
         try package.sync()
     }

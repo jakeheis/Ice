@@ -13,6 +13,20 @@ public class SPM {
     
     public let directory: Path
     
+    public lazy var toolchainPath: Path? = {
+        let capture = CaptureStream()
+        let task = Task(executable: "swift", arguments: ["-v", "Package.swift"], directory: directory.string, stdout: WriteStream.null, stderr: capture)
+        task.runSync()
+        
+        guard let compilerPath = capture.readAll().components(separatedBy: "\n").first(where: { $0.hasPrefix("/") }),
+            let range = compilerPath.range(of: ".xctoolchain/") else {
+                return nil
+        }
+        
+        let portion = String(compilerPath.prefix(upTo: range.upperBound))
+        return Path(portion).normalize()
+    }()
+    
     public lazy var version: SwiftToolsVersion? = {
         if let content = try? captureSwift(args: ["--version"]).stdout,
             let match = Regex("Swift version ([0-9]\\.[0-9](\\.[0-9])?)(-dev)? ").firstMatch(in: content),
@@ -162,14 +176,44 @@ public class SPM {
         return path.trimmingCharacters(in: .whitespacesAndNewlines)
     }
     
-    public func dumpPackage() throws -> Data {
-        let content = try captureSwift(args: ["package", "dump-package"]).stdout
-        guard let jsonStart = content.index(of: "{"), let data = String(content[jsonStart...]).data(using: .utf8) else {
-            throw IceError(message: "can't parse package")
-        }
-        return data
+    public enum DumpMode {
+        case model
+        case packageDescription
     }
     
+    public func dumpPackage(mode: DumpMode) throws -> Data {
+        switch mode {
+        case .model:
+            let content = try captureSwift(args: ["package", "dump-package"]).stdout
+            guard let jsonStart = content.index(of: "{"), let data = String(content[jsonStart...]).data(using: .utf8) else {
+                throw IceError(message: "can't parse package")
+            }
+            return data
+        case .packageDescription:
+            guard let toolchainPath = toolchainPath else {
+                throw IceError(message: "can't find Swift toolchain")
+            }
+            
+            guard let packageFile = PackageFile.find(in: directory) else {
+                throw IceError(message: "can't find Package.swift")
+            }
+            
+            let libVersion: String
+            if packageFile.toolsVersion >= .v4_2 {
+                libVersion = "4_2"
+            } else {
+                libVersion = "4"
+            }
+            let libPath = toolchainPath + "usr" + "lib" + "swift" + "pm" + libVersion
+            
+            guard let content = try? capture("swiftc", "--driver-mode=swift", "-I", libPath.string, "-L", libPath.string, "-lPackageDescription", packageFile.path.string, "-fileno", "1"),
+                let data = content.stdout.data(using: .utf8) else {
+                    throw IceError(message: "can't parse Package.swift")
+            }
+            return data
+        }
+    }
+        
     // MARK: - Helpers
     
     private func runSwift(args: [String], transformer: TransformerPair? = nil) throws {

@@ -19,8 +19,10 @@ public struct Package {
     private static let libRegex = Regex("\\.library\\( *name: *\"([^\"]*)\"")
     
     public static func load(directory: Path, config: Config? = nil) throws -> Package {
-        let loader = try PackageLoader(directory: directory)
-        return try loader.loadPackage(config: config)
+        guard let file = PackageFile.find(in: directory) else {
+            throw IceError(message: "couldn't find Package.swift")
+        }
+        return try file.load(with: config)
     }
     
     public var name: String {
@@ -180,12 +182,12 @@ public struct Package {
     
     public func retrieveLibraries(ofDependency dependency: Dependency) -> [String] {
         let glob = (path.parent() + ".build" + "checkouts").glob("\(dependency.name)*")
+        
         guard let dependencyDirectory = glob.first,
-            let dependencyPackageFile = try? PackageLoader(directory: dependencyDirectory, crawlUp: false).packageFilePath(for: toolsVersion),
-            let contents: String = try? dependencyPackageFile.read().replacingOccurrences(of: "\n", with: " ") else {
+            let packageFile = PackageFile(directory: dependencyDirectory, compilerVersion: toolsVersion) else {
                 return [dependency.name]
         }
-        let matches = Package.libRegex.allMatches(in: contents)
+        let matches = Package.libRegex.allMatches(in: packageFile.content.replacingOccurrences(of: "\n", with: " "))
         
         var libs = matches.compactMap { $0.captures[0] }
         if libs.isEmpty {

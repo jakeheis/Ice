@@ -51,8 +51,10 @@ public class Differentiate {
         #endif
         
         let version: String
-        #if swift(>=4.1.50)
-        version = "4.2 (and above)"
+        #if swift(>=5.0)
+        version = "5.0 (and above)"
+        #elseif swift(>=4.1.50)
+        version = "4.2"
         #elseif swift(>=4.1)
         version = "4.1"
         #else
