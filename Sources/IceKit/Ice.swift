@@ -5,7 +5,6 @@
 //  Created by Jake Heiser on 9/22/17.
 //
 
-import Foundation
 import PathKit
 import SwiftCLI
 
@@ -56,29 +55,3 @@ public class Ice {
     }
     
 }
-
-enum Logger {
-    
-    enum Level: Int {
-        //        case quiet
-        case normal
-        case verbose
-    }
-    
-    static var level: Level {
-        if ProcessInfo.processInfo.environment["ICE_VERBOSE"] == nil {
-            return .normal
-        }
-        return .verbose
-    }
-    
-    static var normal: WritableStream {
-        return level.rawValue >= Level.normal.rawValue ? WriteStream.stdout : WriteStream.null
-    }
-    
-    static var verbose: WritableStream {
-        return level.rawValue >= Level.verbose.rawValue ? WriteStream.stdout : WriteStream.null
-    }
-    
-}
-

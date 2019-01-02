@@ -33,7 +33,7 @@ class AddCommand: IceObject, Command {
             throw IceError(message: "not a valid package reference")
         }
         
-        verboseOut <<< "Resolving url: \(ref.url)"
+        Logger.verbose <<< "Resolving url: \(ref.url)"
         
         let requirement: Package.Dependency.Requirement
         if let version = version.value {
@@ -50,7 +50,7 @@ class AddCommand: IceObject, Command {
             throw IceError(message: "no tagged versions found; manually specify version with --version, --branch, or --sha")
         }
         
-        verboseOut <<< "Resolving at version: \(requirement)"
+        Logger.verbose <<< "Resolving at version: \(requirement)"
         
         var package = try loadPackage()
         
@@ -58,7 +58,7 @@ class AddCommand: IceObject, Command {
             throw IceError(message: "package already depends on \(ref.url)")
         }
         
-        verboseOut <<< "Loaded package: \(package.name)"
+        Logger.verbose <<< "Loaded package: \(package.name)"
         
         let newDependency = package.addDependency(url: ref.url, requirement: requirement)
         try package.sync()

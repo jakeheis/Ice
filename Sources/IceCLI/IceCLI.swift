@@ -51,9 +51,13 @@ public class IceCLI {
             VersionCommand(),
             XcCommand(ice: ice)
         ]
+        
         cli.aliases.removeValue(forKey: "-v") // Reserve -v for verbose flag, not alias to version cmd
-        cli.globalOptions = [GlobalOptions.verbose]
         cli.versionCommand = nil
+        
+        cli.globalOptions = [GlobalOptions.verbose]
+        Logger.verboseFlag = GlobalOptions.verbose
+        
         cli.goAndExit()
     }
     

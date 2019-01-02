@@ -113,21 +113,6 @@ public struct PackageDataV5_0: Codable, Equatable {
                 default: return false
                 }
             }
-            
-            var targetName: String? {
-                switch self {
-                case let .target(target), let .byName(target): return target
-                case .product(_, _): return nil
-                }
-            }
-            
-            var packageName: String? {
-                switch self {
-                case let .product(product, package): return package ?? product
-                case let .byName(package): return package
-                case .target(_): return nil
-                }
-            }
         }
         
         public enum TargetType: String, Codable {
