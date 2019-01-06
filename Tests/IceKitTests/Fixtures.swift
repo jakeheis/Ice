@@ -137,6 +137,10 @@ struct Fixtures {
     
     static let package5_0 = PackageDataV5_0(
         name: "myPackage",
+        platforms: [
+            .init(name: .macos, version: "10.14"),
+            .init(name: .ios, version: "12.0")
+        ],
         pkgConfig: "config",
         providers: [
             .init(kind: .apt, values: ["first", "second"]),
@@ -169,8 +173,8 @@ struct Fixtures {
             .init(name: "Settings", type: .regular, dependencies: [], settings: [
                 .init(name: "define", tool: .c, condition: nil, value: ["FOO"]),
                 .init(name: "headerSearchPath", tool: .cxx, condition: .init(config: "debug"), value: ["path"]),
-                .init(name: "unsafeFlags", tool: .swift, condition: .init(platformNames: ["macos"]), value: ["f1", "f2"]),
-                .init(name: "linkedLibrary", tool: .linker, condition: .init(config: "release", platformNames: ["linux"]), value: ["libz"])
+                .init(name: "unsafeFlags", tool: .swift, condition: .init(platformNames: [.macos]), value: ["f1", "f2"]),
+                .init(name: "linkedLibrary", tool: .linker, condition: .init(config: "release", platformNames: [.linux]), value: ["libz"])
             ])
         ],
         swiftLanguageVersions: ["3", "4", "4.2"],

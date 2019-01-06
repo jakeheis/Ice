@@ -28,7 +28,7 @@ public struct PackageFile {
     }
     
     public static func find(in directory: Path) -> PackageFile? {
-        guard let compilerVersion = SPM(directory: directory).version else {
+        guard let compilerVersion = SwiftExecutable.version else {
             return nil
         }
         
@@ -47,11 +47,8 @@ public struct PackageFile {
     }
     
     public let path: Path
+    public let content: String
     public let toolsVersion: SwiftToolsVersion
-    
-    public var content: String {
-        return (try? path.read()) ?? ""
-    }
     
     public init?(directory: Path, compilerVersion: SwiftToolsVersion) {
         let nonSpecific = PackageFile.formPackagePath(in: directory, versionTag: nil)
@@ -68,28 +65,32 @@ public struct PackageFile {
         ]
         
         if let taggedPath = tags.lazy.map({ PackageFile.formPackagePath(in: directory, versionTag: $0) }).first(where: { $0.exists }) {
-            self.init(path: taggedPath)
+            self.init(existing: taggedPath)
         } else {
-            self.init(path: nonSpecific)
+            self.init(existing: nonSpecific)
         }
     }
     
-    public init?(path: Path) {
-        self.path = path
+    public init?(existing: Path) {
+        self.path = existing
         
-        guard let readStream = ReadStream.for(path: path.string),
-            let line = readStream.readLine(),
-            let match = ToolsVersionLine.findMatch(in: line),
+        guard let content: String = try? existing.read(),
+            let firstLine = content.components(separatedBy: "\n").first,
+            let match = ToolsVersionLine.findMatch(in: firstLine),
             let toolsVersion = SwiftToolsVersion(match.toolsVersion) else {
                 return nil
         }
+        
+        self.content = content
         self.toolsVersion = toolsVersion
     }
     
     public func load(with config: Config?) throws -> Package {
-        let json = try SPM(directory: path.parent()).dumpPackage(mode: .model)
+        let spm = SPM(directory: path.parent())
         
-        let data: ModernPackageData
+        let json = try spm.dumpPackage(mode: .model)
+        
+        var data: ModernPackageData
         if let v5_0 = try? JSONDecoder().decode(PackageDataV5_0.self, from: json) {
             Logger.verbose <<< "Parsing package output as from SPM v5.0"
             data = v5_0
@@ -102,6 +103,16 @@ public struct PackageFile {
         } else {
             throw IceError(message: "can't parse Package.swift")
         }
+        
+        if content.contains("platforms:") {
+            let packageDescriptionData = try spm.dumpPackage(mode: .packageDescription)
+            let packageDescription = try JSONDecoder().decode(PackageDescriptionDump.self, from: packageDescriptionData)
+            
+            data.platforms = packageDescription.package.platforms.value.map { (platform) in
+                return .init(name: platform.platform.name, version: platform.version.value)
+            }
+        }
+        
         return Package(data: data, toolsVersion: toolsVersion, path: path, config: config)
     }
     

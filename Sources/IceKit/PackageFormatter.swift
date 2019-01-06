@@ -16,6 +16,7 @@ public class PackageFormatter {
     public func format() -> ModernPackageData {
         return ModernPackageData(
             name: package.name,
+            platforms: package.platforms?.sorted(by: sortPlatform),
             pkgConfig: package.pkgConfig,
             providers: package.providers?.map(formatProvider),
             products: package.products.map(formatProduct).sorted(by: sortProduct),
@@ -25,6 +26,10 @@ public class PackageFormatter {
             cLanguageStandard: package.cLanguageStandard,
             cxxLanguageStandard: package.cxxLanguageStandard
         )
+    }
+    
+    func sortPlatform(lhs: ModernPackageData.Platform, rhs: ModernPackageData.Platform) -> Bool {
+        return lhs.name.rawValue < rhs.name.rawValue
     }
     
     func formatProvider(provider: Package.Provider) -> Package.Provider {

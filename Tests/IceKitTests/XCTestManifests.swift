@@ -53,6 +53,7 @@ extension PackageLoaderTests {
     static let __allTests = [
         ("testFindPackageRoot", testFindPackageRoot),
         ("testFormPackagePath", testFormPackagePath),
+        ("testPlatformsAddition", testPlatformsAddition),
         ("testVersionedPackage", testVersionedPackage),
     ]
 }
@@ -79,6 +80,7 @@ extension PackageWriterTests {
         ("testFull4_0", testFull4_0),
         ("testFull4_2", testFull4_2),
         ("testFull5_0", testFull5_0),
+        ("testPlatorms", testPlatorms),
         ("testProducts", testProducts),
         ("testProviders", testProviders),
         ("testSwiftLanguageVersions", testSwiftLanguageVersions),

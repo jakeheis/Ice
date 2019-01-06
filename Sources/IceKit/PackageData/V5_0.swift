@@ -26,6 +26,16 @@ public struct PackageDataV5_0: Codable, Equatable {
         }
     }
     
+    public struct Platform: Codable, Equatable {
+        public let name: PlatformName
+        public let version: String
+        
+        init(name: PlatformName, version: String) {
+            self.name = name
+            self.version = version
+        }
+    }
+    
     public struct Product: Equatable {
         public enum ProductType {
             public enum LibraryType: String {
@@ -124,13 +134,13 @@ public struct PackageDataV5_0: Codable, Equatable {
         public struct Setting: Codable, Equatable {
             public struct Condition: Codable, Equatable {
                 public let config: String?
-                public let platformNames: [String]
+                public let platformNames: [PlatformName]
                 
                 public static func ==(lhs: Condition, rhs: Condition) -> Bool {
                     return lhs.config == rhs.config && lhs.platformNames == rhs.platformNames
                 }
                 
-                public init(config: String? = nil, platformNames: [String] = []) {
+                public init(config: String? = nil, platformNames: [PlatformName] = []) {
                     self.config = config
                     self.platformNames = platformNames
                 }
@@ -152,7 +162,7 @@ public struct PackageDataV5_0: Codable, Equatable {
             public let condition: Condition?
             public let value: [String]
             
-            public init(name: String, tool: Tool, condition: Condition?, value: [String]) {
+            init(name: String, tool: Tool, condition: Condition?, value: [String]) {
                 self.name = name
                 self.tool = tool
                 self.condition = condition
@@ -203,10 +213,11 @@ public struct PackageDataV5_0: Codable, Equatable {
     }
     
     public static func ==(lhs: PackageDataV5_0, rhs: PackageDataV5_0) -> Bool {
-        return lhs.name == rhs.name && lhs.pkgConfig == rhs.pkgConfig && lhs.providers ?? [] == rhs.providers ?? [] && lhs.products == rhs.products && lhs.dependencies == rhs.dependencies && lhs.targets == rhs.targets && lhs.swiftLanguageVersions ?? [] == rhs.swiftLanguageVersions ?? [] && lhs.cLanguageStandard == rhs.cLanguageStandard && lhs.cxxLanguageStandard == rhs.cxxLanguageStandard
+        return lhs.name == rhs.name && lhs.platforms == rhs.platforms && lhs.pkgConfig == rhs.pkgConfig && lhs.providers ?? [] == rhs.providers ?? [] && lhs.products == rhs.products && lhs.dependencies == rhs.dependencies && lhs.targets == rhs.targets && lhs.swiftLanguageVersions ?? [] == rhs.swiftLanguageVersions ?? [] && lhs.cLanguageStandard == rhs.cLanguageStandard && lhs.cxxLanguageStandard == rhs.cxxLanguageStandard
     }
     
     public let name: String
+    public internal(set) var platforms: [Platform]?
     public let pkgConfig: String?
     public let providers: [PackageDataV5_0.Provider]?
     public internal(set) var products: [PackageDataV5_0.Product]

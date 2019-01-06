@@ -102,6 +102,7 @@ public struct PackageDataV4_2: Codable {
     func convertToModern() -> ModernPackageData {
         return PackageDataV5_0(
             name: name,
+            platforms: nil,
             pkgConfig: pkgConfig,
             providers: providers?.map { (oldProvider) in
                 return .init(kind: PackageDataV5_0.Provider.Kind(rawValue: oldProvider.name)!, values: oldProvider.values)

@@ -124,6 +124,10 @@ class PackageWriterTests: XCTestCase {
 
         let package = Package(
             name: "myPackage",
+            platforms: [
+                .macOS(.v10_14),
+                .iOS(.v12),
+            ],
             pkgConfig: "config",
             providers: [
                 .apt(["first", "second"]),
@@ -168,6 +172,15 @@ class PackageWriterTests: XCTestCase {
             cxxLanguageStandard: .gnucxx1z
         )
 
+        """)
+    }
+    
+    func testPlatorms() {
+        XCTAssertEqual(write5_0 { $0.addPlatforms(to: &$1) }, """
+            platforms: [
+                .macOS(.v10_14),
+                .iOS(.v12),
+            ]
         """)
     }
     
@@ -348,6 +361,12 @@ class PackageWriterTests: XCTestCase {
         XCTAssertFalse(Version4_0Writer(package: buildSettings, toolsVersion: .v4).canWrite())
         XCTAssertFalse(Version4_2Writer(package: buildSettings, toolsVersion: .v4_2).canWrite())
         XCTAssertTrue(Version5_0Writer(package: buildSettings, toolsVersion: .v5).canWrite())
+        
+        var platforms = full4_2
+        platforms.platforms = full5_0.platforms
+        XCTAssertFalse(Version4_0Writer(package: platforms, toolsVersion: .v4).canWrite())
+        XCTAssertFalse(Version4_2Writer(package: platforms, toolsVersion: .v4_2).canWrite())
+        XCTAssertTrue(Version5_0Writer(package: platforms, toolsVersion: .v5).canWrite())
     }
     
     // MARK: -

@@ -48,6 +48,7 @@ extension PackageWriterImpl {
         
         var function = FunctionCallComponent(name: "Package")
         addName(to: &function)
+        addPlatforms(to: &function)
         addPkgConfig(to: &function)
         addProviders(to: &function)
         addProducts(to: &function)
@@ -69,6 +70,19 @@ extension PackageWriterImpl {
     
     func addName(to function: inout FunctionCallComponent) {
         function.addQuoted(key: "name", value: package.name)
+    }
+    
+    func addPlatforms(to function: inout FunctionCallComponent) {
+        if let platforms = package.platforms {
+            function.addMultilineArray(key: "platforms", children: platforms.map { (platform) in
+                let funcName = platform.name.functionName
+                let version = ".v" + platform.version.split(separator: ".").reversed().drop(while: { $0 == "0" }).reversed().joined(separator: "_")
+                
+                var platformFunc = FunctionCallComponent(staticMember: funcName)
+                platformFunc.addArgument(key: nil, component: ValueComponent(value: version))
+                return platformFunc
+            })
+        }
     }
     
     func addPkgConfig(to function: inout FunctionCallComponent) {
@@ -223,14 +237,9 @@ extension PackageWriterImpl {
                         if let condition = setting.condition {
                             var conditionFunc = FunctionCallComponent(staticMember: "when")
                             if !condition.platformNames.isEmpty {
-                                let platformNames: [String] = condition.platformNames.map { (platform) in
-                                    var name = platform
-                                    if platform.hasSuffix("os") {
-                                        name = String(platform.prefix(platform.count - 2)) + "OS"
-                                    }
-                                    return "." + name
-                                }
-                                conditionFunc.addSingleLineArray(key: "platforms", children: platformNames)
+                                conditionFunc.addSingleLineArray(key: "platforms", children: condition.platformNames.map { (platform) in
+                                    return "." + platform.functionName
+                                })
                                 if let config = condition.config {
                                     conditionFunc.addArgument(key: "configuration", component: ValueComponent(value: ".\(config)"))
                                 }
@@ -336,7 +345,13 @@ final class Version4_2Writer: PackageWriterImpl {
     }
     
     func canWrite() -> Bool {
-        return !package.targets.contains(where: { $0.settings.count > 0 })
+        if let platforms = package.platforms, platforms.count > 0 {
+            return false
+        }
+        if package.targets.contains(where: { $0.settings.count > 0 }) {
+            return false
+        }
+        return true
     }
     
     func addSwiftLanguageVersions(to function: inout FunctionCallComponent) {
@@ -371,6 +386,9 @@ final class Version4_0Writer: PackageWriterImpl {
     }
     
     func canWrite() -> Bool {
+        if let platforms = package.platforms, platforms.count > 0 {
+            return false
+        }
         if package.targets.contains(where: { $0.settings.count > 0 }) {
             return false
         }

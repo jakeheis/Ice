@@ -9,14 +9,19 @@ import Foundation
 import PathKit
 import SwiftCLI
 
-public class SPM {
+public enum SwiftExecutable {
     
-    public let directory: Path
-    
-    public lazy var toolchainPath: Path? = {
+    public static var toolchainPath: Path? = {
+        let tmpFile = Path.current + "._ice.swift"
+        if !tmpFile.exists {
+            try? tmpFile.write("")
+        }
+        
         let capture = CaptureStream()
-        let task = Task(executable: "swift", arguments: ["-v", "Package.swift"], directory: directory.string, stdout: WriteStream.null, stderr: capture)
+        let task = Task(executable: "swift", arguments: ["-v", tmpFile.string], stdout: WriteStream.null, stderr: capture)
         task.runSync()
+        
+        try? tmpFile.delete()
         
         guard let compilerPath = capture.readAll().components(separatedBy: "\n").first(where: { $0.hasPrefix("/") }),
             let range = compilerPath.range(of: ".xctoolchain/") else {
@@ -27,19 +32,27 @@ public class SPM {
         return Path(portion).normalize()
     }()
     
-    public lazy var version: SwiftToolsVersion? = {
-        if let content = try? captureSwift(args: ["--version"]).stdout,
+    public static var version: SwiftToolsVersion? = {
+        if let content = try? capture("swift", "--version").stdout,
             let match = Regex("Swift version ([0-9]\\.[0-9](\\.[0-9])?)(-dev)? ").firstMatch(in: content),
             let versionString = match.captures[0],
             let version = SwiftToolsVersion(versionString) {
-                return version
+            return version
         }
         return nil
     }()
     
+}
+
+public class SPM {
+    
+    public let directory: Path
+    
     public init(directory: Path = .current) {
         self.directory = directory
     }
+    
+    // MARK: - Init project
     
     public enum InitType: String {
         case executable
@@ -54,7 +67,7 @@ public class SPM {
         try runSwift(args: args, transformer: .initialize)
     }
     
-    // MARK: - Building
+    // MARK: - Building / testing
     
     public enum BuildOption {
         case includeTests
@@ -138,7 +151,7 @@ public class SPM {
     
     public func generateTests(for packageTargets: [Package.Target]) throws {
         #if os(macOS)
-        guard let version = version, version >= SwiftToolsVersion(major: 4, minor: 1, patch: 0) else {
+        guard let version = SwiftExecutable.version, version >= SwiftToolsVersion(major: 4, minor: 1, patch: 0) else {
             throw IceError(message: "test list generation only supported for Swift 4.1 and above")
         }
         
@@ -171,7 +184,7 @@ public class SPM {
         }
         let path = try captureSwift(args: args).stdout
         guard !path.isEmpty else {
-            throw IceError(message: "couldn't retrieve executable path")
+            throw IceError(message: "couldn't retrieve bin path")
         }
         return path.trimmingCharacters(in: .whitespacesAndNewlines)
     }
@@ -190,7 +203,7 @@ public class SPM {
             }
             return data
         case .packageDescription:
-            guard let toolchainPath = toolchainPath else {
+            guard let toolchainPath = SwiftExecutable.toolchainPath else {
                 throw IceError(message: "can't find Swift toolchain")
             }
             

@@ -25,6 +25,12 @@ public struct Package {
         return try file.load(with: config)
     }
     
+    internal private(set) var data: ModernPackageData {
+        didSet {
+            dirty = true
+        }
+    }
+    
     public var name: String {
         return data.name
     }
@@ -41,16 +47,12 @@ public struct Package {
         return data.targets
     }
     
-    internal private(set) var data: ModernPackageData {
-        didSet {
-            dirty = true
-        }
-    }
     public var toolsVersion: SwiftToolsVersion {
         didSet {
             dirty = true
         }
     }
+    
     public var path: Path {
         didSet {
             dirty = true
@@ -104,7 +106,7 @@ public struct Package {
     }
     
     public mutating func updateDependency(dependency: Dependency, to requirement: Dependency.Requirement) throws {
-        guard let index = data.dependencies.index(where: { $0 == dependency }) else {
+        guard let index = data.dependencies.index(of: dependency) else {
             throw IceError(message: "dependency '\(dependency.name)' not found")
         }
         data.dependencies[index].requirement = requirement

@@ -68,4 +68,57 @@ class PackageLoaderTests: XCTestCase {
         }
     }
     
+    func testPlatformsAddition() {
+        Differentiate.byVersion(swift5AndAbove: {
+            let icebox = IceBox(template: .lib)
+            
+            icebox.createFile(path: "Package.swift", contents: """
+            // swift-tools-version:5.0
+            // The swift-tools-version declares the minimum version of Swift required to build this package.
+
+            import PackageDescription
+
+            let package = Package(
+                name: "Lib",
+                platforms: [
+                    .macOS(.v10_14),
+                    .iOS(.v12),
+                ],
+                products: [
+                    .library(name: "Lib", targets: ["Lib"]),
+                ],
+                dependencies: [],
+                targets: [
+                    .target(name: "Lib", dependencies: []),
+                    .testTarget(name: "LibTests", dependencies: ["Lib"]),
+                ]
+            )
+            
+            """)
+            
+            icebox.inside {
+                guard let file = PackageFile(directory: .current, compilerVersion: .v5),
+                    let package = try? file.load(with: nil) else {
+                    XCTFail()
+                    return
+                }
+                var path = file.path.normalize()
+                if path.isSymlink {
+                    path = try! path.symlinkDestination()
+                }
+                XCTAssertEqual(path, Path("Package.swift").absolute())
+                XCTAssertEqual(file.path, package.path)
+                
+                XCTAssertEqual(file.toolsVersion, .v5)
+                XCTAssertEqual(package.toolsVersion, .v5)
+                
+                XCTAssertEqual(package.data.platforms, Fixtures.package5_0.platforms)
+                
+            }
+        }, swift4_0AndAbove: {
+            print("Below Swift 5, skipping /testPlatformsAddition")
+        })
+        
+    }
+    
 }

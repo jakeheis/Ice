@@ -15,7 +15,54 @@ class DumpTests: XCTestCase {
         XCTAssertEqual(result.exitStatus, 0)
         XCTAssertEqual(result.stderr, "")
         
-        Differentiate.byVersion(swift4_2AndAbove: {
+        Differentiate.byVersion(swift5AndAbove: {
+            XCTAssertEqual(result.stdout, """
+            {
+              "cLanguageStandard" : null,
+              "cxxLanguageStandard" : null,
+              "dependencies" : [
+                {
+                  "requirement" : {
+                    "range" : [
+                      {
+                        "lowerBound" : "4.0.3",
+                        "upperBound" : "5.0.0"
+                      }
+                    ]
+                  },
+                  "url" : "https:\\/\\/github.com\\/jakeheis\\/SwiftCLI"
+                }
+              ],
+              "manifestVersion" : "v4",
+              "name" : "Exec",
+              "pkgConfig" : null,
+              "products" : [
+
+              ],
+              "providers" : null,
+              "swiftLanguageVersions" : null,
+              "targets" : [
+                {
+                  "dependencies" : [
+                    {
+                      "byName" : [
+                        "SwiftCLI"
+                      ]
+                    }
+                  ],
+                  "exclude" : [
+
+                  ],
+                  "name" : "Exec",
+                  "settings" : [
+
+                  ],
+                  "type" : "regular"
+                }
+              ]
+            }
+            """)
+        }, swift4_2AndAbove: {
             XCTAssertEqual(result.stdout, """
             {
               "cLanguageStandard": null,
@@ -100,7 +147,11 @@ class DumpTests: XCTestCase {
         let result = IceBox(template: .exec).run("dump", "-p")
         XCTAssertEqual(result.exitStatus, 0)
         XCTAssertEqual(result.stderr, "")
-        Differentiate.byVersion(swift4_2AndAbove: {
+        Differentiate.byVersion(swift5AndAbove: {
+            XCTAssertEqual(result.stdout, """
+            {"package":{"products":[],"cxxLanguageStandard":null,"swiftLanguageVersions":null,"providers":null,"pkgConfig":null,"targets":[{"name":"Exec","dependencies":[{"type":"byname","name":"SwiftCLI"}],"sources":null,"providers":null,"pkgConfig":null,"path":null,"publicHeadersPath":null,"exclude":[],"type":"regular"}],"dependencies":[{"url":"https:\\/\\/github.com\\/jakeheis\\/SwiftCLI","requirement":{"type":"range","lowerBound":"4.0.3","upperBound":"5.0.0"}}],"name":"Exec","cLanguageStandard":null},"errors":[]}
+            """)
+        }, swift4_2AndAbove: {
             XCTAssertEqual(result.stdout, """
             {"errors": [], "package": {"cLanguageStandard": null, "cxxLanguageStandard": null, "dependencies": [{"requirement": {"lowerBound": "4.0.3", "type": "range", "upperBound": "5.0.0"}, "url": "https://github.com/jakeheis/SwiftCLI"}], "name": "Exec", "products": [], "targets": [{"dependencies": [{"name": "SwiftCLI", "type": "byname"}], "exclude": [], "name": "Exec", "path": null, "publicHeadersPath": null, "sources": null, "type": "regular"}]}}
             """)
