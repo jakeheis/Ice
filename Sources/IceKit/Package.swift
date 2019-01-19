@@ -86,7 +86,7 @@ public struct Package {
     }
     
     public mutating func removeProduct(_ product: Product) {
-        guard let index = data.products.index(where: { $0 == product }) else {
+        guard let index = data.products.firstIndex(of: product) else {
             return
         }
         data.products.remove(at: index)
@@ -106,14 +106,14 @@ public struct Package {
     }
     
     public mutating func updateDependency(dependency: Dependency, to requirement: Dependency.Requirement) throws {
-        guard let index = data.dependencies.index(of: dependency) else {
+        guard let index = data.dependencies.firstIndex(of: dependency) else {
             throw IceError(message: "dependency '\(dependency.name)' not found")
         }
         data.dependencies[index].requirement = requirement
     }
     
     public mutating func removeDependency(_ dependency: Dependency) {
-        guard let index = data.dependencies.index(where: { $0 == dependency }) else {
+        guard let index = data.dependencies.firstIndex(of: dependency) else {
             return
         }
         
@@ -145,7 +145,7 @@ public struct Package {
     }
     
     public mutating func addTargetDependency(for target: Target, on dependency: Package.Target.Dependency) throws {
-        guard let targetIndex = data.targets.index(where: { $0 == target }) else {
+        guard let targetIndex = data.targets.firstIndex(of: target) else {
             throw IceError(message: "target '\(target)' not found")
         }
         if data.targets[targetIndex].dependencies.contains(dependency) {
@@ -155,7 +155,7 @@ public struct Package {
     }
     
     public mutating func removeTarget(_ target: Target) {
-        guard let index = data.targets.index(where: { $0 == target }) else {
+        guard let index = data.targets.firstIndex(of: target) else {
             return
         }
 

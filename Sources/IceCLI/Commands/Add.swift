@@ -102,7 +102,7 @@ class AddCommand: IceObject, Command {
                     .custom("must be a letter or number corresponding to a target", isTarget)
                 ])
                 
-                let distances = targetString.compactMap { ids.index(of: $0) }
+                let distances = targetString.compactMap { ids.firstIndex(of: $0) }
                 let targets = distances.map { possibleTargets[ids.distance(from: ids.startIndex, to: $0)] }
                 try targets.forEach {
                     try package.addTargetDependency(for: $0, on: .byName(lib))

@@ -1,6 +1,6 @@
 //
 //  Version.swift
-//  Bark
+//  IceKit
 //
 //  Created by Jake Heiser on 7/21/17.
 //

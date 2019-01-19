@@ -15,13 +15,13 @@ class AddTests: XCTestCase {
         
         icebox.execute(with: "version")
         
-        let result = icebox.run("add", "jakeheis/Spawn", "-n")
+        let result = icebox.run("add", "jakeheis/CLISpinner", "-n")
         XCTAssertEqual(result.exitStatus, 0)
         XCTAssertEqual(result.stderr, "")
         XCTAssertEqual(result.stdout, """
-        Fetch https://github.com/jakeheis/Spawn
-        Clone https://github.com/jakeheis/Spawn
-        Resolve https://github.com/jakeheis/Spawn at 0.0.6
+        Fetch https://github.com/jakeheis/CLISpinner
+        Clone https://github.com/jakeheis/CLISpinner
+        Resolve https://github.com/jakeheis/CLISpinner at 0.3.5
         
         """)
         
@@ -37,7 +37,7 @@ class AddTests: XCTestCase {
                 .library(name: "Lib", targets: ["Lib"]),
             ],
             dependencies: [
-                .package(url: "https://github.com/jakeheis/Spawn", from: "0.0.6"),
+                .package(url: "https://github.com/jakeheis/CLISpinner", from: "0.3.5"),
             ],
             targets: [
                 .target(name: "Lib", dependencies: []),
@@ -51,13 +51,13 @@ class AddTests: XCTestCase {
     func testTargetAdd() {
         let icebox = IceBox(template: .lib)
         
-        let result = icebox.run("add", "jakeheis/Spawn", "-t", "Lib")
+        let result = icebox.run("add", "jakeheis/CLISpinner", "-t", "Lib")
         XCTAssertEqual(result.exitStatus, 0)
         XCTAssertEqual(result.stderr, "")
         XCTAssertEqual(result.stdout, """
-        Fetch https://github.com/jakeheis/Spawn
-        Clone https://github.com/jakeheis/Spawn
-        Resolve https://github.com/jakeheis/Spawn at 0.0.6
+        Fetch https://github.com/jakeheis/CLISpinner
+        Clone https://github.com/jakeheis/CLISpinner
+        Resolve https://github.com/jakeheis/CLISpinner at 0.3.5
         
         """)
         
@@ -73,10 +73,10 @@ class AddTests: XCTestCase {
                 .library(name: "Lib", targets: ["Lib"]),
             ],
             dependencies: [
-                .package(url: "https://github.com/jakeheis/Spawn", from: "0.0.6"),
+                .package(url: "https://github.com/jakeheis/CLISpinner", from: "0.3.5"),
             ],
             targets: [
-                .target(name: "Lib", dependencies: ["Spawn"]),
+                .target(name: "Lib", dependencies: ["CLISpinner"]),
                 .testTarget(name: "LibTests", dependencies: ["Lib"]),
             ]
         )
@@ -87,13 +87,13 @@ class AddTests: XCTestCase {
     func testVersionedAdd() {
         let icebox = IceBox(template: .lib)
         
-        let result = icebox.run("add", "jakeheis/Spawn", "--version=0.0.5", "-n")
+        let result = icebox.run("add", "jakeheis/CLISpinner", "--version=0.3.4", "-n")
         XCTAssertEqual(result.exitStatus, 0)
         XCTAssertEqual(result.stderr, "")
         XCTAssertEqual(result.stdout, """
-        Fetch https://github.com/jakeheis/Spawn
-        Clone https://github.com/jakeheis/Spawn
-        Resolve https://github.com/jakeheis/Spawn at 0.0.6
+        Fetch https://github.com/jakeheis/CLISpinner
+        Clone https://github.com/jakeheis/CLISpinner
+        Resolve https://github.com/jakeheis/CLISpinner at 0.3.5
         
         """)
         
@@ -109,7 +109,7 @@ class AddTests: XCTestCase {
                 .library(name: "Lib", targets: ["Lib"]),
             ],
             dependencies: [
-                .package(url: "https://github.com/jakeheis/Spawn", from: "0.0.5"),
+                .package(url: "https://github.com/jakeheis/CLISpinner", from: "0.3.4"),
             ],
             targets: [
                 .target(name: "Lib", dependencies: []),
@@ -123,17 +123,17 @@ class AddTests: XCTestCase {
     func testSingleTargetAdd() {
         let icebox = IceBox(template: .exec)
         
-        let result = icebox.run("add", "jakeheis/Spawn")
+        let result = icebox.run("add", "jakeheis/CLISpinner")
         XCTAssertEqual(result.exitStatus, 0)
         XCTAssertEqual(result.stderr, "")
         
         Differentiate.byVersion(swift4_2AndAbove: {
             result.assertStdout { (t) in
                 t.equals("Fetch https://github.com/jakeheis/SwiftCLI")
-                t.equals("Fetch https://github.com/jakeheis/Spawn")
+                t.equals("Fetch https://github.com/jakeheis/CLISpinner")
                 t.equalsInAnyOrder([
-                    "Clone https://github.com/jakeheis/Spawn",
-                    "Resolve https://github.com/jakeheis/Spawn at 0.0.6",
+                    "Clone https://github.com/jakeheis/CLISpinner",
+                    "Resolve https://github.com/jakeheis/CLISpinner at 0.3.5",
                     "Clone https://github.com/jakeheis/SwiftCLI",
                     "Resolve https://github.com/jakeheis/SwiftCLI at 4.1.2"
                 ])
@@ -143,17 +143,17 @@ class AddTests: XCTestCase {
         }, swift4_1AndAbove: {
             XCTAssertEqual(result.stdout, """
             Update https://github.com/jakeheis/SwiftCLI
-            Fetch https://github.com/jakeheis/Spawn
-            Clone https://github.com/jakeheis/Spawn
-            Resolve https://github.com/jakeheis/Spawn at 0.0.6
+            Fetch https://github.com/jakeheis/CLISpinner
+            Clone https://github.com/jakeheis/CLISpinner
+            Resolve https://github.com/jakeheis/CLISpinner at 0.3.5
             
             """)
         }, swift4_0AndAbove: {
             XCTAssertEqual(result.stdout, """
-            Fetch https://github.com/jakeheis/Spawn
-            Update https://github.com/jakeheis/SwiftCLI
-            Clone https://github.com/jakeheis/Spawn
-            Resolve https://github.com/jakeheis/Spawn at 0.0.6
+            Fetch https://github.com/jakeheis/IceLibTest
+            Update https://github.com/jakeheis/CLISpinner
+            Clone https://github.com/jakeheis/CLISpinner
+            Resolve https://github.com/jakeheis/CLISpinner at 0.3.5
             
             """)
         })
@@ -168,10 +168,10 @@ class AddTests: XCTestCase {
             name: "Exec",
             dependencies: [
                 .package(url: "https://github.com/jakeheis/SwiftCLI", from: "4.0.3"),
-                .package(url: "https://github.com/jakeheis/Spawn", from: "0.0.6"),
+                .package(url: "https://github.com/jakeheis/CLISpinner", from: "0.3.5"),
             ],
             targets: [
-                .target(name: "Exec", dependencies: ["SwiftCLI", "Spawn"]),
+                .target(name: "Exec", dependencies: ["SwiftCLI", "CLISpinner"]),
             ]
         )
 
