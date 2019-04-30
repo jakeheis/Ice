@@ -28,7 +28,7 @@ mint install jakeheis/Ice
 git clone https://github.com/jakeheis/Ice
 cd Ice
 swift build -c release
-mv .build/release/ice /usr/local/bin/ice
+install .build/release/ice /usr/local/bin
 ```
 
 ## Better output
