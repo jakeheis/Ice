@@ -19,13 +19,14 @@ class AddCommand: IceObject, Command {
     let targets = Key<String>("-t", "--targets", description: "List of targets which should depend on this dependency")
     let noInteractive = Flag("-n", "--no-interactive", description: "Do not prompt for targets if none are supplied")
     
-    let version = Key<Version>("-w", "--version", description: "The version of the dependency to depend on")
+    let from = Key<Version>("-f", "--from", description: "The minimum version of the dependency to depend on; allows more recent versions")
+    let exact = Key<Version>("-e", "--exact", description: "The exact version of the dependency to depend on")
     let branch = Key<String>("-b", "--branch", description: "The branch of the dependency to depend on")
     let sha = Key<String>("-s", "--sha", description: "The commit hash of the dependency to depend on")
     let local = Flag("-l", "--local", description: "Add this dependency as a local dependency")
     
     var optionGroups: [OptionGroup] {
-        return [.atMostOne(version, branch, sha, local)]
+        return [.atMostOne(from, exact, branch, sha, local)]
     }
     
     func execute() throws {
@@ -36,8 +37,10 @@ class AddCommand: IceObject, Command {
         Logger.verbose <<< "Resolving url: \(ref.url)"
         
         let requirement: Package.Dependency.Requirement
-        if let version = version.value {
-            requirement = .init(version: version)
+        if let version = from.value {
+            requirement = .init(from: version)
+        } else if let exact = exact.value {
+            requirement = .exact(exact.string)
         } else if let branch = branch.value {
             requirement = .branch(branch)
         } else if let sha = sha.value {
@@ -45,9 +48,9 @@ class AddCommand: IceObject, Command {
         } else if local.value {
             requirement = .localPackage
         } else if let latestVersion = try ref.latestVersion() {
-            requirement = .init(version: latestVersion)
+            requirement = .init(from: latestVersion)
         } else {
-            throw IceError(message: "no tagged versions found; manually specify version with --version, --branch, or --sha")
+            throw IceError(message: "no tagged versions found; manually specify version with --from, --exact, --branch, or --sha")
         }
         
         Logger.verbose <<< "Resolving at version: \(requirement)"

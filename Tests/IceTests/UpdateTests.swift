@@ -34,7 +34,7 @@ class UpdateTests: XCTestCase {
         XCTAssertEqual(buildResult.exitStatus, 0)
         XCTAssertEqual(buildResult.stderr, "")
         
-        let result = icebox.run("update", "SwiftCLI", "--version=5.0.0")
+        let result = icebox.run("update", "SwiftCLI", "--from=5.0.0")
         XCTAssertEqual(result.exitStatus, 0)
         XCTAssertEqual(result.stderr, "")
         XCTAssertEqual(result.stdout, "")

@@ -43,7 +43,7 @@ class PackageTests: XCTestCase {
     func testAddDependency() {
         var package = createPackage()
         
-        package.addDependency(url: "https://github.com/jakeheis/SwiftCLI", requirement: .init(version: Version(5, 2, 0)))
+        package.addDependency(url: "https://github.com/jakeheis/SwiftCLI", requirement: .init(from: Version(5, 2, 0)))
         
         var expectedPackage = Fixtures.modernPackage
         expectedPackage.dependencies.append(.init(url: "https://github.com/jakeheis/SwiftCLI", requirement: .range("5.2.0", "6.0.0")))

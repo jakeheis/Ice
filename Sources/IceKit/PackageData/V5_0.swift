@@ -331,7 +331,7 @@ extension PackageDataV5_0.Dependency.Requirement: Codable {
         }
     }
     
-    public init(version: Version) {
+    public init(from version: Version) {
         self = .range(version.string, Version(version.major + 1, 0, 0).string)
     }
     
