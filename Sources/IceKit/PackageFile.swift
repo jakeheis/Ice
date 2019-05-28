@@ -90,6 +90,12 @@ public struct PackageFile {
         
         let json = try spm.dumpPackage(mode: .model)
         
+        do {
+            _ = try JSONDecoder().decode(PackageDataV5_0.self, from: json)
+        } catch {
+            dump(error)
+        }
+        
         var data: ModernPackageData
         if let v5_0 = try? JSONDecoder().decode(PackageDataV5_0.self, from: json) {
             Logger.verbose <<< "Parsing package output as from SPM v5.0"
@@ -102,15 +108,6 @@ public struct PackageFile {
             data = v4_0.convertToModern()
         } else {
             throw IceError(message: "can't parse Package.swift")
-        }
-        
-        if content.contains("platforms:") {
-            let packageDescriptionData = try spm.dumpPackage(mode: .packageDescription)
-            let packageDescription = try JSONDecoder().decode(PackageDescriptionDump.self, from: packageDescriptionData)
-            
-            data.platforms = packageDescription.package.platforms.value.map { (platform) in
-                return .init(name: platform.platform.name, version: platform.version.value)
-            }
         }
         
         return Package(data: data, toolsVersion: toolsVersion, path: path, config: config)

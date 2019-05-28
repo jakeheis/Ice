@@ -47,6 +47,16 @@
   "manifestVersion" : "v5",
   "name" : "Ice",
   "pkgConfig" : "iceConfig",
+  "platforms" : [
+    {
+      "platformName" : "macos",
+      "version" : "10.12"
+    },
+    {
+      "platformName" : "ios",
+      "version" : "10.0"
+    }
+  ],
   "products" : [
     {
       "name" : "ice",
@@ -110,7 +120,8 @@
   ],
   "swiftLanguageVersions" : [
     "4",
-    "4.2"
+    "4.2",
+    "5"
   ],
   "targets" : [
     {
@@ -166,7 +177,7 @@
         {
           "condition" : {
             "platformNames" : [
-              "linux"
+              "ios"
             ]
           },
           "name" : "linkedLibrary",

@@ -20,6 +20,7 @@ public class IceCLI {
     
     public func run() -> Never {
         Rainbow.enabled = Term.isTTY
+        Logger.verboseFlag = GlobalOptions.verbose
         
         let ice = createIce()
         
@@ -54,9 +55,7 @@ public class IceCLI {
         
         cli.aliases.removeValue(forKey: "-v") // Reserve -v for verbose flag, not alias to version cmd
         cli.versionCommand = nil
-        
         cli.globalOptions = [GlobalOptions.verbose]
-        Logger.verboseFlag = GlobalOptions.verbose
         
         cli.goAndExit()
     }

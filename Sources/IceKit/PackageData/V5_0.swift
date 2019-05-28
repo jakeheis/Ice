@@ -27,11 +27,25 @@ public struct PackageDataV5_0: Codable, Equatable {
     }
     
     public struct Platform: Codable, Equatable {
-        public let name: PlatformName
+        
+        public enum Name: String, Codable, Equatable {
+            case macos
+            case ios
+            case tvos
+            case watchos
+            case linux
+            
+            var functionName: String {
+                // macos -> macOS
+                return rawValue.replacingOccurrences(of: "os", with: "OS")
+            }
+        }
+        
+        public let platformName: Name
         public let version: String
         
-        init(name: PlatformName, version: String) {
-            self.name = name
+        init(platformName: Name, version: String) {
+            self.platformName = platformName
             self.version = version
         }
     }
@@ -134,13 +148,13 @@ public struct PackageDataV5_0: Codable, Equatable {
         public struct Setting: Codable, Equatable {
             public struct Condition: Codable, Equatable {
                 public let config: String?
-                public let platformNames: [PlatformName]
+                public let platformNames: [Platform.Name]
                 
                 public static func ==(lhs: Condition, rhs: Condition) -> Bool {
                     return lhs.config == rhs.config && lhs.platformNames == rhs.platformNames
                 }
                 
-                public init(config: String? = nil, platformNames: [PlatformName] = []) {
+                public init(config: String? = nil, platformNames: [Platform.Name] = []) {
                     self.config = config
                     self.platformNames = platformNames
                 }

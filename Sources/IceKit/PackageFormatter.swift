@@ -29,7 +29,7 @@ public class PackageFormatter {
     }
     
     func sortPlatform(lhs: ModernPackageData.Platform, rhs: ModernPackageData.Platform) -> Bool {
-        return lhs.name.rawValue < rhs.name.rawValue
+        return lhs.platformName.rawValue < rhs.platformName.rawValue
     }
     
     func formatProvider(provider: Package.Provider) -> Package.Provider {

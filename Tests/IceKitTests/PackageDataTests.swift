@@ -141,6 +141,7 @@ class PackageDataTests: XCTestCase {
 
         let package = Package(
             name: "Ice",
+            platforms: [.macOS(.v10_12), .iOS(.v10)],
             pkgConfig: "iceConfig",
             providers: [
                 .brew(["brewPackage"]),
@@ -169,7 +170,7 @@ class PackageDataTests: XCTestCase {
                     .define("API_VERSION_5"),
                 ], linkerSettings: [
                     .linkedLibrary("libssh2"),
-                    .linkedLibrary("openssl", .when(platforms: [.linux])),
+                    .linkedLibrary("openssl", .when(platforms: [.iOS])),
                     .linkedFramework("CoreData", .when(platforms: [.macOS], configuration: .debug)),
                     .unsafeFlags(["-L/path/to/my/library", "-use-ld=gold"], .when(platforms: [.linux])),
                 ]),
@@ -180,7 +181,7 @@ class PackageDataTests: XCTestCase {
                     .apt(["hey"]),
                 ]),
             ],
-            swiftLanguageVersions: [.v4, .v4_2],
+            swiftLanguageVersions: [.v4, .v4_2, .v5],
             cLanguageStandard: .c90,
             cxxLanguageStandard: .cxx98
         )

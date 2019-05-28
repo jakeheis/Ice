@@ -75,7 +75,7 @@ extension PackageWriterImpl {
     func addPlatforms(to function: inout FunctionCallComponent) {
         if let platforms = package.platforms {
             function.addMultilineArray(key: "platforms", children: platforms.map { (platform) in
-                let funcName = platform.name.functionName
+                let funcName = platform.platformName.functionName
                 let version = ".v" + platform.version.split(separator: ".").reversed().drop(while: { $0 == "0" }).reversed().joined(separator: "_")
                 
                 var platformFunc = FunctionCallComponent(staticMember: funcName)

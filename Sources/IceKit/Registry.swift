@@ -21,25 +21,12 @@ public class Registry: RegistryType {
     private var sharedRepo: Path { return directory + "shared" }
     private var sharedPath: Path { return sharedRepo + "Registry" }
     
-    private lazy var localRegistry = {
-        return LocalRegistryFile.load(from: localPath) ?? LocalRegistryFile(entries: [], lastRefreshed: nil)
+    private lazy var localRegistry: LocalRegistryFile = {
+        return LocalRegistryFile.load(from: localPath) ?? LocalRegistryFile(entries: [])
     }()
     
     init(registryPath: Path) {
         self.directory = registryPath
-        
-        if let lastRefreshed = localRegistry.lastRefreshed {
-            // If current date is more than 30 days after last refresh
-            if Date() > lastRefreshed.addingTimeInterval(60 * 60 * 24 * 30) {
-                do {
-                    try refresh(silent: true)
-                } catch {}
-            }
-        } else {
-            do {
-                try refresh(silent: true)
-            } catch {}
-        }
     }
     
     public func refresh(silent: Bool = false) throws {
@@ -49,9 +36,6 @@ public class Registry: RegistryType {
         } else {
             try Git.clone(url: Registry.url, to: sharedRepo.string, silent: silent, timeout: timeout)
         }
-        
-        localRegistry.lastRefreshed = Date()
-        try write()
     }
     
     public func add(name: String, url: String) throws {
@@ -62,6 +46,12 @@ public class Registry: RegistryType {
     public func get(_ name: String) -> RegistryEntry? {
         if let matching = localRegistry.entries.first(where: { $0.name == name }) {
             return matching
+        }
+        
+        if !sharedRepo.exists {
+            do {
+                try Git.clone(url: Registry.url, to: sharedRepo.string, silent: true, timeout: 4)
+            } catch {}
         }
         
         let letterPath = sharedPath + (String(name.uppercased()[name.startIndex]) + ".json")
@@ -83,10 +73,6 @@ public class Registry: RegistryType {
     }
     
     public func search(query: String, includeDescription: Bool) throws -> [RegistryEntry] {
-        do {
-            try refresh(silent: true)
-        } catch {}
-        
         var all = Set<String>()
 
         func filterOnName(entries: [RegistryEntry]) -> [RegistryEntry] {
@@ -154,7 +140,6 @@ public struct RegistryEntry: Codable {
 
 private struct LocalRegistryFile: Codable {
     var entries: [RegistryEntry]
-    var lastRefreshed: Date?
 }
 
 private struct SharedRegistryFile: Codable {    
