@@ -9,19 +9,19 @@ import Rainbow
 import SwiftCLI
 
 final class CompileSwiftLine: Matcher, Matchable {
-    static let regex = Regex("^Compile Swift Module '(.*)' (.*)$")
-    var module: String { return captures[0] }
-    var sourceCount: String { return captures[1] }
+    static let regex = Regex("^(Compile|\\[\\d+/\\d+\\] Compiling) Swift Module '(.*)' (.*)$")
+    var module: String { return captures[1] }
+    var sourceCount: String { return captures[2] }
 }
 
 final class CompileCLine: Matcher, Matchable {
-    static let regex = Regex("Compile ([^ ]*) .*\\.(c|m|cpp|mm)$")
-    var module: String { return captures[0] }
+    static let regex = Regex("^(Compile|\\[\\d+/\\d+\\] Compiling) ([^ ]*) .*\\.(c|m|cpp|mm)$")
+    var module: String { return captures[1] }
 }
 
 final class LinkLine: Matcher, Matchable {
-    static let regex = Regex("^Linking (.*)")
-    var product: String { return captures[0] }
+    static let regex = Regex("^(\\[\\d+/\\d+\\] )?Linking (.*)")
+    var product: String { return captures[1] }
 }
 
 final class BuildErrorLine: Matcher, Matchable, Equatable {

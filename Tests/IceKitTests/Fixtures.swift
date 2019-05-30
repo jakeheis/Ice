@@ -138,8 +138,8 @@ struct Fixtures {
     static let package5_0 = PackageDataV5_0(
         name: "myPackage",
         platforms: [
-            .init(name: .macos, version: "10.14"),
-            .init(name: .ios, version: "12.0")
+            .init(platformName: .macos, version: "10.14"),
+            .init(platformName: .ios, version: "12.0")
         ],
         pkgConfig: "config",
         providers: [
