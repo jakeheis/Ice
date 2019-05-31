@@ -29,18 +29,32 @@ extension Sequence {
 
 #endif
 
-#if !swift(>=4.2)
+#if swift(>=4.1.50)
+
+extension Collection {
+    public func ice_firstIndex(where test: (Element) throws -> Bool) rethrows -> Index? {
+        return try firstIndex(where: test)
+    }
+}
 
 extension Collection where Element: Equatable {
-    
-    public func firstIndex(of element: Element) -> Index? {
-        return index(of: element)
+    public func ice_firstIndex(of element: Element) -> Index? {
+        return firstIndex(of: element)
     }
+}
 
-    public func firstIndex(where test: (Element) throws -> Bool) rethrows -> Index? {
+#else
+
+extension Collection {
+    public func ice_firstIndex(where test: (Element) throws -> Bool) rethrows -> Index? {
         return try index(where: test)
     }
+}
 
+extension Collection where Element: Equatable {
+    public func ice_firstIndex(of element: Element) -> Index? {
+        return index(of: element)
+    }
 }
 
 #endif
