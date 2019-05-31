@@ -75,7 +75,6 @@ public class Differentiate {
     }
     
     private func byVersion(swift5AndAbove: Assertion? = nil, swift4_2AndAbove: Assertion?, swift4_1AndAbove: Assertion?, swift4_0AndAbove: Assertion) {
-        // TODO: swift(>=4.2) doesn't work here for some reason, so using 4.1.50 even though that version doesn't exist
         #if swift(>=5.0)
         if let swift5AndAbove = swift5AndAbove {
             swift5AndAbove()
@@ -103,6 +102,15 @@ public class Differentiate {
         #else
         swift4_0AndAbove()
         #endif
+    }
+    
+}
+
+public func IceAssertEqual<T: Equatable>(_ first: T?, _ second: T?, file: StaticString = #file, line: UInt = #line) {
+    if let firstValue = first, let secondValue = second {
+        XCTAssertEqual(firstValue, secondValue, file: file, line: line)
+    } else {
+        XCTAssertEqual(first, second, file: file, line: line)
     }
     
 }

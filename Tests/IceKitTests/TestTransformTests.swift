@@ -427,6 +427,15 @@ class TestTransformTests: XCTestCase {
         \tReceived:
         \tHello, World!
         """))
+        
+        let test5 = createTest(TestSuite(mode: .all))
+        test5.send(assertionFailure(assertion: "XCTAssertEqual failed: (\"Hello, World!\") is not equal to (\"Hello, Worldddd!\")"))
+        test5.expect(failedTest(failure: """
+        \tExpected:
+        \tHello, Worldddd!
+        \tReceived:
+        \tHello, World!
+        """))
     }
     
     func testXCTEqualWithAccuracy() {
@@ -536,6 +545,15 @@ class TestTransformTests: XCTestCase {
         let test = createTest(TestSuite(mode: .all))
         test.send(assertionFailure(assertion: "XCTAssertFalse failed - "))
         test.expect(failedTest(failure: """
+        \tExpected:
+        \tfalse
+        \tReceived:
+        \ttrue
+        """))
+        
+        let test5 = createTest(TestSuite(mode: .all))
+        test5.send(assertionFailure(assertion: "XCTAssertFalse failed"))
+        test5.expect(failedTest(failure: """
         \tExpected:
         \tfalse
         \tReceived:

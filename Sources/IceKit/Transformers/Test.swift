@@ -243,14 +243,10 @@ class AssertionFailure: Transformer {
             if let match = matchType.findMatch(in: assertion) {
                 match.print(to: stderr)
                 
-                if !match.message.isEmpty {
+                if let message = match.message, !message.isEmpty {
                     stderr <<< ""
-                    let lines = match.message.components(separatedBy: AssertionFailure.newlineReplacement)
-                    var message = lines[0]
-                    if lines.count > 1 {
-                        message += "\n" + lines.dropFirst().map({ "\t\($0)" }).joined(separator: "\n")
-                    }
-                    stderr <<< "\tNote: \(message)"
+                    let indentedMessage = indentMultilineText(message)
+                    stderr <<< "\tNote: \(indentedMessage)"
                 }
                 
                 foundMatch = true
@@ -259,13 +255,23 @@ class AssertionFailure: Transformer {
         }
         
         if !foundMatch {
-            stderr <<< "\tError: ".red + assertion
+            let message = indentMultilineText(assertion)
+            stderr <<< "\tError: ".red + message
         }
         
         let fileLocation = failure.file.beautifyPath
         stderr <<< ""
         stderr <<< "\tat \(fileLocation):\(failure.lineNumber)".dim
         stderr <<< ""
+    }
+    
+    private func indentMultilineText(_ text: String) -> String {
+        let lines = text.components(separatedBy: AssertionFailure.newlineReplacement)
+        var message = lines[0]
+        if lines.count > 1 {
+            message += "\n" + lines.dropFirst().map({ "\t\($0)" }).joined(separator: "\n")
+        }
+        return message
     }
     
 }

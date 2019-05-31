@@ -97,7 +97,7 @@ class TransformStream: WritableStream {
                 WriteStream.stderr <<< "Please rerun this command verbosely:"
                 let newArgs = [CommandLine.arguments[0], "--verbose"] + Array(CommandLine.arguments.dropFirst())
                 WriteStream.stderr <<< "  " + newArgs.joined(separator: " ")
-                WriteStream.stderr <<< "then file a new issue with that command's output"
+                WriteStream.stderr <<< "then file a new issue with the command's output"
             }
             WriteStream.stderr <<< ""
             

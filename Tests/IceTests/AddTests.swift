@@ -124,8 +124,8 @@ class AddTests: XCTestCase {
         let icebox = IceBox(template: .exec)
         
         let result = icebox.run("add", "jakeheis/CLISpinner")
-        XCTAssertEqual(result.exitStatus, 0)
-        XCTAssertEqual(result.stderr, "")
+        IceAssertEqual(result.exitStatus, 0)
+        IceAssertEqual(result.stderr, "")
         
         Differentiate.byVersion(swift4_2AndAbove: {
             result.assertStdout { (t) in
@@ -141,7 +141,7 @@ class AddTests: XCTestCase {
                 t.done()
             }
         }, swift4_1AndAbove: {
-            XCTAssertEqual(result.stdout, """
+            IceAssertEqual(result.stdout, """
             Update https://github.com/jakeheis/SwiftCLI
             Fetch https://github.com/jakeheis/CLISpinner
             Clone https://github.com/jakeheis/CLISpinner
@@ -149,7 +149,7 @@ class AddTests: XCTestCase {
             
             """)
         }, swift4_0AndAbove: {
-            XCTAssertEqual(result.stdout, """
+            IceAssertEqual(result.stdout, """
             Fetch https://github.com/jakeheis/IceLibTest
             Update https://github.com/jakeheis/CLISpinner
             Clone https://github.com/jakeheis/CLISpinner
@@ -158,7 +158,7 @@ class AddTests: XCTestCase {
             """)
         })
         
-        XCTAssertEqual(icebox.fileContents("Package.swift"), """
+        IceAssertEqual(icebox.fileContents("Package.swift"), """
         // swift-tools-version:4.0
         // Managed by ice
 

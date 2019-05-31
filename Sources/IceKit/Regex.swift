@@ -19,6 +19,14 @@ public struct Regex {
         }
     }
     
+    public init(unsafePattern: String, options: NSRegularExpression.Options = []) {
+        do {
+            regularExpression = try NSRegularExpression(pattern: unsafePattern, options: options)
+        } catch {
+            preconditionFailure("invalid Regex")
+        }
+    }
+    
     public func matches(_ string: String) -> Bool {
         return firstMatch(in: string) != nil
     }

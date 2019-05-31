@@ -141,7 +141,10 @@ class PackageDataTests: XCTestCase {
 
         let package = Package(
             name: "Ice",
-            platforms: [.macOS(.v10_12), .iOS(.v10)],
+            platforms: [
+                .macOS(.v10_12),
+                .iOS(.v10)
+            ],
             pkgConfig: "iceConfig",
             providers: [
                 .brew(["brewPackage"]),
