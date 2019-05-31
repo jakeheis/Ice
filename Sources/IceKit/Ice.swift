@@ -24,8 +24,8 @@ public class Ice {
         
         do {
             if !root.exists {
-                try run("mkdir", "-p", root.string)
-                try run("mkdir", "-p", registryDirectory.string)
+                try Task.run("mkdir", "-p", root.string)
+                try Task.run("mkdir", "-p", registryDirectory.string)
             }
             
             let versionFile = root + "version"

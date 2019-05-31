@@ -73,16 +73,18 @@ extension PackageWriterImpl {
     }
     
     func addPlatforms(to function: inout FunctionCallComponent) {
-        if let platforms = package.platforms {
-            function.addMultilineArray(key: "platforms", children: platforms.map { (platform) in
-                let funcName = platform.platformName.functionName
-                let version = ".v" + platform.version.split(separator: ".").reversed().drop(while: { $0 == "0" }).reversed().joined(separator: "_")
-                
-                var platformFunc = FunctionCallComponent(staticMember: funcName)
-                platformFunc.addArgument(key: nil, component: ValueComponent(value: version))
-                return platformFunc
-            })
+        guard !package.platforms.isEmpty else {
+            return
         }
+        
+        function.addMultilineArray(key: "platforms", children: package.platforms.map { (platform) in
+            let funcName = platform.platformName.functionName
+            let version = ".v" + platform.version.split(separator: ".").reversed().drop(while: { $0 == "0" }).reversed().joined(separator: "_")
+            
+            var platformFunc = FunctionCallComponent(staticMember: funcName)
+            platformFunc.addArgument(key: nil, component: ValueComponent(value: version))
+            return platformFunc
+        })
     }
     
     func addPkgConfig(to function: inout FunctionCallComponent) {
@@ -345,7 +347,7 @@ final class Version4_2Writer: PackageWriterImpl {
     }
     
     func canWrite() -> Bool {
-        if let platforms = package.platforms, platforms.count > 0 {
+        if package.platforms.count > 0 {
             return false
         }
         if package.targets.contains(where: { $0.settings.count > 0 }) {
@@ -386,7 +388,7 @@ final class Version4_0Writer: PackageWriterImpl {
     }
     
     func canWrite() -> Bool {
-        if let platforms = package.platforms, platforms.count > 0 {
+        if package.platforms.count > 0 {
             return false
         }
         if package.targets.contains(where: { $0.settings.count > 0 }) {

@@ -67,7 +67,7 @@ class TransformStream: WritableStream {
     
     func consume(file: StaticString = #file, fileLine: UInt = #line) {
         readNextLine()
-        if _isDebugAssertConfiguration() {
+        if Logger.level == .verbose {
             TransformStreamRecord.record(action: .init(
                 kind: .consumed,
                 sourceFile: String(describing: file),
@@ -81,18 +81,30 @@ class TransformStream: WritableStream {
     
     func require<L: Line>(_ line: L.Type, file: StaticString = #file, fileLine: UInt = #line) -> L {
         guard let match = match(line) else {
-            if _isDebugAssertConfiguration() {
+            if Logger.level == .verbose {
                 TransformStreamRecord.dump()
-                
-                WriteStream.stderr <<< ""
-                WriteStream.stderr <<< "Fatal error: ".bold.red + "failed requirement (\(line), next: '\(nextLine as Any)')"
-                WriteStream.stderr <<< ""
-                WriteStream.stderr <<< "\(file):\(line)"
-                WriteStream.stderr <<< ""
             }
+            
+            WriteStream.stderr <<< ""
+            WriteStream.stderr <<< "Internal error: ".bold.red + "failed requirement (\(line), next: '\(nextLine as Any)')"
+            WriteStream.stderr <<< ""
+            WriteStream.stderr <<< "\(file):\(line)"
+            WriteStream.stderr <<< ""
+            if Logger.level == .verbose {
+                WriteStream.stderr <<< "Please file a new issue with this output"
+                WriteStream.stderr <<< "http://github.com/jakeheis/Ice/issues/new"
+            } else {
+                WriteStream.stderr <<< "Please rerun this command verbosely:"
+                let newArgs = [CommandLine.arguments[0], "--verbose"] + Array(CommandLine.arguments.dropFirst())
+                WriteStream.stderr <<< "  " + newArgs.joined(separator: " ")
+                WriteStream.stderr <<< "then file a new issue with that command's output"
+            }
+            WriteStream.stderr <<< ""
+            
             exit(1)
         }
-        if _isDebugAssertConfiguration() {
+        
+        if Logger.level == .verbose {
             TransformStreamRecord.record(action: .init(
                 kind: .required,
                 sourceFile: String(describing: file),
@@ -106,7 +118,7 @@ class TransformStream: WritableStream {
     
     func match<L: Line>(_ line: L.Type, file: StaticString = #file, fileLine: UInt = #line) -> L? {
         if let match = peek(line) {
-            if _isDebugAssertConfiguration() {
+            if Logger.level == .verbose {
                 TransformStreamRecord.record(action: .init(
                     kind: .matched,
                     sourceFile: String(describing: file),
@@ -176,12 +188,4 @@ class TransformStreamRecord {
         actions.removeAll()
     }
     
-}
-
-func niceFatalError(_ message: String, file: StaticString = #file, line: UInt = #line) -> Never {
-    WriteStream.stderr <<< "\n\nFatal error:".bold.red + " \(message)\n"
-    if _isDebugAssertConfiguration() {
-        WriteStream.stderr <<< "\(file):\(line)\n"
-    }
-    exit(1)
 }

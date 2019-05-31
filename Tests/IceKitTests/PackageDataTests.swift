@@ -197,7 +197,7 @@ class PackageDataTests: XCTestCase {
         expected.targets.removeLast() // Remove system target
         expected.dependencies.removeLast() // Remove local dependency
         expected.swiftLanguageVersions?.removeLast() // Remove non-integer version
-        expected.platforms = nil // Remove platforms
+        expected.platforms = [] // Remove platforms
         
         XCTAssertEqual(modernized, expected)
     }
@@ -207,7 +207,7 @@ class PackageDataTests: XCTestCase {
         
         var expected = Fixtures.package5_0
         expected.targets.removeLast() // Remove settings target
-        expected.platforms = nil // Remove platforms
+        expected.platforms = [] // Remove platforms
         
         XCTAssertEqual(modernized, expected)
     }

@@ -14,7 +14,7 @@ class DumpCommand: Command {
     let name = "dump"
     let shortDescription = "Dumps the current package in JSON format"
     
-    let model = Flag("-m", "--model", description: "Print the JSON in model form (same output as `swift package dump-package`); default")
+    let model = Flag("-m", "--model", description: "Print the JSON in model form (same output as 'swift package dump-package'); default")
     let packageDescription = Flag("-p", "--package-description", description: "Print the JSON in package description form")
     
     var optionGroups: [OptionGroup] {

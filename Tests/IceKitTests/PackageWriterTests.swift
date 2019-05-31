@@ -175,6 +175,29 @@ class PackageWriterTests: XCTestCase {
         """)
     }
     
+    func testEmpty() throws {
+        let capture = CaptureStream()
+        let writer = try PackageWriter(package: Fixtures.emptyPackage, toolsVersion: .v5)
+        try writer.write(to: capture)
+        capture.closeWrite()
+        
+        XCTAssertEqual(capture.readAll(), """
+        // swift-tools-version:5.0
+        // Managed by ice
+
+        import PackageDescription
+
+        let package = Package(
+            name: "Empty",
+            targets: [
+                .target(name: "CLI", dependencies: []),
+                .testTarget(name: "CLITests", dependencies: ["CLI"]),
+            ]
+        )
+        
+        """)
+    }
+    
     func testPlatorms() {
         XCTAssertEqual(write5_0 { $0.addPlatforms(to: &$1) }, """
             platforms: [

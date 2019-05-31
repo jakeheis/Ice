@@ -46,7 +46,7 @@ class TransformerPair {
     }
     
     deinit {
-        if _isDebugAssertConfiguration() {
+        if Logger.level == .verbose {
             TransformStreamRecord.clear()
         }
     }

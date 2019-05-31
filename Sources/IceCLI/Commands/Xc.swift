@@ -25,7 +25,7 @@ class XcCommand: IceObject, Command {
         
         let package = try loadPackage()
         do {
-            try run("open", "\(package.name).xcodeproj")
+            try Task.run("open", "\(package.name).xcodeproj")
         } catch {}
     }
     

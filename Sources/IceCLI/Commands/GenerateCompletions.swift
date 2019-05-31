@@ -7,14 +7,14 @@
 
 import SwiftCLI
 
-enum CompletionFunctions: String {
+enum ShellCompletionFunctions: String {
     case listRegistry = "_list_registry"
     case listDependencies = "_list_dependencies"
     case listTargets = "_list_targets"
 }
 
-extension Completion {
-    static func function(_ function: CompletionFunctions) -> Completion {
+extension ShellCompletion {
+    static func function(_ function: ShellCompletionFunctions) -> ShellCompletion {
         return .function(function.rawValue)
     }
 }
@@ -41,17 +41,17 @@ class GenerateCompletionsCommand: Command {
     
     func generateFunctions() -> [String: String] {
         return [
-            CompletionFunctions.listRegistry.rawValue: """
+            ShellCompletionFunctions.listRegistry.rawValue: """
             local packages
             packages=( $(grep name ~/.icebox/Registry/local.json ~/.icebox/Registry/shared/Registry/*.json | grep -o '"[^"]*"' | grep -v "name" | cut -c 2- | rev | cut -c 2- | rev) )
             _describe '' packages
             """,
-            CompletionFunctions.listDependencies.rawValue: """
+            ShellCompletionFunctions.listDependencies.rawValue: """
             local dependencies
             dependencies=( $(grep -e "\\.package" Package.swift | grep -o 'url: "[^"]*"' | grep -o '/[^/]*"' | cut -c 2- | rev | cut -c 2- | rev) )
             _describe '' dependencies
             """,
-            CompletionFunctions.listTargets.rawValue: """
+            ShellCompletionFunctions.listTargets.rawValue: """
             local targets
             targets=( $(grep -e "\\.target\\|\\.testTarget" Package.swift | grep -o 'name: "[^"]*"' | cut -c 8- | rev | cut -c 2- | rev) )
             _describe '' targets

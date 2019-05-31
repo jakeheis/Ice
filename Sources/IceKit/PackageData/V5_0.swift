@@ -231,7 +231,7 @@ public struct PackageDataV5_0: Codable, Equatable {
     }
     
     public let name: String
-    public internal(set) var platforms: [Platform]?
+    public internal(set) var platforms: [Platform]
     public let pkgConfig: String?
     public let providers: [PackageDataV5_0.Provider]?
     public internal(set) var products: [PackageDataV5_0.Product]

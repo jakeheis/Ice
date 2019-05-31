@@ -33,7 +33,7 @@ public enum SwiftExecutable {
     }()
     
     public static var version: SwiftToolsVersion? = {
-        if let content = try? capture("swift", "--version").stdout,
+        if let content = try? Task.capture("swift", "--version").stdout,
             let match = Regex("Swift version ([0-9]\\.[0-9](\\.[0-9])?)(-dev)? ").firstMatch(in: content),
             let versionString = match.captures[0],
             let version = SwiftToolsVersion(versionString) {
@@ -219,7 +219,7 @@ public class SPM {
             }
             let libPath = toolchainPath + "usr" + "lib" + "swift" + "pm" + libVersion
             
-            guard let content = try? capture("swiftc", "--driver-mode=swift", "-I", libPath.string, "-L", libPath.string, "-lPackageDescription", packageFile.path.string, "-fileno", "1"),
+            guard let content = try? Task.capture("swiftc", "--driver-mode=swift", "-I", libPath.string, "-L", libPath.string, "-lPackageDescription", packageFile.path.string, "-fileno", "1"),
                 let data = content.stdout.data(using: .utf8) else {
                     throw IceError(message: "can't parse Package.swift")
             }
@@ -243,7 +243,7 @@ public class SPM {
     
     private func captureSwift(args: [String]) throws -> CaptureResult {
         do {
-            return try capture("swift", arguments: args, directory: directory.string)
+            return try Task.capture("swift", arguments: args, directory: directory.string)
         } catch let error as CaptureError {
             let message: String?
             if error.captured.stderr.isEmpty {

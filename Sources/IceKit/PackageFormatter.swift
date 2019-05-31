@@ -16,7 +16,7 @@ public class PackageFormatter {
     public func format() -> ModernPackageData {
         return ModernPackageData(
             name: package.name,
-            platforms: package.platforms?.sorted(by: sortPlatform),
+            platforms: package.platforms.sorted(by: sortPlatform),
             pkgConfig: package.pkgConfig,
             providers: package.providers?.map(formatProvider),
             products: package.products.map(formatProduct).sorted(by: sortProduct),

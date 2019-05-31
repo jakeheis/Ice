@@ -35,11 +35,12 @@ class UpdateToolsVersion: IceObject, Command {
     let name = "update"
     let shortDescription = "Update the current project's Swift tools version and migrate Package.swift to the new version"
     
-    let tagged = Flag("-t", "--tagged", description: "Tag the new package file with the version (e.g. Package@swift-5.0.swift) rather than just Package.swift")
+    let tagged = Flag("-t", "--tagged", description: "Tag the new package file with the version; e.g. create Package@swift-5.0.swift rather than overwrite Package.swift")
     
     let version = Parameter(completion: .values([
         ("4.0", ""),
-        ("4.2", "")
+        ("4.2", ""),
+        ("5.0", ""),
     ]))
     
     func execute() throws {

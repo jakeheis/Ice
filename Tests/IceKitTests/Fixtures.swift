@@ -185,6 +185,11 @@ struct Fixtures {
     static let modernPackage: ModernPackageData = package5_0
     static let modernToolsVersion = SwiftToolsVersion.v5
     
+    static let emptyPackage = ModernPackageData(name: "Empty", platforms: [], pkgConfig: nil, providers: nil, products: [], dependencies: [], targets: [
+        .init(name: "CLI", type: .regular, dependencies: []),
+        .init(name: "CLITests", type: .test, dependencies: [.byName("CLI")]),
+    ], swiftLanguageVersions: nil, cLanguageStandard: nil, cxxLanguageStandard: nil)
+    
     private init() {}
 }
 
