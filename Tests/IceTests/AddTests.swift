@@ -150,8 +150,8 @@ class AddTests: XCTestCase {
             """)
         }, swift4_0AndAbove: {
             IceAssertEqual(result.stdout, """
-            Fetch https://github.com/jakeheis/IceLibTest
-            Update https://github.com/jakeheis/Regex
+            Fetch https://github.com/jakeheis/Regex
+            Update https://github.com/jakeheis/SwiftCLI
             Clone https://github.com/jakeheis/Regex
             Resolve https://github.com/jakeheis/Regex at 1.2.0
             

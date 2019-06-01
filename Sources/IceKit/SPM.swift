@@ -203,6 +203,10 @@ public class SPM {
             }
             return data
         case .packageDescription:
+            #if os(Linux)
+            throw IceError(message: "dumping package description is not supported on Linux")
+            #endif
+            
             guard let toolchainPath = SwiftExecutable.toolchainPath else {
                 throw IceError(message: "can't find Swift toolchain")
             }
