@@ -189,19 +189,20 @@ public class SPM {
         return path.trimmingCharacters(in: .whitespacesAndNewlines)
     }
     
-    public enum DumpMode {
-        case model
-        case packageDescription
-    }
+//    public enum DumpMode {
+//        case model
+//        case packageDescription
+//    }
     
-    public func dumpPackage(mode: DumpMode) throws -> Data {
-        switch mode {
-        case .model:
+    public func dumpPackage() throws -> Data {
+//        switch mode {
+//        case .model:
             let content = try captureSwift(args: ["package", "dump-package"]).stdout
             guard let jsonStart = content.ice_firstIndex(of: "{"), let data = String(content[jsonStart...]).data(using: .utf8) else {
                 throw IceError(message: "can't parse package")
             }
             return data
+        /*
         case .packageDescription:
             #if os(Linux)
             throw IceError(message: "dumping package description is not supported on Linux")
@@ -228,7 +229,7 @@ public class SPM {
                     throw IceError(message: "can't parse Package.swift")
             }
             return data
-        }
+        }*/
     }
         
     // MARK: - Helpers

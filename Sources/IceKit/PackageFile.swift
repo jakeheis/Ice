@@ -88,7 +88,7 @@ public struct PackageFile {
     public func load(with config: Config?) throws -> Package {
         let spm = SPM(directory: path.parent())
         
-        let json = try spm.dumpPackage(mode: .model)
+        let json = try spm.dumpPackage()
         
         var data: ModernPackageData
         if let v5_0 = try? JSONDecoder().decode(PackageDataV5_0.self, from: json) {

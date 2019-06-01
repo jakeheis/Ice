@@ -42,7 +42,6 @@ extension ConfigTests {
 extension DumpTests {
     static let __allTests = [
         ("testModel", testModel),
-        ("testPackageDescription", testPackageDescription),
     ]
 }
 

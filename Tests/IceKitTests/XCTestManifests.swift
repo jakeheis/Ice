@@ -77,6 +77,7 @@ extension PackageWriterTests {
         ("testCLanguageStandard", testCLanguageStandard),
         ("testCxxLanguageStandard", testCxxLanguageStandard),
         ("testDependencies", testDependencies),
+        ("testEmpty", testEmpty),
         ("testFull4_0", testFull4_0),
         ("testFull4_2", testFull4_2),
         ("testFull5_0", testFull5_0),
