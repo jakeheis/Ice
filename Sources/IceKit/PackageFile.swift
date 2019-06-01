@@ -90,12 +90,6 @@ public struct PackageFile {
         
         let json = try spm.dumpPackage(mode: .model)
         
-        do {
-            _ = try JSONDecoder().decode(PackageDataV5_0.self, from: json)
-        } catch {
-            dump(error)
-        }
-        
         var data: ModernPackageData
         if let v5_0 = try? JSONDecoder().decode(PackageDataV5_0.self, from: json) {
             Logger.verbose <<< "Parsing package output as from SPM v5.0"

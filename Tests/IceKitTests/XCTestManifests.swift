@@ -91,7 +91,7 @@ extension PackageWriterTests {
 extension RegistryTests {
     static let __allTests = [
         ("testAdd", testAdd),
-        ("testAutoRefresh", testAutoRefresh),
+        ("testAutoClone", testAutoClone),
         ("testGet", testGet),
         ("testRemove", testRemove),
     ]

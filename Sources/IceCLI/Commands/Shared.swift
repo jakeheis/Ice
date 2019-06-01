@@ -31,12 +31,6 @@ class IceObject {
     
 }
 
-struct GlobalOptions {
-    static let verbose = Flag("-v", "--verbose", description: "Increase verbosity of informational output")
-    
-    private init() {}
-}
-
 class CreateProjectCommand: IceObject {
     
     let library = Flag("-l", "--lib", description: "Create a new library project (default)")

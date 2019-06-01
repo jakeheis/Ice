@@ -143,7 +143,7 @@ class PackageDataTests: XCTestCase {
             name: "Ice",
             platforms: [
                 .macOS(.v10_12),
-                .iOS(.v10)
+                .iOS(.v10),
             ],
             pkgConfig: "iceConfig",
             providers: [

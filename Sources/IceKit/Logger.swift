@@ -9,7 +9,7 @@ import SwiftCLI
 
 public enum Logger {
     
-    public static var verboseFlag: Flag?
+    public static let verboseFlag = Flag("-v", "--verbose", description: "Increase verbosity of informational output")
     
     public enum Level: Int {
         case normal
@@ -17,7 +17,7 @@ public enum Logger {
     }
     
     public static var level: Level {
-        if verboseFlag?.value == true {
+        if verboseFlag.value == true {
             return .verbose
         }
         return .normal

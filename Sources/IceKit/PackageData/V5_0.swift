@@ -41,6 +41,10 @@ public struct PackageDataV5_0: Codable, Equatable {
             }
         }
         
+        public static func ==(lhs: Platform, rhs: Platform) -> Bool {
+            return lhs.platformName == rhs.platformName && lhs.version == rhs.version
+        }
+        
         public let platformName: Name
         public let version: String
         

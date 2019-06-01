@@ -7,81 +7,84 @@
 
 @testable import IceKit
 import PathKit
+import TestingUtilities
 import XCTest
 
 class RegistryTests: XCTestCase {
     
-    let registryPath: Path = Path("/tmp/ice/Registry")
-    var sharedPath: Path { return registryPath + "shared" + "Registry" }
-    var localPath: Path {  return registryPath + "local.json" }
+    let sharedPath: Path = "shared" + "Registry"
+    let localPath: Path  = "local.json"
     
-    override func setUp() {
-        if registryPath.exists {
-            try! registryPath.delete()
+    func testAutoClone() throws {
+        IceBox(template: .empty).inside {
+            XCTAssertFalse(sharedPath.exists)
+            let registry = Registry(registryPath: .current)
+            _ = registry.get("Alamofire")
+            XCTAssertTrue(sharedPath.exists)
+            XCTAssertTrue((sharedPath + "A.json").exists)
         }
-        try! registryPath.mkpath()
-    }
-    
-    func testAutoRefresh() throws {
-        XCTAssertFalse(sharedPath.exists)
-        _ = Registry(registryPath: registryPath)
-        XCTAssertTrue(sharedPath.exists)
-        XCTAssertTrue((sharedPath + "A.json").exists)
     }
     
     func testAdd() throws {
-        let registry = Registry(registryPath: registryPath)
-        try registry.add(name: "Ice-fake", url: "https://github.com/jakeheis/Ice-fake")
-        
-        let json = try JSONSerialization.jsonObject(with: try localPath.read(), options: []) as! [String: Any]
-        let entries = json["entries"] as! [[String: Any]]
-        XCTAssertEqual(entries.count, 1)
-        XCTAssertEqual(entries[0]["name"] as? String, "Ice-fake")
-        XCTAssertEqual(entries[0]["url"] as? String, "https://github.com/jakeheis/Ice-fake")
-        XCTAssertNotNil(json["lastRefreshed"])
+        IceBox(template: .empty).inside {
+            let registry = Registry(registryPath: .current)
+            try registry.add(name: "Ice-fake", url: "https://github.com/jakeheis/Ice-fake")
+            
+            let json = try JSONSerialization.jsonObject(with: try localPath.read(), options: []) as! [String: Any]
+            let entries = json["entries"] as! [[String: Any]]
+            XCTAssertEqual(entries.count, 1)
+            XCTAssertEqual(entries[0]["name"] as? String, "Ice-fake")
+            XCTAssertEqual(entries[0]["url"] as? String, "https://github.com/jakeheis/Ice-fake")
+        }
     }
     
     func testGet() throws {
-        try localPath.write("""
-        {
-          "entries": [
+        IceBox(template: .empty).inside {
+            try localPath.write("""
             {
-              "name": "SwiftCLI-fake",
-              "url": "https://github.com/jakeheis/SwiftCLI-fake"
+              "entries": [
+                {
+                  "name": "SwiftCLI-fake",
+                  "url": "https://github.com/jakeheis/SwiftCLI-fake"
+                }
+              ]
             }
-          ]
+            """)
+            let registry = Registry(registryPath: .current)
+            
+            let entry = registry.get("SwiftCLI-fake")
+            XCTAssertEqual(entry?.name, "SwiftCLI-fake")
+            XCTAssertEqual(entry?.url, "https://github.com/jakeheis/SwiftCLI-fake")
+            XCTAssertNil(entry?.description)
         }
-        """)
-        let registry = Registry(registryPath: registryPath)
-        
-        let entry = registry.get("SwiftCLI-fake")
-        XCTAssertEqual(entry?.name, "SwiftCLI-fake")
-        XCTAssertEqual(entry?.url, "https://github.com/jakeheis/SwiftCLI-fake")
-        XCTAssertNil(entry?.description)
     }
     
     func testRemove() throws {
-        try localPath.write("""
-        {
-          "entries": [
+        IceBox(template: .empty).inside {
+            try localPath.write("""
             {
-              "name": "SwiftCLI-fake",
-              "url": "https://github.com/jakeheis/SwiftCLI-fake"
+              "entries": [
+                {
+                  "name": "SwiftCLI-fake",
+                  "url": "https://github.com/jakeheis/SwiftCLI-fake"
+                }
+              ]
             }
-          ]
+            """)
+            let registry = Registry(registryPath: .current)
+            
+            let beforeEntry = registry.get("SwiftCLI-fake")
+            XCTAssertNotNil(beforeEntry)
+            
+            try registry.remove("SwiftCLI-fake")
+            
+            let json = try JSONSerialization.jsonObject(with: try localPath.read(), options: []) as! [String: Any]
+            let entries = json["entries"] as! [[String: Any]]
+            XCTAssertEqual(entries.count, 0)
+            
+            let afterEntry = registry.get("SwiftCLI-fake")
+            XCTAssertNil(afterEntry)
         }
-        """)
-        let registry = Registry(registryPath: registryPath)
-        
-        try registry.remove("SwiftCLI-fake")
-        
-        let json = try JSONSerialization.jsonObject(with: try localPath.read(), options: []) as! [String: Any]
-        let entries = json["entries"] as! [[String: Any]]
-        XCTAssertEqual(entries.count, 0)
-        XCTAssertNotNil(json["lastRefreshed"])
-        
-        let entry = registry.get("SwiftCLI-fake")
-        XCTAssertNil(entry)
     }
     
 }

@@ -48,11 +48,7 @@ public class Registry: RegistryType {
             return matching
         }
         
-        if !sharedRepo.exists {
-            do {
-                try Git.clone(url: Registry.url, to: sharedRepo.string, silent: true, timeout: 4)
-            } catch {}
-        }
+        attemptCloneIfNecessary()
         
         let letterPath = sharedPath + (String(name.uppercased()[name.startIndex]) + ".json")
         let sharedRegistry = SharedRegistryFile.load(from: letterPath)
@@ -73,6 +69,8 @@ public class Registry: RegistryType {
     }
     
     public func search(query: String, includeDescription: Bool) throws -> [RegistryEntry] {
+        attemptCloneIfNecessary()
+        
         var all = Set<String>()
 
         func filterOnName(entries: [RegistryEntry]) -> [RegistryEntry] {
@@ -123,6 +121,14 @@ public class Registry: RegistryType {
             if let file = SharedRegistryFile.load(from: path) {
                 block(file, path.lastComponentWithoutExtension)
             }
+        }
+    }
+    
+    private func attemptCloneIfNecessary() {
+        if !sharedRepo.exists {
+            do {
+                try Git.clone(url: Registry.url, to: sharedRepo.string, silent: true, timeout: 4)
+            } catch {}
         }
     }
     

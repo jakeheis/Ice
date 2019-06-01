@@ -15,17 +15,17 @@ class AddTests: XCTestCase {
         
         icebox.execute(with: "version")
         
-        let result = icebox.run("add", "jakeheis/CLISpinner", "-n")
-        XCTAssertEqual(result.exitStatus, 0)
-        XCTAssertEqual(result.stderr, "")
-        XCTAssertEqual(result.stdout, """
-        Fetch https://github.com/jakeheis/CLISpinner
-        Clone https://github.com/jakeheis/CLISpinner
-        Resolve https://github.com/jakeheis/CLISpinner at 0.3.5
+        let result = icebox.run("add", "jakeheis/Regex", "-n")
+        IceAssertEqual(result.exitStatus, 0)
+        IceAssertEqual(result.stderr, "")
+        IceAssertEqual(result.stdout, """
+        Fetch https://github.com/jakeheis/Regex
+        Clone https://github.com/jakeheis/Regex
+        Resolve https://github.com/jakeheis/Regex at 1.2.0
         
         """)
         
-        XCTAssertEqual(icebox.fileContents("Package.swift"), """
+        IceAssertEqual(icebox.fileContents("Package.swift"), """
         // swift-tools-version:4.0
         // Managed by ice
 
@@ -37,7 +37,7 @@ class AddTests: XCTestCase {
                 .library(name: "Lib", targets: ["Lib"]),
             ],
             dependencies: [
-                .package(url: "https://github.com/jakeheis/CLISpinner", from: "0.3.5"),
+                .package(url: "https://github.com/jakeheis/Regex", from: "1.2.0"),
             ],
             targets: [
                 .target(name: "Lib", dependencies: []),
@@ -51,17 +51,17 @@ class AddTests: XCTestCase {
     func testTargetAdd() {
         let icebox = IceBox(template: .lib)
         
-        let result = icebox.run("add", "jakeheis/CLISpinner", "-t", "Lib")
-        XCTAssertEqual(result.exitStatus, 0)
-        XCTAssertEqual(result.stderr, "")
-        XCTAssertEqual(result.stdout, """
-        Fetch https://github.com/jakeheis/CLISpinner
-        Clone https://github.com/jakeheis/CLISpinner
-        Resolve https://github.com/jakeheis/CLISpinner at 0.3.5
+        let result = icebox.run("add", "jakeheis/Regex", "-t", "Lib")
+        IceAssertEqual(result.exitStatus, 0)
+        IceAssertEqual(result.stderr, "")
+        IceAssertEqual(result.stdout, """
+        Fetch https://github.com/jakeheis/Regex
+        Clone https://github.com/jakeheis/Regex
+        Resolve https://github.com/jakeheis/Regex at 1.2.0
         
         """)
         
-        XCTAssertEqual(icebox.fileContents("Package.swift"), """
+        IceAssertEqual(icebox.fileContents("Package.swift"), """
         // swift-tools-version:4.0
         // Managed by ice
 
@@ -73,10 +73,10 @@ class AddTests: XCTestCase {
                 .library(name: "Lib", targets: ["Lib"]),
             ],
             dependencies: [
-                .package(url: "https://github.com/jakeheis/CLISpinner", from: "0.3.5"),
+                .package(url: "https://github.com/jakeheis/Regex", from: "1.2.0"),
             ],
             targets: [
-                .target(name: "Lib", dependencies: ["CLISpinner"]),
+                .target(name: "Lib", dependencies: ["Regex"]),
                 .testTarget(name: "LibTests", dependencies: ["Lib"]),
             ]
         )
@@ -87,17 +87,17 @@ class AddTests: XCTestCase {
     func testVersionedAdd() {
         let icebox = IceBox(template: .lib)
         
-        let result = icebox.run("add", "jakeheis/CLISpinner", "--version=0.3.4", "-n")
-        XCTAssertEqual(result.exitStatus, 0)
-        XCTAssertEqual(result.stderr, "")
-        XCTAssertEqual(result.stdout, """
-        Fetch https://github.com/jakeheis/CLISpinner
-        Clone https://github.com/jakeheis/CLISpinner
-        Resolve https://github.com/jakeheis/CLISpinner at 0.3.5
+        let result = icebox.run("add", "jakeheis/Regex", "--from=1.1.0", "-n")
+        IceAssertEqual(result.exitStatus, 0)
+        IceAssertEqual(result.stderr, "")
+        IceAssertEqual(result.stdout, """
+        Fetch https://github.com/jakeheis/Regex
+        Clone https://github.com/jakeheis/Regex
+        Resolve https://github.com/jakeheis/Regex at 1.2.0
         
         """)
         
-        XCTAssertEqual(icebox.fileContents("Package.swift"), """
+        IceAssertEqual(icebox.fileContents("Package.swift"), """
         // swift-tools-version:4.0
         // Managed by ice
 
@@ -109,7 +109,7 @@ class AddTests: XCTestCase {
                 .library(name: "Lib", targets: ["Lib"]),
             ],
             dependencies: [
-                .package(url: "https://github.com/jakeheis/CLISpinner", from: "0.3.4"),
+                .package(url: "https://github.com/jakeheis/Regex", from: "1.1.0"),
             ],
             targets: [
                 .target(name: "Lib", dependencies: []),
@@ -123,17 +123,17 @@ class AddTests: XCTestCase {
     func testSingleTargetAdd() {
         let icebox = IceBox(template: .exec)
         
-        let result = icebox.run("add", "jakeheis/CLISpinner")
+        let result = icebox.run("add", "jakeheis/Regex")
         IceAssertEqual(result.exitStatus, 0)
         IceAssertEqual(result.stderr, "")
         
         Differentiate.byVersion(swift4_2AndAbove: {
             result.assertStdout { (t) in
                 t.equals("Fetch https://github.com/jakeheis/SwiftCLI")
-                t.equals("Fetch https://github.com/jakeheis/CLISpinner")
+                t.equals("Fetch https://github.com/jakeheis/Regex")
                 t.equalsInAnyOrder([
-                    "Clone https://github.com/jakeheis/CLISpinner",
-                    "Resolve https://github.com/jakeheis/CLISpinner at 0.3.5",
+                    "Clone https://github.com/jakeheis/Regex",
+                    "Resolve https://github.com/jakeheis/Regex at 1.2.0",
                     "Clone https://github.com/jakeheis/SwiftCLI",
                     "Resolve https://github.com/jakeheis/SwiftCLI at 4.1.2"
                 ])
@@ -143,17 +143,17 @@ class AddTests: XCTestCase {
         }, swift4_1AndAbove: {
             IceAssertEqual(result.stdout, """
             Update https://github.com/jakeheis/SwiftCLI
-            Fetch https://github.com/jakeheis/CLISpinner
-            Clone https://github.com/jakeheis/CLISpinner
-            Resolve https://github.com/jakeheis/CLISpinner at 0.3.5
+            Fetch https://github.com/jakeheis/Regex
+            Clone https://github.com/jakeheis/Regex
+            Resolve https://github.com/jakeheis/Regex at 1.2.0
             
             """)
         }, swift4_0AndAbove: {
             IceAssertEqual(result.stdout, """
             Fetch https://github.com/jakeheis/IceLibTest
-            Update https://github.com/jakeheis/CLISpinner
-            Clone https://github.com/jakeheis/CLISpinner
-            Resolve https://github.com/jakeheis/CLISpinner at 0.3.5
+            Update https://github.com/jakeheis/Regex
+            Clone https://github.com/jakeheis/Regex
+            Resolve https://github.com/jakeheis/Regex at 1.2.0
             
             """)
         })
@@ -168,10 +168,10 @@ class AddTests: XCTestCase {
             name: "Exec",
             dependencies: [
                 .package(url: "https://github.com/jakeheis/SwiftCLI", from: "4.0.3"),
-                .package(url: "https://github.com/jakeheis/CLISpinner", from: "0.3.5"),
+                .package(url: "https://github.com/jakeheis/Regex", from: "1.2.0"),
             ],
             targets: [
-                .target(name: "Exec", dependencies: ["SwiftCLI", "CLISpinner"]),
+                .target(name: "Exec", dependencies: ["SwiftCLI", "Regex"]),
             ]
         )
 
@@ -182,16 +182,16 @@ class AddTests: XCTestCase {
         let icebox = IceBox(template: .lib)
         
         let result = icebox.run("add", "jakeheis/SwiftCLI", "--branch=master", "-n")
-        XCTAssertEqual(result.exitStatus, 0)
-        XCTAssertEqual(result.stderr, "")
-        XCTAssertEqual(result.stdout, """
+        IceAssertEqual(result.exitStatus, 0)
+        IceAssertEqual(result.stderr, "")
+        IceAssertEqual(result.stdout, """
         Fetch https://github.com/jakeheis/SwiftCLI
         Clone https://github.com/jakeheis/SwiftCLI
         Resolve https://github.com/jakeheis/SwiftCLI at master
         
         """)
         
-        XCTAssertEqual(icebox.fileContents("Package.swift"), """
+        IceAssertEqual(icebox.fileContents("Package.swift"), """
         // swift-tools-version:4.0
         // Managed by ice
 
@@ -218,16 +218,16 @@ class AddTests: XCTestCase {
         let icebox = IceBox(template: .lib)
         
         let result = icebox.run("add", "jakeheis/SwiftCLI", "--sha=51ba542611878b2e64e82467b895fdf4240ec32e", "-n")
-        XCTAssertEqual(result.exitStatus, 0)
-        XCTAssertEqual(result.stderr, "")
-        XCTAssertEqual(result.stdout, """
+        IceAssertEqual(result.exitStatus, 0)
+        IceAssertEqual(result.stderr, "")
+        IceAssertEqual(result.stdout, """
         Fetch https://github.com/jakeheis/SwiftCLI
         Clone https://github.com/jakeheis/SwiftCLI
         Resolve https://github.com/jakeheis/SwiftCLI at 51ba542611878b2e64e82467b895fdf4240ec32e
         
         """)
         
-        XCTAssertEqual(icebox.fileContents("Package.swift"), """
+        IceAssertEqual(icebox.fileContents("Package.swift"), """
         // swift-tools-version:4.0
         // Managed by ice
 
@@ -254,8 +254,8 @@ class AddTests: XCTestCase {
         let icebox = IceBox(template: .exec)
         
         let result = icebox.run("add", "jakeheis/IceLibTest")
-        XCTAssertEqual(result.exitStatus, 0)
-        XCTAssertEqual(result.stderr, "")
+        IceAssertEqual(result.exitStatus, 0)
+        IceAssertEqual(result.stderr, "")
         
         Differentiate.byVersion(swift4_2AndAbove: {
             result.assertStdout { (t) in
@@ -271,7 +271,7 @@ class AddTests: XCTestCase {
                 t.done()
             }
         }, swift4_1AndAbove: {
-            XCTAssertEqual(result.stdout, """
+            IceAssertEqual(result.stdout, """
             Update https://github.com/jakeheis/SwiftCLI
             Fetch https://github.com/jakeheis/IceLibTest
             Clone https://github.com/jakeheis/IceLibTest
@@ -279,7 +279,7 @@ class AddTests: XCTestCase {
             
             """)
         }, swift4_0AndAbove: {
-            XCTAssertEqual(result.stdout, """
+            IceAssertEqual(result.stdout, """
             Fetch https://github.com/jakeheis/IceLibTest
             Update https://github.com/jakeheis/SwiftCLI
             Clone https://github.com/jakeheis/IceLibTest
@@ -288,7 +288,7 @@ class AddTests: XCTestCase {
             """)
         })
         
-        XCTAssertEqual(icebox.fileContents("Package.swift"), """
+        IceAssertEqual(icebox.fileContents("Package.swift"), """
         // swift-tools-version:4.0
         // Managed by ice
 
