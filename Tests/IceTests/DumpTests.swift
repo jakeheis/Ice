@@ -36,6 +36,9 @@ class DumpTests: XCTestCase {
               "manifestVersion" : "v4",
               "name" : "Exec",
               "pkgConfig" : null,
+              "platforms" : [
+            
+              ],
               "products" : [
 
               ],
