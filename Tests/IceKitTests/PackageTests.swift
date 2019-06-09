@@ -22,7 +22,7 @@ class PackageTests: XCTestCase {
             .init(name: "MyCLI", targets: ["Target3"], type: .executable),
             .init(name: "MyLib", targets: ["Target4"], type: .library(.dynamic))
         ]
-        XCTAssertEqual(package.data, expectedPackage)
+        IceAssertEqual(package.data, expectedPackage)
     }
     
     func testRemoveProduct() throws {
@@ -37,7 +37,7 @@ class PackageTests: XCTestCase {
         
         var expectedPackage = Fixtures.modernPackage
         expectedPackage.products.remove(at: 2)
-        XCTAssertEqual(package.data, expectedPackage)
+        IceAssertEqual(package.data, expectedPackage)
     }
     
     func testAddDependency() {
@@ -47,7 +47,7 @@ class PackageTests: XCTestCase {
         
         var expectedPackage = Fixtures.modernPackage
         expectedPackage.dependencies.append(.init(url: "https://github.com/jakeheis/SwiftCLI", requirement: .range("5.2.0", "6.0.0")))
-        XCTAssertEqual(package.data, expectedPackage)
+        IceAssertEqual(package.data, expectedPackage)
     }
     
     func testUpdateDependency() throws {
@@ -57,7 +57,7 @@ class PackageTests: XCTestCase {
         
         var expectedPackage = Fixtures.modernPackage
         expectedPackage.dependencies[3].requirement = .branch("master")
-        XCTAssertEqual(package.data, expectedPackage)
+        IceAssertEqual(package.data, expectedPackage)
     }
     
     func testRemoveDependency() throws {
@@ -72,16 +72,16 @@ class PackageTests: XCTestCase {
         
         var expectedDependencies = Fixtures.modernPackage.dependencies
         expectedDependencies.remove(at: 2)
-        XCTAssertEqual(package.dependencies, expectedDependencies)
+        IceAssertEqual(package.dependencies, expectedDependencies)
         
         var expectedTargets = Fixtures.modernPackage.targets
         expectedTargets[3].dependencies = [.byName("Core")]
         
-        XCTAssertEqual(package.targets, expectedTargets)
-        XCTAssertEqual(package.targets[0], expectedTargets[0])
-        XCTAssertEqual(package.targets[1], expectedTargets[1])
-        XCTAssertEqual(package.targets[2], expectedTargets[2])
-        XCTAssertEqual(package.targets[3], expectedTargets[3])
+        IceAssertEqual(package.targets, expectedTargets)
+        IceAssertEqual(package.targets[0], expectedTargets[0])
+        IceAssertEqual(package.targets[1], expectedTargets[1])
+        IceAssertEqual(package.targets[2], expectedTargets[2])
+        IceAssertEqual(package.targets[3], expectedTargets[3])
     }
     
     func testAddTarget() {
@@ -91,7 +91,7 @@ class PackageTests: XCTestCase {
         
         var expectedPackage = Fixtures.modernPackage
         expectedPackage.targets.append(.init(name: "CoreTests", type: .test, dependencies: [.byName("Core")]))
-        XCTAssertEqual(package.data, expectedPackage)
+        IceAssertEqual(package.data, expectedPackage)
     }
     
     func testDepend() throws {
@@ -108,7 +108,7 @@ class PackageTests: XCTestCase {
         var expectedPackage = Fixtures.modernPackage
         expectedPackage.targets[2].dependencies = [.byName("SwiftCLI")]
         expectedPackage.targets[3].dependencies += [.target("CLI")]
-        XCTAssertEqual(package.data, expectedPackage)
+        IceAssertEqual(package.data, expectedPackage)
     }
     
     func testRemoveTarget() throws {
@@ -127,10 +127,10 @@ class PackageTests: XCTestCase {
         expectedPackage.targets[1].dependencies.remove(at: 1)
         expectedPackage.targets[2].dependencies.removeFirst()
         
-        XCTAssertEqual(package.data, expectedPackage)
-        XCTAssertEqual(package.data.targets[0], expectedPackage.targets[0])
-        XCTAssertEqual(package.data.targets[1], expectedPackage.targets[1])
-        XCTAssertEqual(package.data.targets[2], expectedPackage.targets[2])
+        IceAssertEqual(package.data, expectedPackage)
+        IceAssertEqual(package.data.targets[0], expectedPackage.targets[0])
+        IceAssertEqual(package.data.targets[1], expectedPackage.targets[1])
+        IceAssertEqual(package.data.targets[2], expectedPackage.targets[2])
     }
     
     private func createPackage() -> Package {

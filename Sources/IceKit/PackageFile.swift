@@ -34,8 +34,10 @@ public struct PackageFile {
         
         var current = directory
         while true {
+            Logger.verbose <<< "searching for package in \(current)"
             let path = PackageFile.formPackagePath(in: current, versionTag: nil)
             if path.exists {
+                Logger.verbose <<< "found package in \(current)"
                 return PackageFile(directory: current, compilerVersion: compilerVersion)
             }
             let parent = current.parent()

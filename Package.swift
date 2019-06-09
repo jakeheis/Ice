@@ -10,11 +10,11 @@ let package = Package(
         .library(name: "IceKit", targets: ["IceKit"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/jakeheis/Icebox", from: "0.0.2"),
-        .package(url: "https://github.com/kylef/PathKit", from: "0.9.1"),
+        .package(url: "https://github.com/jakeheis/Icebox", from: "0.0.6"),
+        .package(url: "https://github.com/kylef/PathKit", from: "0.9.0"),
         .package(url: "https://github.com/onevcat/Rainbow", from: "3.1.1"),
         .package(url: "https://github.com/jakeheis/SwiftCLI", from: "5.3.0"),
-        .package(url: "https://github.com/scottrhoyt/SwiftyTextTable", from: "0.8.0"),
+        .package(url: "https://github.com/scottrhoyt/SwiftyTextTable", from: "0.9.0"),
     ],
     targets: [
         .target(name: "Ice", dependencies: ["IceCLI"]),

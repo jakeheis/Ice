@@ -15,9 +15,9 @@ class ToolsVersionTests: XCTestCase {
         let icebox = IceBox(template: .lib)
         
         let result = icebox.run("tools-version", "get")
-        XCTAssertEqual(result.exitStatus, 0)
-        XCTAssertEqual(result.stderr, "")
-        XCTAssertEqual(result.stdout, "Swift tools version: 4.0\n")
+        IceAssertEqual(result.exitStatus, 0)
+        IceAssertEqual(result.stderr, "")
+        IceAssertEqual(result.stdout, "Swift tools version: 4.0\n")
     }
     
     func testUpdate() {
@@ -43,11 +43,11 @@ class ToolsVersionTests: XCTestCase {
         """)
         
         let result = icebox.run("tools-version", "update", "4.2")
-        XCTAssertEqual(result.exitStatus, 0)
-        XCTAssertEqual(result.stderr, "")
-        XCTAssertEqual(result.stdout, "")
+        IceAssertEqual(result.exitStatus, 0)
+        IceAssertEqual(result.stderr, "")
+        IceAssertEqual(result.stdout, "")
         
-        XCTAssertEqual(icebox.fileContents("Package.swift"), """
+        IceAssertEqual(icebox.fileContents("Package.swift"), """
         // swift-tools-version:4.2
         // Managed by ice
 
@@ -92,11 +92,11 @@ class ToolsVersionTests: XCTestCase {
         """)
         
         let result = icebox.run("tools-version", "update", "4.2", "-t")
-        XCTAssertEqual(result.exitStatus, 0)
-        XCTAssertEqual(result.stderr, "")
-        XCTAssertEqual(result.stdout, "")
+        IceAssertEqual(result.exitStatus, 0)
+        IceAssertEqual(result.stderr, "")
+        IceAssertEqual(result.stdout, "")
         
-        XCTAssertEqual(icebox.fileContents("Package.swift"), """
+        IceAssertEqual(icebox.fileContents("Package.swift"), """
         // swift-tools-version:4.0
         // Managed by ice
 
@@ -116,7 +116,7 @@ class ToolsVersionTests: XCTestCase {
         
         """)
         
-        XCTAssertEqual(icebox.fileContents("Package@swift-4.2.swift"), """
+        IceAssertEqual(icebox.fileContents("Package@swift-4.2.swift"), """
         // swift-tools-version:4.2
         // Managed by ice
 

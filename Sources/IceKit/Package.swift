@@ -200,12 +200,14 @@ public struct Package {
     
     public mutating func sync(format: Bool? = nil) throws {
         if !dirty {
+            Logger.verbose <<< "package not dirty, sync complete"
             return
         }
         
         guard let fileStream = WriteStream.for(path: path.string, appending: false) else  {
             throw IceError(message: "couldn't write to \(path)")
         }
+        Logger.verbose <<< "syncing package to \(path.string)"
         try write(to: fileStream, format: format)
         fileStream.truncateRemaining()
         dirty = false
@@ -213,6 +215,7 @@ public struct Package {
     
     public func write(to stream: WritableStream, format: Bool? = nil) throws {
         let shouldFormat = format ?? config.reformat
+        Logger.verbose <<< "writing \(shouldFormat ? "" : "non-")formatted package"
         let packageData = shouldFormat ? PackageFormatter(package: data).format() : data
         let writer = try PackageWriter(package: packageData, toolsVersion: toolsVersion)
         try writer.write(to: stream)

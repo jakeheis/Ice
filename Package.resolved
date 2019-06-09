@@ -24,8 +24,8 @@
         "repositoryURL": "https://github.com/onevcat/Rainbow",
         "state": {
           "branch": null,
-          "revision": "797a68d0a642609424b08f11eb56974a54d5f6e2",
-          "version": "3.1.4"
+          "revision": "9c52c1952e9b2305d4507cf473392ac2d7c9b155",
+          "version": "3.1.5"
         }
       },
       {
@@ -51,8 +51,8 @@
         "repositoryURL": "https://github.com/scottrhoyt/SwiftyTextTable",
         "state": {
           "branch": null,
-          "revision": "7b8661865f0d9590a4b7c146237fecd99f3d8406",
-          "version": "0.8.2"
+          "revision": "c6df6cf533d120716bff38f8ff9885e1ce2a4ac3",
+          "version": "0.9.0"
         }
       }
     ]

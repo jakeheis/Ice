@@ -17,9 +17,9 @@ class CleanTests: XCTestCase {
         XCTAssertTrue(icebox.fileExists(".build/debug"))
         
         let binResult = icebox.run("clean")
-        XCTAssertEqual(binResult.exitStatus, 0)
-        XCTAssertEqual(binResult.stderr, "")
-        XCTAssertEqual(binResult.stdout, "")
+        IceAssertEqual(binResult.exitStatus, 0)
+        IceAssertEqual(binResult.stderr, "")
+        IceAssertEqual(binResult.stdout, "")
         
         XCTAssertFalse(icebox.fileExists(".build/debug"))
     }

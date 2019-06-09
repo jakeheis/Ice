@@ -14,13 +14,13 @@ class UpdateTests: XCTestCase {
         let icebox = IceBox(template: .exec)
         
         let buildResult = icebox.run("build")
-        XCTAssertEqual(buildResult.exitStatus, 0)
-        XCTAssertEqual(buildResult.stderr, "")
+        IceAssertEqual(buildResult.exitStatus, 0)
+        IceAssertEqual(buildResult.stderr, "")
         
         let result = icebox.run("update")
-        XCTAssertEqual(result.exitStatus, 0)
-        XCTAssertEqual(result.stderr, "")
-        XCTAssertEqual(result.stdout, """
+        IceAssertEqual(result.exitStatus, 0)
+        IceAssertEqual(result.stderr, "")
+        IceAssertEqual(result.stdout, """
         Update https://github.com/jakeheis/SwiftCLI
         Resolve https://github.com/jakeheis/SwiftCLI at 4.3.2
         
@@ -31,15 +31,15 @@ class UpdateTests: XCTestCase {
         let icebox = IceBox(template: .exec)
         
         let buildResult = icebox.run("build")
-        XCTAssertEqual(buildResult.exitStatus, 0)
-        XCTAssertEqual(buildResult.stderr, "")
+        IceAssertEqual(buildResult.exitStatus, 0)
+        IceAssertEqual(buildResult.stderr, "")
         
         let result = icebox.run("update", "SwiftCLI", "--from=5.0.0")
-        XCTAssertEqual(result.exitStatus, 0)
-        XCTAssertEqual(result.stderr, "")
-        XCTAssertEqual(result.stdout, "")
+        IceAssertEqual(result.exitStatus, 0)
+        IceAssertEqual(result.stderr, "")
+        IceAssertEqual(result.stdout, "")
         
-        XCTAssertEqual(icebox.fileContents("Package.swift"), """
+        IceAssertEqual(icebox.fileContents("Package.swift"), """
         // swift-tools-version:4.0
         // Managed by ice
 

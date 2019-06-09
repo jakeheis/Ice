@@ -22,14 +22,14 @@ class PackageDataTests: XCTestCase {
         let parsed = try JSONDecoder().decode(PackageDataV4_0.self, from: data)
         let package = Package(data: parsed.convertToModern(), toolsVersion: .v4, path: packagePath, config: mockConfig)
         
-        XCTAssertEqual(package.toolsVersion, SwiftToolsVersion(major: 4, minor: 0, patch: 0))
-        XCTAssertEqual(package.dirty, false)
+        IceAssertEqual(package.toolsVersion, SwiftToolsVersion(major: 4, minor: 0, patch: 0))
+        IceAssertEqual(package.dirty, false)
         
         let captureStream = CaptureStream()
         try package.write(to: captureStream)
         captureStream.closeWrite()
         
-        XCTAssertEqual(captureStream.readAll(), """
+        IceAssertEqual(captureStream.readAll(), """
         // swift-tools-version:4.0
         // Managed by ice
 
@@ -69,14 +69,14 @@ class PackageDataTests: XCTestCase {
         let parsed = try JSONDecoder().decode(PackageDataV4_2.self, from: data)
         let package = Package(data: parsed.convertToModern(), toolsVersion: .v4_2, path: packagePath, config: mockConfig)
         
-        XCTAssertEqual(package.toolsVersion, SwiftToolsVersion(major: 4, minor: 2, patch: 0))
-        XCTAssertEqual(package.dirty, false)
+        IceAssertEqual(package.toolsVersion, SwiftToolsVersion(major: 4, minor: 2, patch: 0))
+        IceAssertEqual(package.dirty, false)
         
         let captureStream = CaptureStream()
         try package.write(to: captureStream)
         captureStream.closeWrite()
         
-        XCTAssertEqual(captureStream.readAll(), """
+        IceAssertEqual(captureStream.readAll(), """
         // swift-tools-version:4.2
         // Managed by ice
 
@@ -126,14 +126,14 @@ class PackageDataTests: XCTestCase {
         let parsed = try JSONDecoder().decode(PackageDataV5_0.self, from: data)
         let package = Package(data: parsed, toolsVersion: .v5, path: packagePath, config: mockConfig)
         
-        XCTAssertEqual(package.toolsVersion, SwiftToolsVersion(major: 5, minor: 0, patch: 0))
-        XCTAssertEqual(package.dirty, false)
+        IceAssertEqual(package.toolsVersion, SwiftToolsVersion(major: 5, minor: 0, patch: 0))
+        IceAssertEqual(package.dirty, false)
         
         let captureStream = CaptureStream()
         try package.write(to: captureStream)
         captureStream.closeWrite()
         
-        XCTAssertEqual(captureStream.readAll(), """
+        IceAssertEqual(captureStream.readAll(), """
         // swift-tools-version:5.0
         // Managed by ice
 
@@ -202,7 +202,7 @@ class PackageDataTests: XCTestCase {
         expected.swiftLanguageVersions?.removeLast() // Remove non-integer version
         expected.platforms = [] // Remove platforms
         
-        XCTAssertEqual(modernized, expected)
+        IceAssertEqual(modernized, expected)
     }
     
     func testModernize4_2() {
@@ -212,20 +212,20 @@ class PackageDataTests: XCTestCase {
         expected.targets.removeLast() // Remove settings target
         expected.platforms = [] // Remove platforms
         
-        XCTAssertEqual(modernized, expected)
+        IceAssertEqual(modernized, expected)
     }
 
     func testSwiftToolsVersion() {
         let fourTwo = SwiftToolsVersion(major: 4, minor: 2, patch: 0)
         
-        XCTAssertEqual(fourTwo, .v4_2)
+        IceAssertEqual(fourTwo, .v4_2)
         XCTAssertNotEqual(fourTwo, .v4)
         
         XCTAssertGreaterThan(fourTwo, .v4)
         
-        XCTAssertEqual(fourTwo.description, "4.2")
-        XCTAssertEqual(fourTwo, SwiftToolsVersion("4.2.0"))
-        XCTAssertEqual(fourTwo, SwiftToolsVersion("4.2"))
+        IceAssertEqual(fourTwo.description, "4.2")
+        IceAssertEqual(fourTwo, SwiftToolsVersion("4.2.0"))
+        IceAssertEqual(fourTwo, SwiftToolsVersion("4.2"))
     }
     
 }

@@ -12,9 +12,9 @@ class SearchTests: XCTestCase {
     
     func testFullSearch() {
         let result = IceBox(template: .empty).run("search", "RxSwift")
-        XCTAssertEqual(result.exitStatus, 0)
-        XCTAssertEqual(result.stderr, "")
-        XCTAssertEqual(result.stdout!, """
+        IceAssertEqual(result.exitStatus, 0)
+        IceAssertEqual(result.stderr, "")
+        IceAssertEqual(result.stdout!, """
         
         ● Name: RxSwift
           URL: https://github.com/ReactiveX/RxSwift
@@ -50,9 +50,9 @@ class SearchTests: XCTestCase {
     
     func testNameSearch() {
         let result = IceBox(template: .empty).run("search", "RxSwift", "-n")
-        XCTAssertEqual(result.exitStatus, 0)
-        XCTAssertEqual(result.stderr, "")
-        XCTAssertEqual(result.stdout, """
+        IceAssertEqual(result.exitStatus, 0)
+        IceAssertEqual(result.stderr, "")
+        IceAssertEqual(result.stdout, """
         
         ● Name: RxSwift
           URL: https://github.com/ReactiveX/RxSwift
@@ -64,9 +64,9 @@ class SearchTests: XCTestCase {
     
     func testNoResults() {
         let result = IceBox(template: .empty).run("search", "NotRealPackage", "-n")
-        XCTAssertEqual(result.exitStatus, 0)
-        XCTAssertEqual(result.stderr, "")
-        XCTAssertEqual(result.stdout, """
+        IceAssertEqual(result.exitStatus, 0)
+        IceAssertEqual(result.stderr, "")
+        IceAssertEqual(result.stdout, """
         Warning: no results found
         
         Try a Github search: https://github.com/search?q=NotRealPackage+language:swift&s=stars

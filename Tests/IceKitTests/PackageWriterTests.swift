@@ -17,7 +17,7 @@ class PackageWriterTests: XCTestCase {
         try writer.write(to: capture)
         capture.closeWrite()
         
-        XCTAssertEqual(capture.readAll(), """
+        IceAssertEqual(capture.readAll(), """
         // swift-tools-version:4.0
         // Managed by ice
 
@@ -64,7 +64,7 @@ class PackageWriterTests: XCTestCase {
         try writer.write(to: capture)
         capture.closeWrite()
         
-        XCTAssertEqual(capture.readAll(), """
+        IceAssertEqual(capture.readAll(), """
         // swift-tools-version:4.2
         // Managed by ice
         
@@ -116,7 +116,7 @@ class PackageWriterTests: XCTestCase {
         try writer.write(to: capture)
         capture.closeWrite()
         
-        XCTAssertEqual(capture.readAll(), """
+        IceAssertEqual(capture.readAll(), """
         // swift-tools-version:5.0
         // Managed by ice
         
@@ -181,7 +181,7 @@ class PackageWriterTests: XCTestCase {
         try writer.write(to: capture)
         capture.closeWrite()
         
-        XCTAssertEqual(capture.readAll(), """
+        IceAssertEqual(capture.readAll(), """
         // swift-tools-version:5.0
         // Managed by ice
 
@@ -199,7 +199,7 @@ class PackageWriterTests: XCTestCase {
     }
     
     func testPlatorms() {
-        XCTAssertEqual(write5_0 { $0.addPlatforms(to: &$1) }, """
+        IceAssertEqual(write5_0 { $0.addPlatforms(to: &$1) }, """
             platforms: [
                 .macOS(.v10_14),
                 .iOS(.v12),
@@ -217,13 +217,13 @@ class PackageWriterTests: XCTestCase {
             ]
         """
             
-        XCTAssertEqual(write4_0 { $0.addProducts(to: &$1) }, expected)
-        XCTAssertEqual(write4_2 { $0.addProducts(to: &$1) }, expected)
-        XCTAssertEqual(write5_0 { $0.addProducts(to: &$1) }, expected)
+        IceAssertEqual(write4_0 { $0.addProducts(to: &$1) }, expected)
+        IceAssertEqual(write4_2 { $0.addProducts(to: &$1) }, expected)
+        IceAssertEqual(write5_0 { $0.addProducts(to: &$1) }, expected)
     }
     
     func testDependencies() {
-        XCTAssertEqual(write4_0 { $0.addDependencies(to: &$1) }, """
+        IceAssertEqual(write4_0 { $0.addDependencies(to: &$1) }, """
             dependencies: [
                 .package(url: "https://github.com/jakeheis/SwiftCLI", .branch("swift4")),
                 .package(url: "https://github.com/jakeheis/Spawn", .exact("0.0.4")),
@@ -246,12 +246,12 @@ class PackageWriterTests: XCTestCase {
             ]
         """
         
-        XCTAssertEqual(write4_2 { $0.addDependencies(to: &$1) }, expected)
-        XCTAssertEqual(write5_0 { $0.addDependencies(to: &$1) }, expected)
+        IceAssertEqual(write4_2 { $0.addDependencies(to: &$1) }, expected)
+        IceAssertEqual(write5_0 { $0.addDependencies(to: &$1) }, expected)
     }
     
     func testTargets() throws {
-        XCTAssertEqual(write4_0 { $0.addTargets(to: &$1) }, """
+        IceAssertEqual(write4_0 { $0.addTargets(to: &$1) }, """
             targets: [
                 .target(name: "CLI", dependencies: ["Core", .product(name: "FileKit")]),
                 .testTarget(name: "CLITests", dependencies: [.target(name: "CLI"), "Core"]),
@@ -260,7 +260,7 @@ class PackageWriterTests: XCTestCase {
             ]
         """)
         
-        XCTAssertEqual(write4_2 { $0.addTargets(to: &$1) }, """
+        IceAssertEqual(write4_2 { $0.addTargets(to: &$1) }, """
             targets: [
                 .target(name: "CLI", dependencies: ["Core", .product(name: "FileKit")]),
                 .testTarget(name: "CLITests", dependencies: [.target(name: "CLI"), "Core"]),
@@ -273,7 +273,7 @@ class PackageWriterTests: XCTestCase {
             ]
         """)
         
-        XCTAssertEqual(write5_0 { $0.addTargets(to: &$1) }, """
+        IceAssertEqual(write5_0 { $0.addTargets(to: &$1) }, """
             targets: [
                 .target(name: "CLI", dependencies: ["Core", .product(name: "FileKit")]),
                 .testTarget(name: "CLITests", dependencies: [.target(name: "CLI"), "Core"]),
@@ -304,21 +304,21 @@ class PackageWriterTests: XCTestCase {
             ]
         """
         
-        XCTAssertEqual(write4_0 { $0.addProviders(to: &$1) }, expected)
-        XCTAssertEqual(write4_2 { $0.addProviders(to: &$1) }, expected)
-        XCTAssertEqual(write5_0 { $0.addProviders(to: &$1) }, expected)
+        IceAssertEqual(write4_0 { $0.addProviders(to: &$1) }, expected)
+        IceAssertEqual(write4_2 { $0.addProviders(to: &$1) }, expected)
+        IceAssertEqual(write5_0 { $0.addProviders(to: &$1) }, expected)
     }
     
     func testSwiftLanguageVersions() throws {
-        XCTAssertEqual(write4_0 { $0.addSwiftLanguageVersions(to: &$1) }, """
+        IceAssertEqual(write4_0 { $0.addSwiftLanguageVersions(to: &$1) }, """
             swiftLanguageVersions: [3, 4]
         """)
         
         let expected = """
             swiftLanguageVersions: [.v3, .v4, .v4_2]
         """
-        XCTAssertEqual(write4_2 { $0.addSwiftLanguageVersions(to: &$1) }, expected)
-        XCTAssertEqual(write5_0 { $0.addSwiftLanguageVersions(to: &$1) }, expected)
+        IceAssertEqual(write4_2 { $0.addSwiftLanguageVersions(to: &$1) }, expected)
+        IceAssertEqual(write5_0 { $0.addSwiftLanguageVersions(to: &$1) }, expected)
     }
     
     func testCLanguageStandard() {
@@ -326,9 +326,9 @@ class PackageWriterTests: XCTestCase {
             cLanguageStandard: .iso9899_199409
         """
         
-        XCTAssertEqual(write4_0 { $0.addCLangaugeStandard(to: &$1) }, expected)
-        XCTAssertEqual(write4_2 { $0.addCLangaugeStandard(to: &$1) }, expected)
-        XCTAssertEqual(write5_0 { $0.addCLangaugeStandard(to: &$1) }, expected)
+        IceAssertEqual(write4_0 { $0.addCLangaugeStandard(to: &$1) }, expected)
+        IceAssertEqual(write4_2 { $0.addCLangaugeStandard(to: &$1) }, expected)
+        IceAssertEqual(write5_0 { $0.addCLangaugeStandard(to: &$1) }, expected)
     }
     
     func testCxxLanguageStandard() {
@@ -336,9 +336,9 @@ class PackageWriterTests: XCTestCase {
             cxxLanguageStandard: .gnucxx1z
         """
         
-        XCTAssertEqual(write4_0 { $0.addCxxLangaugeStandard(to: &$1) }, expected)
-        XCTAssertEqual(write4_2 { $0.addCxxLangaugeStandard(to: &$1) }, expected)
-        XCTAssertEqual(write5_0 { $0.addCxxLangaugeStandard(to: &$1) }, expected)
+        IceAssertEqual(write4_0 { $0.addCxxLangaugeStandard(to: &$1) }, expected)
+        IceAssertEqual(write4_2 { $0.addCxxLangaugeStandard(to: &$1) }, expected)
+        IceAssertEqual(write5_0 { $0.addCxxLangaugeStandard(to: &$1) }, expected)
     }
     
     func testCanWrite() {

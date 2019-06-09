@@ -420,7 +420,7 @@ class TestTransformTests: XCTestCase {
     
     func testXCTEquals() {
         let test = createTest(TestSuite(mode: .all))
-        test.send(assertionFailure(assertion: "XCTAssertEqual failed: (\"Hello, World!\") is not equal to (\"Hello, Worldddd!\") - "))
+        test.send(assertionFailure(assertion: "IceAssertEqual failed: (\"Hello, World!\") is not equal to (\"Hello, Worldddd!\") - "))
         test.expect(failedTest(failure: """
         \tExpected:
         \tHello, Worldddd!
@@ -429,7 +429,7 @@ class TestTransformTests: XCTestCase {
         """))
         
         let test5 = createTest(TestSuite(mode: .all))
-        test5.send(assertionFailure(assertion: "XCTAssertEqual failed: (\"Hello, World!\") is not equal to (\"Hello, Worldddd!\")"))
+        test5.send(assertionFailure(assertion: "IceAssertEqual failed: (\"Hello, World!\") is not equal to (\"Hello, Worldddd!\")"))
         test5.expect(failedTest(failure: """
         \tExpected:
         \tHello, Worldddd!
@@ -440,7 +440,7 @@ class TestTransformTests: XCTestCase {
     
     func testXCTEqualWithAccuracy() {
         let test = createTest(TestSuite(mode: .all))
-        test.send(assertionFailure(assertion: "XCTAssertEqualWithAccuracy failed: (\"4.0\") is not equal to (\"5.0\") +/- (\"0.5\") - "))
+        test.send(assertionFailure(assertion: "IceAssertEqualWithAccuracy failed: (\"4.0\") is not equal to (\"5.0\") +/- (\"0.5\") - "))
         test.expect(failedTest(failure: """
         \tExpected:
         \t5.0 (+/- 0.5)
@@ -612,7 +612,7 @@ class TestTransformTests: XCTestCase {
     func testMultilineEquality() {
         let test = createTest(TestSuite(mode: .all))
         test.send(assertionFailure(assertion: """
-        XCTAssertEqual failed: ("first line
+        IceAssertEqual failed: ("first line
         second line") is not equal to ("first line
         third line\") -
         """ + " "))

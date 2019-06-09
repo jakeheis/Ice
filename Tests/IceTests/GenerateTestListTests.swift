@@ -17,16 +17,16 @@ class GenerateTestListTests: XCTestCase {
         
         Differentiate.byPlatform(mac: {
             Differentiate.byVersion(swift5AndAbove: {
-                XCTAssertEqual(result.exitStatus, 0)
-                XCTAssertEqual(result.stderr, "")
-                XCTAssertEqual(result.stdout!, """
+                IceAssertEqual(result.exitStatus, 0)
+                IceAssertEqual(result.stderr, "")
+                IceAssertEqual(result.stdout!, """
                 Compile Lib (1 sources)
                 Compile LibTests (1 sources)
                 Link ./.build/x86_64-apple-macosx/debug/LibPackageTests.xctest/Contents/MacOS/LibPackageTests
                 
                 """)
                 
-                XCTAssertEqual(icebox.fileContents("Tests/LinuxMain.swift")!, """
+                IceAssertEqual(icebox.fileContents("Tests/LinuxMain.swift")!, """
                 import XCTest
                 
                 import LibTests
@@ -38,7 +38,7 @@ class GenerateTestListTests: XCTestCase {
 
                 """)
                 
-                XCTAssertEqual(icebox.fileContents("Tests/LibTests/XCTestManifests.swift")!, """
+                IceAssertEqual(icebox.fileContents("Tests/LibTests/XCTestManifests.swift")!, """
                 #if !canImport(ObjectiveC)
                 import XCTest
                 
@@ -60,16 +60,16 @@ class GenerateTestListTests: XCTestCase {
                 
                 """)
             }, swift4_1AndAbove: {
-                XCTAssertEqual(result.exitStatus, 0)
-                XCTAssertEqual(result.stderr, "")
-                XCTAssertEqual(result.stdout, """
+                IceAssertEqual(result.exitStatus, 0)
+                IceAssertEqual(result.stderr, "")
+                IceAssertEqual(result.stdout, """
                 Compile Lib (1 sources)
                 Compile LibTests (1 sources)
                 Link ./.build/x86_64-apple-macosx10.10/debug/LibPackageTests.xctest/Contents/MacOS/LibPackageTests
                 
                 """)
                 
-                XCTAssertEqual(icebox.fileContents("Tests/LinuxMain.swift"), """
+                IceAssertEqual(icebox.fileContents("Tests/LinuxMain.swift"), """
                 import XCTest
                 
                 import LibTests
@@ -81,7 +81,7 @@ class GenerateTestListTests: XCTestCase {
 
                 """)
                 
-                XCTAssertEqual(icebox.fileContents("Tests/LibTests/XCTestManifests.swift"), """
+                IceAssertEqual(icebox.fileContents("Tests/LibTests/XCTestManifests.swift"), """
                 import XCTest
 
                 extension LibTests {
@@ -100,9 +100,9 @@ class GenerateTestListTests: XCTestCase {
                 
                 """)
             }, swift4_0AndAbove: {
-                XCTAssertEqual(result.exitStatus, 1)
-                XCTAssertEqual(result.stdout, "")
-                XCTAssertEqual(result.stderr, """
+                IceAssertEqual(result.exitStatus, 1)
+                IceAssertEqual(result.stdout, "")
+                IceAssertEqual(result.stderr, """
                 
                 Error: test list generation only supported for Swift 4.1 and above
                 
@@ -110,9 +110,9 @@ class GenerateTestListTests: XCTestCase {
                 """)
             })
         }, linux: {
-            XCTAssertEqual(result.exitStatus, 1)
-            XCTAssertEqual(result.stdout, "")
-            XCTAssertEqual(result.stderr, """
+            IceAssertEqual(result.exitStatus, 1)
+            IceAssertEqual(result.stdout, "")
+            IceAssertEqual(result.stderr, """
 
             Error: test list generation is not supported on Linux
 

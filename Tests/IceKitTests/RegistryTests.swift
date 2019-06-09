@@ -32,9 +32,9 @@ class RegistryTests: XCTestCase {
             
             let json = try JSONSerialization.jsonObject(with: try localPath.read(), options: []) as! [String: Any]
             let entries = json["entries"] as! [[String: Any]]
-            XCTAssertEqual(entries.count, 1)
-            XCTAssertEqual(entries[0]["name"] as? String, "Ice-fake")
-            XCTAssertEqual(entries[0]["url"] as? String, "https://github.com/jakeheis/Ice-fake")
+            IceAssertEqual(entries.count, 1)
+            IceAssertEqual(entries[0]["name"] as? String, "Ice-fake")
+            IceAssertEqual(entries[0]["url"] as? String, "https://github.com/jakeheis/Ice-fake")
         }
     }
     
@@ -53,8 +53,8 @@ class RegistryTests: XCTestCase {
             let registry = Registry(registryPath: .current)
             
             let entry = registry.get("SwiftCLI-fake")
-            XCTAssertEqual(entry?.name, "SwiftCLI-fake")
-            XCTAssertEqual(entry?.url, "https://github.com/jakeheis/SwiftCLI-fake")
+            IceAssertEqual(entry?.name, "SwiftCLI-fake")
+            IceAssertEqual(entry?.url, "https://github.com/jakeheis/SwiftCLI-fake")
             XCTAssertNil(entry?.description)
         }
     }
@@ -80,7 +80,7 @@ class RegistryTests: XCTestCase {
             
             let json = try JSONSerialization.jsonObject(with: try localPath.read(), options: []) as! [String: Any]
             let entries = json["entries"] as! [[String: Any]]
-            XCTAssertEqual(entries.count, 0)
+            IceAssertEqual(entries.count, 0)
             
             let afterEntry = registry.get("SwiftCLI-fake")
             XCTAssertNil(afterEntry)

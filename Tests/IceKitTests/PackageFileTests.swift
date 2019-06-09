@@ -15,9 +15,9 @@ import XCTest
 class PackageLoaderTests: XCTestCase {
     
     func testFormPackagePath() {
-        XCTAssertEqual(PackageFile.formPackagePath(in: .current, versionTag: nil), .current + "Package.swift")
-        XCTAssertEqual(PackageFile.formPackagePath(in: .current, versionTag: "4.0"), .current + "Package@swift-4.0.swift")
-        XCTAssertEqual(PackageFile.formPackagePath(in: .current, versionTag: "4.1.2"), .current + "Package@swift-4.1.2.swift")
+        IceAssertEqual(PackageFile.formPackagePath(in: .current, versionTag: nil), .current + "Package.swift")
+        IceAssertEqual(PackageFile.formPackagePath(in: .current, versionTag: "4.0"), .current + "Package@swift-4.0.swift")
+        IceAssertEqual(PackageFile.formPackagePath(in: .current, versionTag: "4.1.2"), .current + "Package@swift-4.1.2.swift")
     }
     
     func testFindPackageRoot() {
@@ -26,10 +26,10 @@ class PackageLoaderTests: XCTestCase {
         icebox.inside {
             let root = Path.current
             
-            XCTAssertEqual(PackageFile.find(in: .current)?.path.parent(), root)
+            IceAssertEqual(PackageFile.find(in: .current)?.path.parent(), root)
             
             (root + "Sources").chdir {
-                XCTAssertEqual(PackageFile.find(in: .current)?.path.parent(), root)
+                IceAssertEqual(PackageFile.find(in: .current)?.path.parent(), root)
             }
         }
     }
@@ -61,9 +61,9 @@ class PackageLoaderTests: XCTestCase {
             let base = Path.current + "Package.swift"
             let specific = Path.current + "Package@swift-4.2.swift"
             
-            XCTAssertEqual(PackageFile(directory: .current, compilerVersion: .v4)?.path, base)
-            XCTAssertEqual(PackageFile(directory: .current, compilerVersion: .v4_2)?.path, specific)
-            XCTAssertEqual(PackageFile(directory: .current, compilerVersion: .v5)?.path, base)
+            IceAssertEqual(PackageFile(directory: .current, compilerVersion: .v4)?.path, base)
+            IceAssertEqual(PackageFile(directory: .current, compilerVersion: .v4_2)?.path, specific)
+            IceAssertEqual(PackageFile(directory: .current, compilerVersion: .v5)?.path, base)
             XCTAssertNil(PackageFile(directory: .current + "Sources", compilerVersion: .v5))
         }
     }
@@ -106,13 +106,13 @@ class PackageLoaderTests: XCTestCase {
                 if path.isSymlink {
                     path = try! path.symlinkDestination()
                 }
-                XCTAssertEqual(path, Path("Package.swift").absolute())
-                XCTAssertEqual(file.path, package.path)
+                IceAssertEqual(path, Path("Package.swift").absolute())
+                IceAssertEqual(file.path, package.path)
                 
-                XCTAssertEqual(file.toolsVersion, .v5)
-                XCTAssertEqual(package.toolsVersion, .v5)
+                IceAssertEqual(file.toolsVersion, .v5)
+                IceAssertEqual(package.toolsVersion, .v5)
                 
-                XCTAssertEqual(package.data.platforms, Fixtures.package5_0.platforms)
+                IceAssertEqual(package.data.platforms, Fixtures.package5_0.platforms)
                 
             }
         }, swift4_0AndAbove: {

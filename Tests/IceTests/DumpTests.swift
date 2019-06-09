@@ -16,55 +16,108 @@ class DumpTests: XCTestCase {
         IceAssertEqual(result.stderr, "")
         
         Differentiate.byVersion(swift5AndAbove: {
-            IceAssertEqual(result.stdout, """
-            {
-              "cLanguageStandard" : null,
-              "cxxLanguageStandard" : null,
-              "dependencies" : [
+            Differentiate.byPlatform(mac: {
+                IceAssertEqual(result.stdout, """
                 {
-                  "requirement" : {
-                    "range" : [
-                      {
-                        "lowerBound" : "4.0.3",
-                        "upperBound" : "5.0.0"
-                      }
-                    ]
-                  },
-                  "url" : "https:\\/\\/github.com\\/jakeheis\\/SwiftCLI"
-                }
-              ],
-              "manifestVersion" : "v4",
-              "name" : "Exec",
-              "pkgConfig" : null,
-              "platforms" : [
-            
-              ],
-              "products" : [
-
-              ],
-              "providers" : null,
-              "swiftLanguageVersions" : null,
-              "targets" : [
-                {
+                  "cLanguageStandard" : null,
+                  "cxxLanguageStandard" : null,
                   "dependencies" : [
                     {
-                      "byName" : [
-                        "SwiftCLI"
-                      ]
+                      "requirement" : {
+                        "range" : [
+                          {
+                            "lowerBound" : "4.0.3",
+                            "upperBound" : "5.0.0"
+                          }
+                        ]
+                      },
+                      "url" : "https:\\/\\/github.com\\/jakeheis\\/SwiftCLI"
                     }
                   ],
-                  "exclude" : [
-
-                  ],
+                  "manifestVersion" : "v4",
                   "name" : "Exec",
-                  "settings" : [
+                  "pkgConfig" : null,
+                  "platforms" : [
 
                   ],
-                  "type" : "regular"
+                  "products" : [
+
+                  ],
+                  "providers" : null,
+                  "swiftLanguageVersions" : null,
+                  "targets" : [
+                    {
+                      "dependencies" : [
+                        {
+                          "byName" : [
+                            "SwiftCLI"
+                          ]
+                        }
+                      ],
+                      "exclude" : [
+
+                      ],
+                      "name" : "Exec",
+                      "settings" : [
+
+                      ],
+                      "type" : "regular"
+                    }
+                  ]
                 }
-              ]
-            }
-            """)
+                """)
+            }, linux: {
+                IceAssertEqual(result.stdout, """
+                {
+                  "cLanguageStandard" : null,
+                  "cxxLanguageStandard" : null,
+                  "dependencies" : [
+                    {
+                      "requirement" : {
+                        "range" : [
+                          {
+                            "lowerBound" : "4.0.3",
+                            "upperBound" : "5.0.0"
+                          }
+                        ]
+                      },
+                      "url" : "https:\\/\\/github.com\\/jakeheis\\/SwiftCLI"
+                    }
+                  ],
+                  "manifestVersion" : "v4",
+                  "name" : "Exec",
+                  "pkgConfig" : null,
+                  "platforms" : [
+                    \n\
+                  ],
+                  "products" : [
+                    \n\
+                  ],
+                  "providers" : null,
+                  "swiftLanguageVersions" : null,
+                  "targets" : [
+                    {
+                      "dependencies" : [
+                        {
+                          "byName" : [
+                            "SwiftCLI"
+                          ]
+                        }
+                      ],
+                      "exclude" : [
+                        \n\
+                      ],
+                      "name" : "Exec",
+                      "settings" : [
+                        \n\
+                      ],
+                      "type" : "regular"
+                    }
+                  ]
+                }
+                """)
+            })
+            
         }, swift4_2AndAbove: {
             IceAssertEqual(result.stdout, """
             {

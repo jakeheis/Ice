@@ -16,9 +16,9 @@ class RunTests: XCTestCase {
         icebox.run("build")
 
         let result = icebox.run("run")
-        XCTAssertEqual(result.exitStatus, 0)
-        XCTAssertEqual(result.stderr, "")
-        XCTAssertEqual(result.stdout, """
+        IceAssertEqual(result.exitStatus, 0)
+        IceAssertEqual(result.stderr, "")
+        IceAssertEqual(result.stdout, """
         Hello, world!
         
         """)
@@ -40,8 +40,8 @@ class RunTests: XCTestCase {
             }
             
             let result = icebox.run("run", "-w")
-            XCTAssertEqual(result.exitStatus, 2)
-            XCTAssertEqual(result.stderr, "")
+            IceAssertEqual(result.exitStatus, 2)
+            IceAssertEqual(result.stderr, "")
             result.assertStdout { (v) in
                 v.equals("[ice] restarting due to changes...")
                 v.equals("Hello, world!")
@@ -55,9 +55,9 @@ class RunTests: XCTestCase {
             #endif
         }, linux: {
             let result = icebox.run("run", "-w")
-            XCTAssertEqual(result.exitStatus, 1)
-            XCTAssertEqual(result.stdout, "")
-            XCTAssertEqual(result.stderr, """
+            IceAssertEqual(result.exitStatus, 1)
+            IceAssertEqual(result.stdout, "")
+            IceAssertEqual(result.stderr, """
             
             Error: -w is not supported on Linux
             

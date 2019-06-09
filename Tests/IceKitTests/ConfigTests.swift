@@ -30,9 +30,9 @@ class ConfigTests: XCTestCase {
         """)
         
         let config = ConfigManager(global: directory, local: directory)
-        XCTAssertEqual(config.local.reformat, nil)
-        XCTAssertEqual(config.global.reformat, true)
-        XCTAssertEqual(config.resolved.reformat, true)
+        IceAssertEqual(config.local.reformat, nil)
+        IceAssertEqual(config.global.reformat, true)
+        IceAssertEqual(config.resolved.reformat, true)
         
         try! localPath.write("""
         {
@@ -41,9 +41,9 @@ class ConfigTests: XCTestCase {
         """)
         
         let config2 = ConfigManager(global: directory, local: directory)
-        XCTAssertEqual(config2.local.reformat, false)
-        XCTAssertEqual(config2.global.reformat, true)
-        XCTAssertEqual(config2.resolved.reformat, false)
+        IceAssertEqual(config2.local.reformat, false)
+        IceAssertEqual(config2.global.reformat, true)
+        IceAssertEqual(config2.resolved.reformat, false)
     }
     
     func testSet() throws {
@@ -54,25 +54,25 @@ class ConfigTests: XCTestCase {
         """)
 
         let config = ConfigManager(global: directory, local: directory)
-        XCTAssertEqual(config.resolved.reformat, true)
+        IceAssertEqual(config.resolved.reformat, true)
         
         try config.update(scope: .global) { $0.reformat = false }
         
         let object = try! JSONSerialization.jsonObject(with: globalPath.read(), options: []) as! [String: Bool]
-        XCTAssertEqual(object["reformat"], false)
+        IceAssertEqual(object["reformat"], false)
         
-        XCTAssertEqual(config.local.reformat, nil)
-        XCTAssertEqual(config.global.reformat, false)
-        XCTAssertEqual(config.resolved.reformat, false)
+        IceAssertEqual(config.local.reformat, nil)
+        IceAssertEqual(config.global.reformat, false)
+        IceAssertEqual(config.resolved.reformat, false)
         
         try config.update(scope: .local) { $0.reformat = true }
         
         let object2 = try! JSONSerialization.jsonObject(with: localPath.read(), options: []) as! [String: Bool]
-        XCTAssertEqual(object2["reformat"], true)
+        IceAssertEqual(object2["reformat"], true)
         
-        XCTAssertEqual(config.local.reformat, true)
-        XCTAssertEqual(config.global.reformat, false)
-        XCTAssertEqual(config.resolved.reformat, true)
+        IceAssertEqual(config.local.reformat, true)
+        IceAssertEqual(config.global.reformat, false)
+        IceAssertEqual(config.resolved.reformat, true)
     }
     
 }
