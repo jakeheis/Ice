@@ -73,12 +73,12 @@ class PackageTests: XCTestCase {
         
         var expectedDependencies = Fixtures.modernPackage.dependencies
         expectedDependencies.remove(at: 2)
-        IceAssertEqual(package.dependencies, expectedDependencies)
+        XCTAssertEqual(package.dependencies, expectedDependencies)
         
         var expectedTargets = Fixtures.modernPackage.targets
         expectedTargets[3].dependencies = [.byName("Core")]
         
-        IceAssertEqual(package.targets, expectedTargets)
+        XCTAssertEqual(package.targets, expectedTargets)
         IceAssertEqual(package.targets[0], expectedTargets[0])
         IceAssertEqual(package.targets[1], expectedTargets[1])
         IceAssertEqual(package.targets[2], expectedTargets[2])

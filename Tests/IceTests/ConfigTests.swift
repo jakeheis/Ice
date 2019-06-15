@@ -40,7 +40,7 @@ class ConfigTests: XCTestCase {
         IceAssertEqual(reformatResult.stdout, "")
         
         let object = try! JSONSerialization.jsonObject(with: icebox.fileContents("global/config.json")!, options: []) as! [String: Bool]
-        IceAssertEqual(object, [
+        XCTAssertEqual(object, [
             "reformat": true,
         ])
     }

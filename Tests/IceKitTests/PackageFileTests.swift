@@ -112,7 +112,7 @@ class PackageLoaderTests: XCTestCase {
                 IceAssertEqual(file.toolsVersion, .v5)
                 IceAssertEqual(package.toolsVersion, .v5)
                 
-                IceAssertEqual(package.data.platforms, Fixtures.package5_0.platforms)
+                XCTAssertEqual(package.data.platforms, Fixtures.package5_0.platforms)
                 
             }
         }, swift4_0AndAbove: {
