@@ -6,6 +6,7 @@
 //
 
 @testable import IceKit
+import TestingUtilities
 import XCTest
 
 class LineTests: XCTestCase {

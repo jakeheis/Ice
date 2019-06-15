@@ -6,6 +6,7 @@
 //
 
 import IceKit
+import TestingUtilities
 import XCTest
 
 class VersionTests: XCTestCase {

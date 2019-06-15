@@ -8,6 +8,7 @@
 @testable import IceKit
 import Rainbow
 import SwiftCLI
+import TestingUtilities
 import XCTest
 
 class TransformerTest {

@@ -7,6 +7,7 @@
 
 @testable import IceKit
 import SwiftCLI
+import TestingUtilities
 import XCTest
 
 class PackageWriterTests: XCTestCase {

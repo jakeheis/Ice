@@ -7,6 +7,7 @@
 
 import XCTest
 import PathKit
+import TestingUtilities
 @testable import IceKit
 
 class ConfigTests: XCTestCase {
