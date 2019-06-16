@@ -16,23 +16,23 @@ class RegistryTests: XCTestCase {
         XCTAssertFalse(icebox.fileExists("global/Registry/local.json"))
         
         let result = icebox.run("registry", "add", "jakeheis/dne", "dne")
-        XCTAssertEqual(result.exitStatus, 0)
-        XCTAssertEqual(result.stderr, "")
-        XCTAssertEqual(result.stdout, "")
+        IceAssertEqual(result.exitStatus, 0)
+        IceAssertEqual(result.stderr, "")
+        IceAssertEqual(result.stdout, "")
         
         XCTAssertTrue(icebox.fileExists("global/Registry/local.json"))
         let json = try JSONSerialization.jsonObject(with: icebox.fileContents("global/Registry/local.json")!, options: []) as! [String: Any]
         let entries = json["entries"] as! [[String: Any]]
-        XCTAssertEqual(entries.count, 1)
-        XCTAssertEqual(entries[0]["name"] as? String, "dne")
-        XCTAssertEqual(entries[0]["url"] as? String, "https://github.com/jakeheis/dne")
+        IceAssertEqual(entries.count, 1)
+        IceAssertEqual(entries[0]["name"] as? String, "dne")
+        IceAssertEqual(entries[0]["url"] as? String, "https://github.com/jakeheis/dne")
     }
     
     func testSharedLookup() {
         let result = IceBox(template: .empty).run("registry", "lookup", "Alamofire")
-        XCTAssertEqual(result.exitStatus, 0)
-        XCTAssertEqual(result.stderr, "")
-        XCTAssertEqual(result.stdout, """
+        IceAssertEqual(result.exitStatus, 0)
+        IceAssertEqual(result.stderr, "")
+        IceAssertEqual(result.stdout, """
         https://github.com/Alamofire/Alamofire
         
         """)
@@ -43,9 +43,9 @@ class RegistryTests: XCTestCase {
         icebox.createFile(path: "global/Registry/local.json", contents: "{\"entries\":[{\"name\":\"dne\",\"url\":\"https:\\/\\/github.com\\/jakeheis\\/dne\"}]}")
         
         let result = icebox.run("registry", "lookup", "dne")
-        XCTAssertEqual(result.exitStatus, 0)
-        XCTAssertEqual(result.stderr, "")
-        XCTAssertEqual(result.stdout, """
+        IceAssertEqual(result.exitStatus, 0)
+        IceAssertEqual(result.stderr, "")
+        IceAssertEqual(result.stdout, """
         https://github.com/jakeheis/dne
         
         """)
@@ -56,13 +56,13 @@ class RegistryTests: XCTestCase {
         icebox.createFile(path: "global/Registry/local.json", contents: "{\"entries\":[{\"name\":\"dne\",\"url\":\"https:\\/\\/github.com\\/jakeheis\\/dne\"}]}")
         
         let result = icebox.run("registry", "remove", "dne")
-        XCTAssertEqual(result.exitStatus, 0)
-        XCTAssertEqual(result.stderr, "")
-        XCTAssertEqual(result.stdout, "")
+        IceAssertEqual(result.exitStatus, 0)
+        IceAssertEqual(result.stderr, "")
+        IceAssertEqual(result.stdout, "")
         
         let json = try! JSONSerialization.jsonObject(with: icebox.fileContents("global/Registry/local.json")!, options: []) as! [String: Any]
         let entries = json["entries"] as! [[String: Any]]
-        XCTAssertEqual(entries.count, 0)
+        IceAssertEqual(entries.count, 0)
     }
     
 }

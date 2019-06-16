@@ -15,35 +15,38 @@ class UpdateCommand: IceObject, Command {
     
     let dependency = OptionalParameter(completion: .function(.listDependencies))
     
-    let version = Key<Version>("--version", description: "The new version of the dependency to depend on")
+    let from = Key<Version>("-f", "--from", description: "The minimum version of the dependency to depend on; allows more recent versions")
+    let exact = Key<Version>("-e", "--exact", description: "The exact version of the dependency to depend on")
     let branch = Key<String>("--branch", description: "The new branch of the dependency to depend on")
     let sha = Key<String>("--sha", description: "The new commit hash of the dependency to depend on")
     
     var optionGroups: [OptionGroup] {
-        return [.atMostOne(version, branch, sha)]
+        return [.atMostOne(from, exact, branch, sha)]
     }
     
     func execute() throws {
         guard let dependency = dependency.value else {
-            guard version.value == nil && branch.value == nil && sha.value == nil else {
-                throw IceError(message: "--version, --branch, and --sha can only be used when updating a specific dependency")
+            guard from.value == nil && exact.value == nil && branch.value == nil && sha.value == nil else {
+                throw IceError(message: "--from, --exact, --branch, and --sha can only be used when updating a specific dependency")
             }
             try SPM().update()
             return
         }
         
         var package = try loadPackage()
-        guard let dep = package.dependencies.first(where: { RepositoryReference(url: $0.url).name == dependency }) else {
-            throw IceError(message: "No dependency found with that name")
+        guard let dep = package.getDependency(named: dependency) else {
+            throw IceError(message: "dependency '\(dependency)' not found")
         }
         
         let requirement: Package.Dependency.Requirement
-        if let version = version.value {
-            requirement = .init(version: version)
+        if let version = from.value {
+            requirement = .init(from: version)
+        } else if let exact = exact.value {
+            requirement = .exact(exact.string)
         } else if let branch = branch.value {
-            requirement = .init(type: .branch, lowerBound: nil, upperBound: nil, identifier: branch)
+            requirement = .branch(branch)
         } else if let sha = sha.value {
-            requirement = .init(type: .revision, lowerBound: nil, upperBound: nil, identifier: sha)
+            requirement = .revision(sha)
         } else {
             requirement = try inputVersion(for: dep)
         }
@@ -82,7 +85,7 @@ class UpdateCommand: IceObject, Command {
         })
         stdout <<< ""
         
-        return .init(version: chosen)
+        return .init(from: chosen)
     }
     
     private func currentVersion(of dep: Package.Dependency) -> String {
@@ -94,12 +97,16 @@ class UpdateCommand: IceObject, Command {
             } else {
                 return pin.state.revision
             }
-        } else if let lowerBound = dep.requirement.lowerBound {
-            return lowerBound
-        } else if let id = dep.requirement.identifier {
-            return id
         }
-        return "(none)"
+        
+        // If the package hasn't been resolved yet, just say what's in Package.swift
+        switch dep.requirement {
+        case let .range(lowerBound, _):
+            return lowerBound
+        case let .branch(id), let .revision(id), let .exact(id):
+            return id
+        default: return "(none)"
+        }
     }
     
 }

@@ -14,12 +14,12 @@ class XcTests: XCTestCase {
         let icebox = IceBox(template: .lib)
         
         let result = icebox.run("xc", "-n")
-        XCTAssertEqual(result.exitStatus, 0)
-        XCTAssertEqual(result.stdout, """
+        IceAssertEqual(result.exitStatus, 0)
+        IceAssertEqual(result.stdout, """
         Generated Lib.xcodeproj
         
         """)
-        XCTAssertEqual(result.stderr, "")
+        IceAssertEqual(result.stderr, "")
         
         XCTAssertTrue(icebox.fileExists("Lib.xcodeproj"))
     }

@@ -12,9 +12,9 @@ class ResolveTests: XCTestCase {
     
     func testResolve() {
         let result = IceBox(template: .exec).run("resolve")
-        XCTAssertEqual(result.exitStatus, 0)
-        XCTAssertEqual(result.stderr, "")
-        XCTAssertEqual(result.stdout, """
+        IceAssertEqual(result.exitStatus, 0)
+        IceAssertEqual(result.stderr, "")
+        IceAssertEqual(result.stdout, """
         Fetch https://github.com/jakeheis/SwiftCLI
         Clone https://github.com/jakeheis/SwiftCLI
         Resolve https://github.com/jakeheis/SwiftCLI at 4.1.2

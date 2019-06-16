@@ -10,7 +10,7 @@ import SwiftCLI
 
 public class Ice {
     
-    public static let version = Version(0, 7, 2)
+    public static let version = Version(0, 8, 0)
     public static let defaultRoot = Path.home + ".icebox"
     
     public let root: Path
@@ -24,8 +24,8 @@ public class Ice {
         
         do {
             if !root.exists {
-                try run("mkdir", "-p", root.string)
-                try run("mkdir", "-p", registryDirectory.string)
+                try Task.run("mkdir", "-p", root.string)
+                try Task.run("mkdir", "-p", registryDirectory.string)
             }
             
             let versionFile = root + "version"

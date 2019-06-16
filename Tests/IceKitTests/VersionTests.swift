@@ -5,23 +5,24 @@
 //  Created by Jake Heiser on 9/20/17.
 //
 
-import XCTest
 import IceKit
+import TestingUtilities
+import XCTest
 
 class VersionTests: XCTestCase {
     
     func testBasicParse() {
         let version = Version("1.4.3")
-        XCTAssertEqual(version?.major, 1)
-        XCTAssertEqual(version?.minor, 4)
-        XCTAssertEqual(version?.patch, 3)
+        IceAssertEqual(version?.major, 1)
+        IceAssertEqual(version?.minor, 4)
+        IceAssertEqual(version?.patch, 3)
     }
     
     func testVParse() {
         let version = Version("v1.4.3")
-        XCTAssertEqual(version?.major, 1)
-        XCTAssertEqual(version?.minor, 4)
-        XCTAssertEqual(version?.patch, 3)
+        IceAssertEqual(version?.major, 1)
+        IceAssertEqual(version?.minor, 4)
+        IceAssertEqual(version?.patch, 3)
     }
     
     func testIllegalVersion() {
@@ -29,7 +30,7 @@ class VersionTests: XCTestCase {
     }
     
     func testEquality() {
-        XCTAssertEqual(Version("1.4.3"), Version(1, 4, 3))
+        IceAssertEqual(Version("1.4.3"), Version(1, 4, 3))
     }
     
     func testComparison() {

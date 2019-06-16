@@ -13,8 +13,8 @@ class BuildTests: XCTestCase {
     func testSimpleBuild() {
         let icebox = IceBox(template: .exec)
         let result = icebox.run("build")
-        XCTAssertEqual(result.exitStatus, 0)
-        XCTAssertEqual(result.stderr, "")
+        IceAssertEqual(result.exitStatus, 0)
+        IceAssertEqual(result.stderr, "")
         
         result.assertStdout { (v) in
             v.equals("Fetch https://github.com/jakeheis/SwiftCLI")
@@ -34,17 +34,17 @@ class BuildTests: XCTestCase {
         let icebox = IceBox(template: .lib)
         
         let initial = icebox.run("build", "-c")
-        XCTAssertEqual(initial.exitStatus, 0)
-        XCTAssertEqual(initial.stderr, "")
-        XCTAssertEqual(initial.stdout, """
+        IceAssertEqual(initial.exitStatus, 0)
+        IceAssertEqual(initial.stderr, "")
+        IceAssertEqual(initial.stdout, """
         Compile Lib (1 sources)
 
         """)
         
         let followup = icebox.run("build", "-c")
-        XCTAssertEqual(followup.exitStatus, 0)
-        XCTAssertEqual(followup.stderr, "")
-        XCTAssertEqual(followup.stdout, """
+        IceAssertEqual(followup.exitStatus, 0)
+        IceAssertEqual(followup.stderr, "")
+        IceAssertEqual(followup.stdout, """
         Compile Lib (1 sources)
 
         """)
@@ -56,61 +56,16 @@ class BuildTests: XCTestCase {
         let icebox = IceBox(template: .lib)
         
         let initial = icebox.run("build", "-r")
-        XCTAssertEqual(initial.exitStatus, 0)
-        XCTAssertEqual(initial.stderr, "")
+        IceAssertEqual(initial.exitStatus, 0)
+        IceAssertEqual(initial.stderr, "")
         
-        XCTAssertEqual(initial.stdout, """
+        IceAssertEqual(initial.stdout, """
         Compile Lib (1 sources)
 
         """)
         
         XCTAssertTrue(icebox.fileExists(".build/release"))
         XCTAssertFalse(icebox.fileExists(".build/debug"))
-    }
-    
-    func testWatchBuild() {
-        let icebox = IceBox(template: .lib)
-        
-        Differentiate.byPlatform(mac: {
-            #if os(macOS)
-            DispatchQueue.global().asyncAfter(deadline: .now() + 4) {
-                icebox.createFile(path: "Sources/Lib/Lib.swift", contents: "\nprint(\"hey world\")\n")
-            }
-            
-            DispatchQueue.global().asyncAfter(deadline: .now() + 6) {
-                icebox.interrupt()
-            }
-            
-            let result = icebox.run("build", "-w")
-            
-            XCTAssertEqual(result.exitStatus, 2)
-            XCTAssertEqual(result.stderr, "")
-            XCTAssertEqual(result.stdout, """
-            [ice] rebuilding due to changes...
-            Compile Lib (1 sources)
-            [ice] rebuilding due to changes...
-            Compile Lib (1 sources)
-            
-              ● Error: expressions are not allowed at the top level
-
-                print("hey world")
-                ^
-                at Sources/Lib/Lib.swift:2
-            
-            
-            """)
-            #endif
-        }, linux: {
-            let result = icebox.run("build", "-w")
-            XCTAssertEqual(result.exitStatus, 1)
-            XCTAssertEqual(result.stdout, "")
-            XCTAssertEqual(result.stderr, """
-
-            Error: -w is not supported on Linux
-
-
-            """)
-        })
     }
     
     func testBuildErrors() {
@@ -126,11 +81,11 @@ class BuildTests: XCTestCase {
         icebox.createFile(path: "Sources/Exec/main.swift", contents: contents)
         
         let result = icebox.run("build")
-        XCTAssertEqual(result.exitStatus, 1)
-        XCTAssertEqual(result.stderr, "")
+        IceAssertEqual(result.exitStatus, 1)
+        IceAssertEqual(result.stderr, "")
         
         Differentiate.byVersion(swift4_2AndAbove: {
-            XCTAssertEqual(result.stdout, """
+            IceAssertEqual(result.stdout, """
             Fetch https://github.com/jakeheis/SwiftCLI
             Clone https://github.com/jakeheis/SwiftCLI
             Resolve https://github.com/jakeheis/SwiftCLI at 4.1.2
@@ -177,7 +132,7 @@ class BuildTests: XCTestCase {
             
             """)
         }, swift4_0AndAbove: {
-            XCTAssertEqual(result.stdout, """
+            IceAssertEqual(result.stdout, """
             Fetch https://github.com/jakeheis/SwiftCLI
             Clone https://github.com/jakeheis/SwiftCLI
             Resolve https://github.com/jakeheis/SwiftCLI at 4.1.2
@@ -228,17 +183,17 @@ class BuildTests: XCTestCase {
     
     func testBuildTarget() {
         let success = IceBox(template: .lib).run("build", "--target=Lib")
-        XCTAssertEqual(success.exitStatus, 0)
-        XCTAssertEqual(success.stderr, "")
-        XCTAssertEqual(success.stdout, """
+        IceAssertEqual(success.exitStatus, 0)
+        IceAssertEqual(success.stderr, "")
+        IceAssertEqual(success.stdout, """
         Compile Lib (1 sources)
 
         """)
         
         let error = IceBox(template: .lib).run("build", "--target=Library")
-        XCTAssertEqual(error.exitStatus, 1)
-        XCTAssertEqual(error.stdout, "")
-        XCTAssertEqual(error.stderr, """
+        IceAssertEqual(error.exitStatus, 1)
+        IceAssertEqual(error.stdout, "")
+        IceAssertEqual(error.stderr, """
         
         Error: no target named 'Library'
 
@@ -248,8 +203,8 @@ class BuildTests: XCTestCase {
     
     func testBuildProduct() {
         let result = IceBox(template: .exec).run("build", "--product=Exec")
-        XCTAssertEqual(result.exitStatus, 0)
-        XCTAssertEqual(result.stderr, "")
+        IceAssertEqual(result.exitStatus, 0)
+        IceAssertEqual(result.stderr, "")
         result.assertStdout { (v) in
             v.equals("Fetch https://github.com/jakeheis/SwiftCLI")
             v.equals("Clone https://github.com/jakeheis/SwiftCLI")
@@ -262,14 +217,14 @@ class BuildTests: XCTestCase {
         }
         
         let result2 = IceBox(template: .exec).run("build", "--product=Prod")
-        XCTAssertEqual(result2.exitStatus, 1)
-        XCTAssertEqual(result2.stdout, """
+        IceAssertEqual(result2.exitStatus, 1)
+        IceAssertEqual(result2.stdout, """
         Fetch https://github.com/jakeheis/SwiftCLI
         Clone https://github.com/jakeheis/SwiftCLI
         Resolve https://github.com/jakeheis/SwiftCLI at 4.1.2
         
         """)
-        XCTAssertEqual(result2.stderr, """
+        IceAssertEqual(result2.stderr, """
         
         Error: no product named 'Prod'
 

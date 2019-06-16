@@ -12,8 +12,8 @@ class OutdatedTests: XCTestCase {
     
     func testOutdated() {
         let result = IceBox(template: .exec).run("outdated")
-        XCTAssertEqual(result.exitStatus, 0)
-        XCTAssertEqual(result.stderr, "")
+        IceAssertEqual(result.exitStatus, 0)
+        IceAssertEqual(result.stderr, "")
         result.assertStdout { (t) in
             t.equals("+----------+-----------------+----------+--------+")
             t.equals("| Name     | Wanted          | Resolved | Latest |")
@@ -27,8 +27,8 @@ class OutdatedTests: XCTestCase {
     
     func testOutdatedNoDependencies() {
         let result = IceBox(template: .lib).run("outdated")
-        XCTAssertEqual(result.exitStatus, 0)
-        XCTAssertEqual(result.stderr, "")
+        IceAssertEqual(result.exitStatus, 0)
+        IceAssertEqual(result.stderr, "")
     }
 
 }

@@ -14,11 +14,11 @@ class RemoveTests: XCTestCase {
         let icebox = IceBox(template: .exec)
         
         let result = icebox.run("remove", "SwiftCLI")
-        XCTAssertEqual(result.exitStatus, 0)
-        XCTAssertEqual(result.stdout, "")
-        XCTAssertEqual(result.stderr, "")
+        IceAssertEqual(result.exitStatus, 0)
+        IceAssertEqual(result.stdout, "")
+        IceAssertEqual(result.stderr, "")
         
-        XCTAssertEqual(icebox.fileContents("Package.swift"), """
+        IceAssertEqual(icebox.fileContents("Package.swift"), """
         // swift-tools-version:4.0
         // Managed by ice
 
@@ -58,11 +58,11 @@ class RemoveTests: XCTestCase {
         """)
         
         let result = icebox.run("remove", "Mint")
-        XCTAssertEqual(result.exitStatus, 0)
-        XCTAssertEqual(result.stdout, "")
-        XCTAssertEqual(result.stderr, "")
+        IceAssertEqual(result.exitStatus, 0)
+        IceAssertEqual(result.stdout, "")
+        IceAssertEqual(result.stderr, "")
         
-        XCTAssertEqual(icebox.fileContents("Package.swift"), """
+        IceAssertEqual(icebox.fileContents("Package.swift"), """
         // swift-tools-version:4.0
         // Managed by ice
 

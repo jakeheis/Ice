@@ -100,7 +100,7 @@ private class Error: Transformer {
         }
         
         let codeLine = stream.require(CodeLine.self)
-        let startIndex = codeLine.text.index(where: { $0 != " " }) ?? codeLine.text.startIndex
+        let startIndex = codeLine.text.ice_firstIndex(where: { $0 != " " }) ?? codeLine.text.startIndex
         out <<< indentation + String(codeLine.text[startIndex...]).lightBlack
         
         while !stream.nextIs(HighlightsLine.self) {

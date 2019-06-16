@@ -5,8 +5,8 @@
 //  Created by Jake Heiser on 6/3/18.
 //
 
-import XCTest
 @testable import IceKit
+import XCTest
 
 class XcTransformTests: XCTestCase {
     

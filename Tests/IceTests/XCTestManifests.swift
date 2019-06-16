@@ -20,7 +20,6 @@ extension BuildTests {
         ("testCleanBuild", testCleanBuild),
         ("testReleaseBuild", testReleaseBuild),
         ("testSimpleBuild", testSimpleBuild),
-        ("testWatchBuild", testWatchBuild),
     ]
 }
 
@@ -41,7 +40,7 @@ extension ConfigTests {
 
 extension DumpTests {
     static let __allTests = [
-        ("testDump", testDump),
+        ("testModel", testModel),
     ]
 }
 
@@ -105,7 +104,6 @@ extension ResolveTests {
 extension RunTests {
     static let __allTests = [
         ("testBasicRun", testBasicRun),
-        ("testWatchRun", testWatchRun),
     ]
 }
 
@@ -135,6 +133,7 @@ extension TestTests {
 extension ToolsVersionTests {
     static let __allTests = [
         ("testGet", testGet),
+        ("testTaggedUpdate", testTaggedUpdate),
         ("testUpdate", testUpdate),
     ]
 }

@@ -5,8 +5,8 @@
 //  Created by Jake Heiser on 9/16/17.
 //
 
-import XCTest
 @testable import IceKit
+import XCTest
 
 class BuildTransformTests: XCTestCase {
     
@@ -16,6 +16,15 @@ class BuildTransformTests: XCTestCase {
         Compile Swift Module 'Sup' (1 sources)
         """)
         build.expect("""
+        Compile Sup (1 sources)
+
+        """)
+        
+        let build5 = createTest()
+        build5.send("""
+        [1/10] Compiling Swift Module 'Sup' (1 sources)
+        """)
+        build5.expect("""
         Compile Sup (1 sources)
 
         """)
@@ -32,6 +41,17 @@ class BuildTransformTests: XCTestCase {
         Compile RxCocoaRuntime
 
         """)
+        
+        let build5 = createTest()
+        build5.send("""
+        [1/10] Compiling RxCocoaRuntime _RXObjCRuntime.m
+        [2/10] Compiling RxCocoaRuntime _RXKVOObserver.m
+        [3/10] Compiling RxCocoaRuntime _RXDelegateProxy.m
+        """)
+        build5.expect("""
+        Compile RxCocoaRuntime
+
+        """)
     }
     
     func testLink() {
@@ -41,6 +61,15 @@ class BuildTransformTests: XCTestCase {
         """)
         build.expect("""
         Link ./.build/x86_64-apple-macosx10.10/debug/ice
+
+        """)
+        
+        let build5 = createTest()
+        build5.send("""
+        [10/10] Linking ./.build/x86_64-apple-macosx/debug/ice
+        """)
+        build5.expect("""
+        Link ./.build/x86_64-apple-macosx/debug/ice
 
         """)
     }

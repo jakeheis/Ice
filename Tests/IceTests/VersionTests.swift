@@ -12,8 +12,8 @@ class VersionTests: XCTestCase {
     
     func testVersion() {
         let result = IceBox(template: .exec).run("--version")
-        XCTAssertEqual(result.exitStatus, 0)
-        XCTAssertEqual(result.stderr, "")
+        IceAssertEqual(result.exitStatus, 0)
+        IceAssertEqual(result.stderr, "")
         
         result.assertStdout { (v) in
             v.matches("Ice version: \\d\\.\\d\\.\\d")

@@ -21,25 +21,12 @@ public class Registry: RegistryType {
     private var sharedRepo: Path { return directory + "shared" }
     private var sharedPath: Path { return sharedRepo + "Registry" }
     
-    private lazy var localRegistry = {
-        return LocalRegistryFile.load(from: localPath) ?? LocalRegistryFile(entries: [], lastRefreshed: nil)
+    private lazy var localRegistry: LocalRegistryFile = {
+        return LocalRegistryFile.load(from: localPath) ?? LocalRegistryFile(entries: [])
     }()
     
     init(registryPath: Path) {
         self.directory = registryPath
-        
-        if let lastRefreshed = localRegistry.lastRefreshed {
-            // If current date is more than 30 days after last refresh
-            if Date() > lastRefreshed.addingTimeInterval(60 * 60 * 24 * 30) {
-                do {
-                    try refresh(silent: true)
-                } catch {}
-            }
-        } else {
-            do {
-                try refresh(silent: true)
-            } catch {}
-        }
     }
     
     public func refresh(silent: Bool = false) throws {
@@ -49,9 +36,6 @@ public class Registry: RegistryType {
         } else {
             try Git.clone(url: Registry.url, to: sharedRepo.string, silent: silent, timeout: timeout)
         }
-        
-        localRegistry.lastRefreshed = Date()
-        try write()
     }
     
     public func add(name: String, url: String) throws {
@@ -64,6 +48,8 @@ public class Registry: RegistryType {
             return matching
         }
         
+        attemptCloneIfNecessary()
+        
         let letterPath = sharedPath + (String(name.uppercased()[name.startIndex]) + ".json")
         let sharedRegistry = SharedRegistryFile.load(from: letterPath)
         if let matching = sharedRegistry?.entries.first(where: { $0.name == name }) {
@@ -74,8 +60,8 @@ public class Registry: RegistryType {
     }
     
     public func remove(_ name: String) throws {
-        guard let index = localRegistry.entries.index(where: { $0.name == name })  else {
-            throw IceError(message: "\(name) does not exist in your local registry")
+        guard let index = localRegistry.entries.ice_firstIndex(where: { $0.name == name })  else {
+            throw IceError(message: "\(name) does not exist in the local registry")
         }
         localRegistry.entries.remove(at: index)
         
@@ -83,9 +69,7 @@ public class Registry: RegistryType {
     }
     
     public func search(query: String, includeDescription: Bool) throws -> [RegistryEntry] {
-        do {
-            try refresh(silent: true)
-        } catch {}
+        attemptCloneIfNecessary()
         
         var all = Set<String>()
 
@@ -123,7 +107,7 @@ public class Registry: RegistryType {
         }
         
         var combined = localEntries + highEntries + middleEntries + bottomEntries
-        if let index = combined.index(where: { $0.name.lowercased() == query.lowercased() } ) {
+        if let index = combined.ice_firstIndex(where: { $0.name.lowercased() == query.lowercased() } ) {
             let perfectMatch = combined.remove(at: index)
             combined.insert(perfectMatch, at: 0)
         }
@@ -137,6 +121,14 @@ public class Registry: RegistryType {
             if let file = SharedRegistryFile.load(from: path) {
                 block(file, path.lastComponentWithoutExtension)
             }
+        }
+    }
+    
+    private func attemptCloneIfNecessary() {
+        if !sharedRepo.exists {
+            do {
+                try Git.clone(url: Registry.url, to: sharedRepo.string, silent: true, timeout: 4)
+            } catch {}
         }
     }
     
@@ -154,7 +146,6 @@ public struct RegistryEntry: Codable {
 
 private struct LocalRegistryFile: Codable {
     var entries: [RegistryEntry]
-    var lastRefreshed: Date?
 }
 
 private struct SharedRegistryFile: Codable {    

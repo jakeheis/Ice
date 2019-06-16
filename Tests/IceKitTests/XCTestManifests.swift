@@ -40,16 +40,21 @@ extension LineTests {
 
 extension PackageDataTests {
     static let __allTests = [
+        ("test4_0", test4_0),
+        ("test4_2", test4_2),
+        ("test5_0", test5_0),
         ("testModernize4_0", testModernize4_0),
+        ("testModernize4_2", testModernize4_2),
         ("testSwiftToolsVersion", testSwiftToolsVersion),
     ]
 }
 
 extension PackageLoaderTests {
     static let __allTests = [
-        ("testBasic", testBasic),
-        ("testComplex4_2", testComplex4_2),
-        ("testComplex", testComplex),
+        ("testFindPackageRoot", testFindPackageRoot),
+        ("testFormPackagePath", testFormPackagePath),
+        ("testPlatformsAddition", testPlatformsAddition),
+        ("testVersionedPackage", testVersionedPackage),
     ]
 }
 
@@ -72,7 +77,11 @@ extension PackageWriterTests {
         ("testCLanguageStandard", testCLanguageStandard),
         ("testCxxLanguageStandard", testCxxLanguageStandard),
         ("testDependencies", testDependencies),
-        ("testFull", testFull),
+        ("testEmpty", testEmpty),
+        ("testFull4_0", testFull4_0),
+        ("testFull4_2", testFull4_2),
+        ("testFull5_0", testFull5_0),
+        ("testPlatorms", testPlatorms),
         ("testProducts", testProducts),
         ("testProviders", testProviders),
         ("testSwiftLanguageVersions", testSwiftLanguageVersions),
@@ -83,7 +92,7 @@ extension PackageWriterTests {
 extension RegistryTests {
     static let __allTests = [
         ("testAdd", testAdd),
-        ("testAutoRefresh", testAutoRefresh),
+        ("testAutoClone", testAutoClone),
         ("testGet", testGet),
         ("testRemove", testRemove),
     ]

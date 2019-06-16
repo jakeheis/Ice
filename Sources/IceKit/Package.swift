@@ -16,11 +16,19 @@ public struct Package {
     public typealias Dependency = ModernPackageData.Dependency
     public typealias Target = ModernPackageData.Target
     
-    public static let fileName = Path("Package.swift")
     private static let libRegex = Regex("\\.library\\( *name: *\"([^\"]*)\"")
     
     public static func load(directory: Path, config: Config? = nil) throws -> Package {
-        return try PackageLoader.load(directory: directory, config: config)
+        guard let file = PackageFile.find(in: directory) else {
+            throw IceError(message: "couldn't find Package.swift")
+        }
+        return try file.load(with: config)
+    }
+    
+    internal private(set) var data: ModernPackageData {
+        didSet {
+            dirty = true
+        }
     }
     
     public var name: String {
@@ -39,126 +47,121 @@ public struct Package {
         return data.targets
     }
     
-    public private(set) var data: ModernPackageData {
-        didSet {
-            dirty = true
-        }
-    }
     public var toolsVersion: SwiftToolsVersion {
         didSet {
             dirty = true
         }
     }
-    public let directory: Path
+    
+    public var path: Path {
+        didSet {
+            dirty = true
+        }
+    }
+    
     public let config: Config
     
     public var dirty = false
     
-    public init(data: ModernPackageData, toolsVersion: SwiftToolsVersion, directory: Path, config: Config?) {
+    public init(data: ModernPackageData, toolsVersion: SwiftToolsVersion, path: Path, config: Config?) {
         self.data = data
         self.toolsVersion = toolsVersion
-        self.directory = directory
+        self.path = path
         self.config = config ?? Config()
+        
+        Logger.verbose <<< "Parsed package: \(data.name)"
     }
     
     // MARK: - Products
     
-    public enum ProductType {
-        case executable
-        case library
-        case staticLibrary
-        case dynamicLibrary
+    @discardableResult
+    public mutating func addProduct(name: String, targets: [String], type: Product.ProductType) -> Product {
+        let product = Product(name: name, targets: targets, type: type)
+        data.products.append(product)
+        return product
     }
     
-    public mutating func addProduct(name: String, type: ProductType, targets: [String]) {
-        let productType: String
-        switch type {
-        case .executable: productType = "executable"
-        case .library, .staticLibrary, .dynamicLibrary: productType = "library"
-        }
-        let libraryType: String?
-        switch type {
-        case .staticLibrary: libraryType = "static"
-        case .dynamicLibrary: libraryType = "dynamic"
-        case .library, .executable: libraryType = nil
-        }
-        data.products.append(.init(
-            name: name,
-            product_type: productType,
-            targets: targets,
-            type: libraryType)
-        )
+    public func getProduct(named: String) -> Product? {
+        return data.products.first(where: { $0.name == named })
     }
     
-    public mutating func removeProduct(name: String) throws {
-        guard let index = data.products.index(where: { $0.name == name }) else {
-            throw IceError(message: "can't remove product \(name)")
+    public mutating func removeProduct(_ product: Product) {
+        guard let index = data.products.ice_firstIndex(of: product) else {
+            return
         }
         data.products.remove(at: index)
     }
     
     // MARK: - Dependencies
     
-    public mutating func addDependency(ref: RepositoryReference, requirement: Package.Dependency.Requirement) {
-        data.dependencies.append(.init(
-            url: ref.url,
-            requirement: requirement
-        ))
+    @discardableResult
+    public mutating func addDependency(url: String, requirement: Dependency.Requirement) -> Dependency {
+        let dependency = Dependency(url: url, requirement: requirement)
+        data.dependencies.append(dependency)
+        return dependency
     }
     
-    public mutating func updateDependency(dependency: Package.Dependency, to requirement: Package.Dependency.Requirement) throws {
-        guard let index = data.dependencies.index(where: { $0.url == dependency.url }) else {
-            throw IceError(message: "can't update dependency \(dependency.name)")
+    public func getDependency(named: String) -> Dependency? {
+        return data.dependencies.first(where: { $0.name == named })
+    }
+    
+    public mutating func updateDependency(dependency: Dependency, to requirement: Dependency.Requirement) throws {
+        guard let index = data.dependencies.ice_firstIndex(of: dependency) else {
+            throw IceError(message: "dependency '\(dependency.name)' not found")
         }
         data.dependencies[index].requirement = requirement
     }
     
-    public mutating func removeDependency(named name: String) throws {
-        guard let index = data.dependencies.index(where: { $0.name == name }) else {
-            throw IceError(message: "no dependency named \(name)")
+    public mutating func removeDependency(_ dependency: Dependency) {
+        guard let index = data.dependencies.ice_firstIndex(of: dependency) else {
+            return
         }
+        
         data.dependencies.remove(at: index)
         
-        let libs = retrieveLibrariesOfDependency(named: name)
-        for lib in libs {
-            removeDependencyFromTargets(named: lib)
+        let libs = retrieveLibraries(ofDependency: dependency)
+        
+        removeTargetDependency {
+            switch $0 {
+            case let .byName(lib) where libs.contains(lib): return true
+            case let .product(_, package) where package == dependency.name: return true
+            case let .product(lib, nil) where libs.contains(lib): return true
+            default: return false
+            }
         }
     }
     
     // MARK: - Targets
     
-    public mutating func addTarget(name: String, type: Package.Target.TargetType, dependencies: [String]) {
-        let dependencies = dependencies.map { Package.Target.Dependency(name: $0) }
-        data.targets.append(.init(
-            name: name,
-            type: type,
-            dependencies: dependencies,
-            path: nil,
-            exclude: [],
-            sources: nil,
-            publicHeadersPath: nil,
-            pkgConfig: nil,
-            providers: nil
-        ))
+    @discardableResult
+    public mutating func addTarget(name: String, type: Target.TargetType, dependencies: [Target.Dependency], path: String? = nil, exclude: [String] = [], sources: [String]? = nil, publicHeadersPath: String? = nil, pkgConfig: String? = nil, providers: [Provider]? = nil, settings: [Target.Setting] = []) -> Target {
+        let target = Target(name: name, type: type, dependencies: dependencies, path: path, exclude: exclude, sources: sources, publicHeadersPath: publicHeadersPath, pkgConfig: pkgConfig, providers: providers, settings: settings)
+        data.targets.append(target)
+        return target
     }
     
-    public mutating func depend(target: String, on lib: String) throws {
-        guard let targetIndex = data.targets.index(where: { $0.name == target }) else {
+    public func getTarget(named: String) -> Target? {
+        return data.targets.first(where: { $0.name == named })
+    }
+    
+    public mutating func addTargetDependency(for target: Target, on dependency: Package.Target.Dependency) throws {
+        guard let targetIndex = data.targets.ice_firstIndex(of: target) else {
             throw IceError(message: "target '\(target)' not found")
         }
-        if data.targets[targetIndex].dependencies.contains(where: { $0.name == lib }) {
+        if data.targets[targetIndex].dependencies.contains(dependency) {
             return
         }
-        data.targets[targetIndex].dependencies.append(.init(name: lib))
+        data.targets[targetIndex].dependencies.append(dependency)
     }
     
-    public mutating func removeTarget(named name: String) throws {
-        guard let index = data.targets.index(where: { $0.name == name }) else {
-            throw IceError(message: "can't remove target \(name)")
+    public mutating func removeTarget(_ target: Target) {
+        guard let index = data.targets.ice_firstIndex(of: target) else {
+            return
         }
+
         data.targets.remove(at: index)
         
-        removeDependencyFromTargets(named: name)
+        removeTargetDependency(where: { $0 == .byName(target.name) || $0 == .target(target.name) })
         
         data.products = data.products.map { (oldProduct) in
             var newProduct = oldProduct
@@ -169,40 +172,42 @@ public struct Package {
     
     // MARK: - Helpers
     
-    private mutating func removeDependencyFromTargets(named name: String) {
+    private mutating func removeTargetDependency(where test: (Target.Dependency) -> Bool) {
         data.targets = data.targets.map { (oldTarget) in
             var newTarget = oldTarget
-            newTarget.dependencies = newTarget.dependencies.filter { $0.name != name }
+            newTarget.dependencies = newTarget.dependencies.filter { !test($0) }
             return newTarget
         }
     }
     
     // MARK: -
     
-    public func retrieveLibrariesOfDependency(named dependency: String) -> [String] {
-        let glob = (directory + ".build" + "checkouts").glob("\(dependency)*")
-        guard let path = glob.first,
-            let contents: String = try? (path + Package.fileName).read().replacingOccurrences(of: "\n", with: " ") else {
-                return [dependency]
+    public func retrieveLibraries(ofDependency dependency: Dependency) -> [String] {
+        let glob = (path.parent() + ".build" + "checkouts").glob("\(dependency.name)*")
+        
+        guard let dependencyDirectory = glob.first,
+            let packageFile = PackageFile(directory: dependencyDirectory, compilerVersion: toolsVersion) else {
+                return [dependency.name]
         }
-        let matches = Package.libRegex.allMatches(in: contents)
+        let matches = Package.libRegex.allMatches(in: packageFile.content.replacingOccurrences(of: "\n", with: " "))
         
         var libs = matches.compactMap { $0.captures[0] }
         if libs.isEmpty {
-            libs.append(dependency)
+            libs.append(dependency.name)
         }
         return libs
     }
     
     public mutating func sync(format: Bool? = nil) throws {
         if !dirty {
+            Logger.verbose <<< "package not dirty, sync complete"
             return
         }
         
-        let path = directory + Package.fileName
         guard let fileStream = WriteStream.for(path: path.string, appending: false) else  {
             throw IceError(message: "couldn't write to \(path)")
         }
+        Logger.verbose <<< "syncing package to \(path.string)"
         try write(to: fileStream, format: format)
         fileStream.truncateRemaining()
         dirty = false
@@ -210,6 +215,7 @@ public struct Package {
     
     public func write(to stream: WritableStream, format: Bool? = nil) throws {
         let shouldFormat = format ?? config.reformat
+        Logger.verbose <<< "writing \(shouldFormat ? "" : "non-")formatted package"
         let packageData = shouldFormat ? PackageFormatter(package: data).format() : data
         let writer = try PackageWriter(package: packageData, toolsVersion: toolsVersion)
         try writer.write(to: stream)

@@ -9,27 +9,50 @@ import Foundation
 import PathKit
 import SwiftCLI
 
-public class SPM {
+public enum SwiftExecutable {
     
-    public let directory: Path
+    public static var toolchainPath: Path? = {
+        let tmpFile = Path.current + "._ice.swift"
+        if !tmpFile.exists {
+            try? tmpFile.write("")
+        }
+        
+        let capture = CaptureStream()
+        let task = Task(executable: "swift", arguments: ["-v", tmpFile.string], stdout: WriteStream.null, stderr: capture)
+        task.runSync()
+        
+        try? tmpFile.delete()
+        
+        guard let compilerPath = capture.readAll().components(separatedBy: "\n").first(where: { $0.hasPrefix("/") }),
+            let range = compilerPath.range(of: ".xctoolchain/") else {
+                return nil
+        }
+        
+        let portion = String(compilerPath.prefix(upTo: range.upperBound))
+        return Path(portion).normalize()
+    }()
     
-    public lazy var version: Version? = {
-        if let content = try? captureSwift(args: ["--version"]).stdout,
-            let match = Regex("Swift version ([0-9]\\.[0-9](\\.[0-9])?) ").firstMatch(in: content),
-            var versionString = match.captures[0] {
-            if versionString.components(separatedBy: ".").count != 3 { // Two part version outputed by spm; assume patch of 0
-                versionString += ".0"
-            }
-            if let version = Version(versionString) {
-                return version
-            }
+    public static var version: SwiftToolsVersion? = {
+        if let content = try? Task.capture("swift", "--version").stdout,
+            let match = Regex("Swift version ([0-9]\\.[0-9](\\.[0-9])?)(-dev)? ").firstMatch(in: content),
+            let versionString = match.captures[0],
+            let version = SwiftToolsVersion(versionString) {
+            return version
         }
         return nil
     }()
     
+}
+
+public class SPM {
+    
+    public let directory: Path
+    
     public init(directory: Path = .current) {
         self.directory = directory
     }
+    
+    // MARK: - Init project
     
     public enum InitType: String {
         case executable
@@ -44,7 +67,7 @@ public class SPM {
         try runSwift(args: args, transformer: .initialize)
     }
     
-    // MARK: - Building
+    // MARK: - Building / testing
     
     public enum BuildOption {
         case includeTests
@@ -128,7 +151,7 @@ public class SPM {
     
     public func generateTests(for packageTargets: [Package.Target]) throws {
         #if os(macOS)
-        guard let version = version, version >= Version(4, 1, 0) else {
+        guard let version = SwiftExecutable.version, version >= SwiftToolsVersion(major: 4, minor: 1, patch: 0) else {
             throw IceError(message: "test list generation only supported for Swift 4.1 and above")
         }
         
@@ -161,19 +184,54 @@ public class SPM {
         }
         let path = try captureSwift(args: args).stdout
         guard !path.isEmpty else {
-            throw IceError(message: "couldn't retrieve executable path")
+            throw IceError(message: "couldn't retrieve bin path")
         }
         return path.trimmingCharacters(in: .whitespacesAndNewlines)
     }
     
-    public func dumpPackage() throws -> Data {
-        let content = try captureSwift(args: ["package", "dump-package"]).stdout
-        guard let jsonStart = content.index(of: "{"), let data = String(content[jsonStart...]).data(using: .utf8) else {
-            throw IceError(message: "can't parse package")
-        }
-        return data
-    }
+//    public enum DumpMode {
+//        case model
+//        case packageDescription
+//    }
     
+    public func dumpPackage() throws -> Data {
+//        switch mode {
+//        case .model:
+            let content = try captureSwift(args: ["package", "dump-package"]).stdout
+            guard let jsonStart = content.ice_firstIndex(of: "{"), let data = String(content[jsonStart...]).data(using: .utf8) else {
+                throw IceError(message: "can't parse package")
+            }
+            return data
+        /*
+        case .packageDescription:
+            #if os(Linux)
+            throw IceError(message: "dumping package description is not supported on Linux")
+            #endif
+            
+            guard let toolchainPath = SwiftExecutable.toolchainPath else {
+                throw IceError(message: "can't find Swift toolchain")
+            }
+            
+            guard let packageFile = PackageFile.find(in: directory) else {
+                throw IceError(message: "can't find Package.swift")
+            }
+            
+            let libVersion: String
+            if packageFile.toolsVersion >= .v4_2 {
+                libVersion = "4_2"
+            } else {
+                libVersion = "4"
+            }
+            let libPath = toolchainPath + "usr" + "lib" + "swift" + "pm" + libVersion
+            
+            guard let content = try? Task.capture("swiftc", "--driver-mode=swift", "-I", libPath.string, "-L", libPath.string, "-lPackageDescription", packageFile.path.string, "-fileno", "1"),
+                let data = content.stdout.data(using: .utf8) else {
+                    throw IceError(message: "can't parse Package.swift")
+            }
+            return data
+        }*/
+    }
+        
     // MARK: - Helpers
     
     private func runSwift(args: [String], transformer: TransformerPair? = nil) throws {
@@ -190,7 +248,7 @@ public class SPM {
     
     private func captureSwift(args: [String]) throws -> CaptureResult {
         do {
-            return try capture("swift", arguments: args, directory: directory.string)
+            return try Task.capture("swift", arguments: args, directory: directory.string)
         } catch let error as CaptureError {
             let message: String?
             if error.captured.stderr.isEmpty {

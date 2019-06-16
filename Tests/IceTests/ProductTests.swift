@@ -14,11 +14,11 @@ class ProductTests: XCTestCase {
         let icebox = IceBox(template: .lib)
         
         let result = icebox.run("product", "add", "gogo", "--exec")
-        XCTAssertEqual(result.exitStatus, 0)
-        XCTAssertEqual(result.stdout, "")
-        XCTAssertEqual(result.stderr, "")
+        IceAssertEqual(result.exitStatus, 0)
+        IceAssertEqual(result.stdout, "")
+        IceAssertEqual(result.stderr, "")
         
-        XCTAssertEqual(icebox.fileContents("Package.swift"), """
+        IceAssertEqual(icebox.fileContents("Package.swift"), """
         // swift-tools-version:4.0
         // Managed by ice
 
@@ -43,11 +43,11 @@ class ProductTests: XCTestCase {
         let icebox = IceBox(template: .lib)
         
         let result = icebox.run("product", "add", "Static", "-s", "-t", "Lib")
-        XCTAssertEqual(result.exitStatus, 0)
-        XCTAssertEqual(result.stdout, "")
-        XCTAssertEqual(result.stderr, "")
+        IceAssertEqual(result.exitStatus, 0)
+        IceAssertEqual(result.stdout, "")
+        IceAssertEqual(result.stderr, "")
         
-        XCTAssertEqual(icebox.fileContents("Package.swift"), """
+        IceAssertEqual(icebox.fileContents("Package.swift"), """
         // swift-tools-version:4.0
         // Managed by ice
 
@@ -72,11 +72,11 @@ class ProductTests: XCTestCase {
         let icebox = IceBox(template: .lib)
         
         let result = icebox.run("product", "remove", "Lib")
-        XCTAssertEqual(result.exitStatus, 0)
-        XCTAssertEqual(result.stdout, "")
-        XCTAssertEqual(result.stderr, "")
+        IceAssertEqual(result.exitStatus, 0)
+        IceAssertEqual(result.stdout, "")
+        IceAssertEqual(result.stderr, "")
         
-        XCTAssertEqual(icebox.fileContents("Package.swift"), """
+        IceAssertEqual(icebox.fileContents("Package.swift"), """
         // swift-tools-version:4.0
         // Managed by ice
 

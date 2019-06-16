@@ -14,11 +14,11 @@ class TargetTests: XCTestCase {
         let icebox = IceBox(template: .lib)
         
         let result = icebox.run("target", "add", "Core")
-        XCTAssertEqual(result.exitStatus, 0)
-        XCTAssertEqual(result.stdout, "")
-        XCTAssertEqual(result.stderr, "")
+        IceAssertEqual(result.exitStatus, 0)
+        IceAssertEqual(result.stdout, "")
+        IceAssertEqual(result.stderr, "")
         
-        XCTAssertEqual(icebox.fileContents("Package.swift"), """
+        IceAssertEqual(icebox.fileContents("Package.swift"), """
         // swift-tools-version:4.0
         // Managed by ice
 
@@ -43,11 +43,11 @@ class TargetTests: XCTestCase {
         let icebox = IceBox(template: .lib)
         
         let result = icebox.run("target", "add", "Core", "-d", "Lib")
-        XCTAssertEqual(result.exitStatus, 0)
-        XCTAssertEqual(result.stdout, "")
-        XCTAssertEqual(result.stderr, "")
+        IceAssertEqual(result.exitStatus, 0)
+        IceAssertEqual(result.stdout, "")
+        IceAssertEqual(result.stderr, "")
         
-        XCTAssertEqual(icebox.fileContents("Package.swift"), """
+        IceAssertEqual(icebox.fileContents("Package.swift"), """
         // swift-tools-version:4.0
         // Managed by ice
 
@@ -72,11 +72,11 @@ class TargetTests: XCTestCase {
         let icebox = IceBox(template: .lib)
         
         let result = icebox.run("target", "remove", "Lib")
-        XCTAssertEqual(result.exitStatus, 0)
-        XCTAssertEqual(result.stdout, "")
-        XCTAssertEqual(result.stderr, "")
+        IceAssertEqual(result.exitStatus, 0)
+        IceAssertEqual(result.stdout, "")
+        IceAssertEqual(result.stderr, "")
         
-        XCTAssertEqual(icebox.fileContents("Package.swift"), """
+        IceAssertEqual(icebox.fileContents("Package.swift"), """
         // swift-tools-version:4.0
         // Managed by ice
 
@@ -102,11 +102,11 @@ class TargetTests: XCTestCase {
             icebox.execute(with: "tools-version", "update", "4.2")
             
             let result = icebox.run("target", "add", "CSSH", "-s")
-            XCTAssertEqual(result.exitStatus, 0)
-            XCTAssertEqual(result.stdout, "")
-            XCTAssertEqual(result.stderr, "")
+            IceAssertEqual(result.exitStatus, 0)
+            IceAssertEqual(result.stdout, "")
+            IceAssertEqual(result.stderr, "")
             
-            XCTAssertEqual(icebox.fileContents("Package.swift"), """
+            IceAssertEqual(icebox.fileContents("Package.swift"), """
             // swift-tools-version:4.2
             // Managed by ice
 

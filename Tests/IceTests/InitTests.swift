@@ -16,11 +16,11 @@ class InitTests: XCTestCase {
         icebox.createDirectory(path: "MyNewLib")
         
         let result = icebox.run("init", "--lib", configure: { $0.currentDirectoryPath += "/MyNewLib" })
-        XCTAssertEqual(result.exitStatus, 0)
-        XCTAssertEqual(result.stderr, "")
+        IceAssertEqual(result.exitStatus, 0)
+        IceAssertEqual(result.stderr, "")
         
         Differentiate.byVersion(swift4_1AndAbove: {
-            XCTAssertEqual(result.stdout, """
+            IceAssertEqual(result.stdout, """
             
             Creating library package: MyNewLib
 
@@ -40,7 +40,7 @@ class InitTests: XCTestCase {
             
             """)
         }, swift4_0AndAbove: {
-            XCTAssertEqual(result.stdout, """
+            IceAssertEqual(result.stdout, """
             
             Creating library package: MyNewLib
 
@@ -68,11 +68,11 @@ class InitTests: XCTestCase {
         icebox.createDirectory(path: "MyNewExec")
         
         let result = icebox.run("init", "--exec", configure: { $0.currentDirectoryPath += "/MyNewExec" })
-        XCTAssertEqual(result.exitStatus, 0)
-        XCTAssertEqual(result.stderr, "")
+        IceAssertEqual(result.exitStatus, 0)
+        IceAssertEqual(result.stderr, "")
         
         Differentiate.byVersion(swift4_2AndAbove: {
-            XCTAssertEqual(result.stdout, """
+            IceAssertEqual(result.stdout, """
             
             Creating executable package: MyNewExec
 
@@ -92,7 +92,7 @@ class InitTests: XCTestCase {
             
             """)
         }, swift4_0AndAbove: {
-            XCTAssertEqual(result.stdout, """
+            IceAssertEqual(result.stdout, """
             
             Creating executable package: MyNewExec
 

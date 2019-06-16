@@ -7,6 +7,7 @@
 
 @testable import IceKit
 import PathKit
+import TestingUtilities
 import XCTest
 
 class PackageTests: XCTestCase {
@@ -14,108 +15,127 @@ class PackageTests: XCTestCase {
     func testAddProduct() {
         var package = createPackage()
         
-        package.addProduct(name: "MyCLI", type: .executable, targets: ["Target3"])
-        package.addProduct(name: "MyLib", type: .dynamicLibrary, targets: ["Target4"])
+        package.addProduct(name: "MyCLI", targets: ["Target3"], type: .executable)
+        package.addProduct(name: "MyLib", targets: ["Target4"], type: .library(.dynamic))
         
-        let expectedProducts = Fixtures.products + [
-            .init(name: "MyCLI", product_type: "executable", targets: ["Target3"], type: nil),
-            .init(name: "MyLib", product_type: "library", targets: ["Target4"], type: "dynamic")
+        var expectedPackage = Fixtures.modernPackage
+        expectedPackage.products += [
+            .init(name: "MyCLI", targets: ["Target3"], type: .executable),
+            .init(name: "MyLib", targets: ["Target4"], type: .library(.dynamic))
         ]
-        assertEqualCodings(package.products, expectedProducts)
+        IceAssertEqual(package.data, expectedPackage)
     }
     
     func testRemoveProduct() throws {
         var package = createPackage()
         
-        try package.removeProduct(name: "Static")
+        guard let product = package.getProduct(named: "Static") else {
+            XCTFail()
+            return
+        }
         
-        var expectedProducts = Fixtures.products
-        expectedProducts.remove(at: 2)
-        assertEqualCodings(package.products, expectedProducts)
+        package.removeProduct(product)
         
-        XCTAssertThrowsError(try package.removeProduct(name: "not-real"))
+        var expectedPackage = Fixtures.modernPackage
+        expectedPackage.products.remove(at: 2)
+        IceAssertEqual(package.data, expectedPackage)
     }
     
     func testAddDependency() {
         var package = createPackage()
         
-        let ref = RepositoryReference(url: "https://github.com/jakeheis/SwiftCLI")
-        package.addDependency(ref: ref, requirement: .init(version: Version(5, 2, 0)))
+        package.addDependency(url: "https://github.com/jakeheis/SwiftCLI", requirement: .init(from: Version(5, 2, 0)))
         
-        let expectedDependencies = Fixtures.dependencies + [
-            .init(url: "https://github.com/jakeheis/SwiftCLI", requirement: .init(type: .range, lowerBound: "5.2.0", upperBound: "6.0.0", identifier: nil))
-        ]
-        assertEqualCodings(package.dependencies, expectedDependencies)
+        var expectedPackage = Fixtures.modernPackage
+        expectedPackage.dependencies.append(.init(url: "https://github.com/jakeheis/SwiftCLI", requirement: .range("5.2.0", "6.0.0")))
+        IceAssertEqual(package.data, expectedPackage)
     }
     
     func testUpdateDependency() throws {
         var package = createPackage()
         
-        try package.updateDependency(dependency: Fixtures.dependencies[3], to: .init(type: .branch, lowerBound: nil, upperBound: nil, identifier: "master"))
+        try package.updateDependency(dependency: Fixtures.modernPackage.dependencies[3], to: .branch("master"))
         
-        var expectedDependencies = Fixtures.dependencies
-        expectedDependencies[3].requirement = .init(type: .branch, lowerBound: nil, upperBound: nil, identifier: "master")
-        assertEqualCodings(package.dependencies, expectedDependencies)
+        var expectedPackage = Fixtures.modernPackage
+        expectedPackage.dependencies[3].requirement = .branch("master")
+        IceAssertEqual(package.data, expectedPackage)
     }
     
     func testRemoveDependency() throws {
         var package = createPackage()
         
-        try package.removeDependency(named: "Flock")
+        guard let dependency = package.getDependency(named: "Flock") else {
+            XCTFail()
+            return
+        }
         
-        var expectedDependencies = Fixtures.dependencies
+        package.removeDependency(dependency)
+        
+        var expectedDependencies = Fixtures.modernPackage.dependencies
         expectedDependencies.remove(at: 2)
-        assertEqualCodings(package.dependencies, expectedDependencies)
+        XCTAssertEqual(package.dependencies, expectedDependencies)
         
-        var expectedTargets = Fixtures.targets
-        expectedTargets[3].dependencies = [.init(name: "Core")]
-        assertEqualCodings(package.targets, expectedTargets)
+        var expectedTargets = Fixtures.modernPackage.targets
+        expectedTargets[3].dependencies = [.byName("Core")]
         
-        XCTAssertThrowsError(try package.removeDependency(named: "not-real"))
+        XCTAssertEqual(package.targets, expectedTargets)
+        IceAssertEqual(package.targets[0], expectedTargets[0])
+        IceAssertEqual(package.targets[1], expectedTargets[1])
+        IceAssertEqual(package.targets[2], expectedTargets[2])
+        IceAssertEqual(package.targets[3], expectedTargets[3])
     }
     
     func testAddTarget() {
         var package = createPackage()
         
-        package.addTarget(name: "CoreTests", type: .test, dependencies: ["Core"])
+        package.addTarget(name: "CoreTests", type: .test, dependencies: [.byName("Core")])
         
-        let expectedTargets = Fixtures.targets + [
-            .init(name: "CoreTests", type: .test, dependencies: [.init(name: "Core")], path: nil, exclude: [], sources: nil, publicHeadersPath: nil, pkgConfig: nil, providers: nil)
-        ]
-        assertEqualCodings(package.targets, expectedTargets)
+        var expectedPackage = Fixtures.modernPackage
+        expectedPackage.targets.append(.init(name: "CoreTests", type: .test, dependencies: [.byName("Core")]))
+        IceAssertEqual(package.data, expectedPackage)
     }
     
     func testDepend() throws {
         var package = createPackage()
         
-        try package.depend(target: "Core", on: "SwiftCLI")
-        try package.depend(target: "Exclusive", on: "CLI")
+        guard let core = package.getTarget(named: "Core"), let exclusive = package.getTarget(named: "Exclusive") else {
+            XCTFail()
+            return
+        }
         
-        var expectedTargets = Fixtures.targets
-        expectedTargets[2].dependencies = [.init(name: "SwiftCLI")]
-        expectedTargets[3].dependencies += [.init(name: "CLI")]
-        assertEqualCodings(package.targets, expectedTargets)
+        try package.addTargetDependency(for: core, on: .byName("SwiftCLI"))
+        try package.addTargetDependency(for: exclusive, on: .target("CLI"))
         
-        XCTAssertThrowsError(try package.depend(target: "not-real", on: "SwiftCLI"))
+        var expectedPackage = Fixtures.modernPackage
+        expectedPackage.targets[2].dependencies = [.byName("SwiftCLI")]
+        expectedPackage.targets[3].dependencies += [.target("CLI")]
+        IceAssertEqual(package.data, expectedPackage)
     }
     
     func testRemoveTarget() throws {
         var package = createPackage()
         
-        try package.removeTarget(named: "Core")
+        guard let core = package.getTarget(named: "Core") else {
+            XCTFail()
+            return
+        }
         
-        var expectedTargets = Fixtures.targets
-        expectedTargets.remove(at: 2)
-        expectedTargets[0].dependencies.removeFirst()
-        expectedTargets[1].dependencies.remove(at: 1)
-        expectedTargets[2].dependencies.removeFirst()
-        assertEqualCodings(package.targets, expectedTargets)
+        package.removeTarget(core)
         
-        XCTAssertThrowsError(try package.removeTarget(named: "not-real"))
+        var expectedPackage = Fixtures.modernPackage
+        expectedPackage.targets.remove(at: 2)
+        expectedPackage.targets[0].dependencies.removeFirst()
+        expectedPackage.targets[1].dependencies.remove(at: 1)
+        expectedPackage.targets[2].dependencies.removeFirst()
+        
+        IceAssertEqual(package.data, expectedPackage)
+        IceAssertEqual(package.data.targets[0], expectedPackage.targets[0])
+        IceAssertEqual(package.data.targets[1], expectedPackage.targets[1])
+        IceAssertEqual(package.data.targets[2], expectedPackage.targets[2])
     }
     
     private func createPackage() -> Package {
-        return Package(data: Fixtures.package, toolsVersion: .v4, directory: .current, config: mockConfig)
+        return Package(data: Fixtures.modernPackage, toolsVersion: Fixtures.modernToolsVersion, path: .current + "Package.swift", config: mockConfig)
     }
 
 }

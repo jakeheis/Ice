@@ -19,13 +19,14 @@ class AddCommand: IceObject, Command {
     let targets = Key<String>("-t", "--targets", description: "List of targets which should depend on this dependency")
     let noInteractive = Flag("-n", "--no-interactive", description: "Do not prompt for targets if none are supplied")
     
-    let version = Key<Version>("-w", "--version", description: "The version of the dependency to depend on")
+    let from = Key<Version>("-f", "--from", description: "The minimum version of the dependency to depend on; allows more recent versions")
+    let exact = Key<Version>("-e", "--exact", description: "The exact version of the dependency to depend on")
     let branch = Key<String>("-b", "--branch", description: "The branch of the dependency to depend on")
     let sha = Key<String>("-s", "--sha", description: "The commit hash of the dependency to depend on")
     let local = Flag("-l", "--local", description: "Add this dependency as a local dependency")
     
     var optionGroups: [OptionGroup] {
-        return [.atMostOne(version, branch, sha, local)]
+        return [.atMostOne(from, exact, branch, sha, local)]
     }
     
     func execute() throws {
@@ -33,24 +34,26 @@ class AddCommand: IceObject, Command {
             throw IceError(message: "not a valid package reference")
         }
         
-        verboseOut <<< "Resolving url: \(ref.url)"
+        Logger.verbose <<< "Resolving url: \(ref.url)"
         
         let requirement: Package.Dependency.Requirement
-        if let version = version.value {
-            requirement = .init(version: version)
+        if let version = from.value {
+            requirement = .init(from: version)
+        } else if let exact = exact.value {
+            requirement = .exact(exact.string)
         } else if let branch = branch.value {
-            requirement = .init(type: .branch, lowerBound: nil, upperBound: nil, identifier: branch)
+            requirement = .branch(branch)
         } else if let sha = sha.value {
-            requirement = .init(type: .revision, lowerBound: nil, upperBound: nil, identifier: sha)
+            requirement = .revision(sha)
         } else if local.value {
-            requirement = .init(type: .localPackage, lowerBound: nil, upperBound: nil, identifier: nil)
+            requirement = .localPackage
         } else if let latestVersion = try ref.latestVersion() {
-            requirement = .init(version: latestVersion)
+            requirement = .init(from: latestVersion)
         } else {
-            throw IceError(message: "no tagged versions found; manually specify version with --version, --branch, or --sha")
+            throw IceError(message: "no tagged versions found; manually specify version with --from, --exact, --branch, or --sha")
         }
         
-        verboseOut <<< "Resolving at version: \(requirement)"
+        Logger.verbose <<< "Resolving at version: \(requirement)"
         
         var package = try loadPackage()
         
@@ -58,14 +61,14 @@ class AddCommand: IceObject, Command {
             throw IceError(message: "package already depends on \(ref.url)")
         }
         
-        verboseOut <<< "Loaded package: \(package.name)"
+        Logger.verbose <<< "Loaded package: \(package.name)"
         
-        package.addDependency(ref: ref, requirement: requirement)
+        let newDependency = package.addDependency(url: ref.url, requirement: requirement)
         try package.sync()
         
         try SPM().resolve()
         
-        let libs = package.retrieveLibrariesOfDependency(named: ref.name)
+        let libs = package.retrieveLibraries(ofDependency: newDependency)
         if libs.count > 1 {
             stdout <<< ""
             stdout <<< "Note: ".bold.blue + "this dependency offers multiple libraries (" + libs.joined(separator: ", ") + ")"
@@ -73,10 +76,14 @@ class AddCommand: IceObject, Command {
         
         for lib in libs {
             if let targetString = targets.value {
-                let targets = targetString.components(separatedBy: ",")
-                try targets.forEach { try package.depend(target: $0, on: lib) }
+                for targetName in targetString.commaSeparated() {
+                    guard let target = package.getTarget(named: targetName) else {
+                        throw IceError(message: "target '\(targetName)' not found")
+                    }
+                    try package.addTargetDependency(for: target, on: .byName(lib))
+                }
             } else if package.targets.count == 1 {
-                try package.depend(target: package.targets[0].name, on: lib)
+                try package.addTargetDependency(for: package.targets[0], on: .byName(lib))
             } else if !noInteractive.value {
                 stdout <<< ""
                 stdout <<< "Which targets depend on \(lib)?"
@@ -98,9 +105,11 @@ class AddCommand: IceObject, Command {
                     .custom("must be a letter or number corresponding to a target", isTarget)
                 ])
                 
-                let distances = targetString.compactMap { ids.index(of: $0) }
+                let distances = targetString.compactMap { ids.ice_firstIndex(of: $0) }
                 let targets = distances.map { possibleTargets[ids.distance(from: ids.startIndex, to: $0)] }
-                try targets.forEach { try package.depend(target: $0.name, on: lib) }
+                try targets.forEach {
+                    try package.addTargetDependency(for: $0, on: .byName(lib))
+                }
             }
         }
         

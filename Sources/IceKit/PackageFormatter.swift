@@ -16,6 +16,7 @@ public class PackageFormatter {
     public func format() -> ModernPackageData {
         return ModernPackageData(
             name: package.name,
+            platforms: package.platforms.sorted(by: sortPlatform),
             pkgConfig: package.pkgConfig,
             providers: package.providers?.map(formatProvider),
             products: package.products.map(formatProduct).sorted(by: sortProduct),
@@ -27,9 +28,13 @@ public class PackageFormatter {
         )
     }
     
+    func sortPlatform(lhs: ModernPackageData.Platform, rhs: ModernPackageData.Platform) -> Bool {
+        return lhs.platformName.rawValue < rhs.platformName.rawValue
+    }
+    
     func formatProvider(provider: Package.Provider) -> Package.Provider {
         return .init(
-            name: provider.name,
+            kind: provider.kind,
             values: provider.values.sorted()
         )
     }
@@ -37,16 +42,19 @@ public class PackageFormatter {
     func formatProduct(product: Package.Product) -> Package.Product {
         return .init(
             name: product.name,
-            product_type: product.product_type,
             targets: product.targets.sorted(),
             type: product.type
         )
     }
     
     func sortProduct(lhs: Package.Product, rhs: Package.Product) -> Bool {
-        if lhs.isExecutable && !rhs.isExecutable { return true }
-        if !lhs.isExecutable && rhs.isExecutable { return false }
-        return lhs.name < rhs.name
+        switch (lhs.type, rhs.type) {
+        case (.executable, .library(_)):
+            return true
+        case (.library(_), .executable):
+            return false
+        default: return lhs.name < rhs.name
+        }
     }
     
     func sortDependency(lhs: Package.Dependency, rhs: Package.Dependency) -> Bool {
@@ -57,13 +65,28 @@ public class PackageFormatter {
         return .init(
             name: target.name,
             type: target.type,
-            dependencies: target.dependencies.sorted { $0.name < $1.name },
+            dependencies: target.dependencies.sorted { (lhs, rhs) in
+                let lName: String
+                switch lhs {
+                case let .target(name): lName = name
+                case let .product(name, _): lName = name
+                case let .byName(name): lName = name
+                }
+                let rName: String
+                switch rhs {
+                case let .target(name): rName = name
+                case let .product(name, _): rName = name
+                case let .byName(name): rName = name
+                }
+                return lName < rName
+            },
             path: target.path,
             exclude: target.exclude.sorted(),
             sources: target.sources?.sorted(),
             publicHeadersPath: target.publicHeadersPath,
             pkgConfig: target.pkgConfig,
-            providers: target.providers
+            providers: target.providers,
+            settings: target.settings
         )
     }
     

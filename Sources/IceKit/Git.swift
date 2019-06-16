@@ -21,7 +21,7 @@ enum Git {
     static func lsRemote(url: String) throws -> [Version] {
         var versions: [Version] = []
         let versionStream = LineStream { (line) in
-            guard let index = line.index(of: "\t") else {
+            guard let index = line.ice_firstIndex(of: "\t") else {
                 return
             }
             let name = String(line[line.index(index, offsetBy: "refs/tags/".count + 1)...])
