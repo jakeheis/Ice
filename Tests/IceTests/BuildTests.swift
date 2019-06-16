@@ -68,51 +68,6 @@ class BuildTests: XCTestCase {
         XCTAssertFalse(icebox.fileExists(".build/debug"))
     }
     
-    func testWatchBuild() {
-        let icebox = IceBox(template: .lib)
-        
-        Differentiate.byPlatform(mac: {
-            #if os(macOS)
-            DispatchQueue.global().asyncAfter(deadline: .now() + 5) {
-                icebox.createFile(path: "Sources/Lib/Lib.swift", contents: "\nprint(\"hey world\")\n")
-            }
-            
-            DispatchQueue.global().asyncAfter(deadline: .now() + 6) {
-                icebox.interrupt()
-            }
-            
-            let result = icebox.run("build", "-w")
-            
-            IceAssertEqual(result.exitStatus, 2)
-            IceAssertEqual(result.stderr, "")
-            IceAssertEqual(result.stdout, """
-            [ice] rebuilding due to changes...
-            Compile Lib (1 sources)
-            [ice] rebuilding due to changes...
-            Compile Lib (1 sources)
-            
-              ● Error: expressions are not allowed at the top level
-
-                print("hey world")
-                ^
-                at Sources/Lib/Lib.swift:2
-            
-            
-            """)
-            #endif
-        }, linux: {
-            let result = icebox.run("build", "-w")
-            IceAssertEqual(result.exitStatus, 1)
-            IceAssertEqual(result.stdout, "")
-            IceAssertEqual(result.stderr, """
-
-            Error: -w is not supported on Linux
-
-
-            """)
-        })
-    }
-    
     func testBuildErrors() {
         let icebox = IceBox(template: .exec)
         
