@@ -14,12 +14,12 @@ class NewCommand: CreateProjectCommand, Command {
     let name = "new"
     let shortDescription = "Creates a new package in the given directory"
     
-    let projectName = Parameter(completion: .none)
+    @Param var projectName: String
 
     func execute() throws {
-        let path = Path.current + projectName.value
+        let path = Path.current + projectName
         if path.exists {
-            throw IceError(message: "\(projectName.value) already exists")
+            throw IceError(message: "\(projectName) already exists")
         }
         try path.mkdir()
         
@@ -28,7 +28,7 @@ class NewCommand: CreateProjectCommand, Command {
         try createProject()
         
         stdout <<< ""
-        stdout <<< "Run: ".blue.bold + "cd \(projectName.value) && ice build"
+        stdout <<< "Run: ".blue.bold + "cd \(projectName) && ice build"
         stdout <<< ""
     }
 

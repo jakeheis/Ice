@@ -23,31 +23,37 @@ private class TargetAddCommand: IceObject, Command {
     let name = "add"
     let shortDescription = "Add a new target"
     
-    let targetName = Parameter(completion: .none)
+    @Param(completion: .none)
+    var targetName: String
 
-    let isTest = Flag("-t", "--test", description: "Marks this target as a test target")
-    let isSystem = Flag("-s", "--system", description: "Marks this target as a system target")
-    let dependencies = Key<String>("-d", "--dependencies", description: "Creates the new target with the given dependencies; comma-separated")
+    @Flag("-t", "--test", description: "Marks this target as a test target")
+    var isTest: Bool
+    
+    @Flag("-s", "--system", description: "Marks this target as a system target")
+    var isSystem: Bool
+    
+    @Key("-d", "--dependencies", description: "Creates the new target with the given dependencies; comma-separated")
+    var dependencies: String?
     
     var optionGroups: [OptionGroup] {
-        return [.atMostOne(isTest, isSystem), .atMostOne(isSystem, dependencies)]
+        return [.atMostOne($isTest, $isSystem), .atMostOne($isSystem, $dependencies)]
     }
     
     func execute() throws {
         var package = try loadPackage()
         
-        if package.targets.contains(where: { $0.name == targetName.value }) {
-            throw IceError(message: "target \(targetName.value) already exists")
+        if package.targets.contains(where: { $0.name == targetName }) {
+            throw IceError(message: "target \(targetName) already exists")
         }
         
         var targetType: Package.Target.TargetType
-        if isTest.value {
+        if isTest {
             targetType = .test
-        } else if isSystem.value {
+        } else if isSystem {
             targetType = .system
         } else {
             targetType = .regular
-            if targetName.value.contains("Test") {
+            if targetName.contains("Test") {
                 stdout <<< ""
                 stdout <<< "Warning: ".yellow.bold + "Target name contains the word `Tests` but --test was not passed."
                 stdout <<< ""
@@ -56,23 +62,23 @@ private class TargetAddCommand: IceObject, Command {
             }
         }
         
-        let targetDependencies = dependencies.value?.commaSeparated().map { Package.Target.Dependency.byName($0) } ?? []
+        let targetDependencies = dependencies?.commaSeparated().map { Package.Target.Dependency.byName($0) } ?? []
         package.addTarget(
-            name: targetName.value,
+            name: targetName,
             type: targetType,
             dependencies: targetDependencies
         )
         try package.sync()
         
-        let targetPath = Path.current + (targetType == .test ? "Tests" : "Sources") + targetName.value
+        let targetPath = Path.current + (targetType == .test ? "Tests" : "Sources") + targetName
         try targetPath.mkpath()
         
         switch targetType {
         case .regular, .test:
-            let initialFile = targetPath + Path(targetName.value + ".swift")
+            let initialFile = targetPath + Path(targetName + ".swift")
             try initialFile.write("""
             //
-            //  \(targetName.value).swift
+            //  \(targetName).swift
             //  \(package.name)
             //
 
@@ -80,9 +86,9 @@ private class TargetAddCommand: IceObject, Command {
         case .system:
             let initialFile = targetPath + "module.modulemap"
             try initialFile.write("""
-            module \(targetName.value) [system] {
-              header "/usr/include/\(targetName.value).h"
-              link "\(targetName.value)"
+            module \(targetName) [system] {
+              header "/usr/include/\(targetName).h"
+              link "\(targetName)"
               export *
             }
             
@@ -97,12 +103,13 @@ private class TargetRemoveCommand: IceObject, Command {
     let name = "remove"
     let shortDescription = "Remove the given target"
     
-    let target = Parameter(completion: .function(.listTargets))
+    @Param(completion: .function(.listTargets))
+    var target: String
     
     func execute() throws {
         var package = try loadPackage()
-        guard let target = package.getTarget(named: target.value) else {
-            throw IceError(message: "target '\(self.target.value)' not found")
+        guard let target = package.getTarget(named: target) else {
+            throw IceError(message: "target '\(self.target)' not found")
         }
         package.removeTarget(target)
         try package.sync()

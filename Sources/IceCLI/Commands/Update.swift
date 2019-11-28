@@ -13,20 +13,28 @@ class UpdateCommand: IceObject, Command {
     let name = "update"
     let shortDescription = "Update package dependencies"
     
-    let dependency = OptionalParameter(completion: .function(.listDependencies))
+    @OptParam(completion: .function(.listDependencies))
+    var dependency: String?
     
-    let from = Key<Version>("-f", "--from", description: "The minimum version of the dependency to depend on; allows more recent versions")
-    let exact = Key<Version>("-e", "--exact", description: "The exact version of the dependency to depend on")
-    let branch = Key<String>("--branch", description: "The new branch of the dependency to depend on")
-    let sha = Key<String>("--sha", description: "The new commit hash of the dependency to depend on")
+    @Key("-f", "--from", description: "The minimum version of the dependency to depend on; allows more recent versions")
+    var from: Version?
+    
+    @Key("-e", "--exact", description: "The exact version of the dependency to depend on")
+    var exact: Version?
+    
+    @Key("--branch", description: "The new branch of the dependency to depend on")
+    var branch: String?
+    
+    @Key("--sha", description: "The new commit hash of the dependency to depend on")
+    var sha: String?
     
     var optionGroups: [OptionGroup] {
-        return [.atMostOne(from, exact, branch, sha)]
+        return [.atMostOne($from, $exact, $branch, $sha)]
     }
     
     func execute() throws {
-        guard let dependency = dependency.value else {
-            guard from.value == nil && exact.value == nil && branch.value == nil && sha.value == nil else {
+        guard let dependency = dependency else {
+            guard from == nil && exact == nil && branch == nil && sha == nil else {
                 throw IceError(message: "--from, --exact, --branch, and --sha can only be used when updating a specific dependency")
             }
             try SPM().update()
@@ -39,13 +47,13 @@ class UpdateCommand: IceObject, Command {
         }
         
         let requirement: Package.Dependency.Requirement
-        if let version = from.value {
+        if let version = from {
             requirement = .init(from: version)
-        } else if let exact = exact.value {
+        } else if let exact = exact {
             requirement = .exact(exact.string)
-        } else if let branch = branch.value {
+        } else if let branch = branch {
             requirement = .branch(branch)
-        } else if let sha = sha.value {
+        } else if let sha = sha {
             requirement = .revision(sha)
         } else {
             requirement = try inputVersion(for: dep)

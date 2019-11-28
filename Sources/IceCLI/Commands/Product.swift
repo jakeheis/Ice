@@ -22,44 +22,52 @@ private class ProductAddCommand: IceObject, Command {
     let name = "add"
     let shortDescription = "Add a new product"
     
-    let productName = Parameter(completion: .none)
+    @Param(completion: .none)
+    var productName: String
     
-    let executable = Flag("-e", "--exec", description: "Make an executable product")
-    let library = Flag("-l", "--lib", description: "Make a library product (default)")
+    @Flag("-e", "--exec", description: "Make an executable product")
+    var executable: Bool
     
-    let staticProduct = Flag("-s", "--static", description: "Make a static library")
-    let dynamicProduct = Flag("-d", "--dynamic", description: "Make a dynamic library")
+    @Flag("-l", "--lib", description: "Make a library product (default)")
+    var library: Bool
+    
+    @Flag("-s", "--static", description: "Make a static library")
+    var staticProduct: Bool
+    
+    @Flag("-d", "--dynamic", description: "Make a dynamic library")
+    var dynamicProduct: Bool
 
-    let targets = Key<String>("-t", "--targets", description: "Creates the new product with the given targets; comma-separated")
+    @Key<String>("-t", "--targets", description: "Creates the new product with the given targets; comma-separated")
+    var targets: String?
     
     var optionGroups: [OptionGroup] {
         return [
-            .atMostOne(executable, library),
-            .atMostOne(staticProduct, dynamicProduct, executable)
+            .atMostOne($executable, $library),
+            .atMostOne($staticProduct, $dynamicProduct, $executable)
         ]
     }
     
     func execute() throws {
         var package = try loadPackage()
         
-        if package.getProduct(named: productName.value) != nil {
-            throw IceError(message: "product \(productName.value) already exists")
+        if package.getProduct(named: productName) != nil {
+            throw IceError(message: "product \(productName) already exists")
         }
         
         let type: Package.Product.ProductType
-        if executable.value {
+        if executable {
             type = .executable
-        } else if staticProduct.value {
+        } else if staticProduct {
             type = .library(.static)
-        } else if dynamicProduct.value {
+        } else if dynamicProduct {
             type = .library(.dynamic)
         } else {
             type = .library(.automatic)
         }
         
-        let productTargets = targets.value?.commaSeparated() ?? []
+        let productTargets = targets?.commaSeparated() ?? []
         package.addProduct(
-            name: productName.value,
+            name: productName,
             targets: productTargets,
             type: type
         )
@@ -73,13 +81,13 @@ private class ProductRemoveCommand: IceObject, Command {
     let name = "remove"
     let shortDescription = "Remove the given product"
     
-    let product = Parameter()
+    @Param var product: String
     
     func execute() throws {
         var package = try loadPackage()
         
-        guard let product = package.getProduct(named: product.value) else {
-            throw IceError(message: "product '\(self.product.value)' not found")
+        guard let product = package.getProduct(named: product) else {
+            throw IceError(message: "product '\(self.product)' not found")
         }
         
         package.removeProduct(product)

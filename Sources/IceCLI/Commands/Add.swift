@@ -14,38 +14,51 @@ class AddCommand: IceObject, Command {
     let name = "add"
     let shortDescription = "Adds the given package as a dependency"
     
-    let dependency = Parameter(completion: .function(.listRegistry))
+    @Param(completion: .function(.listRegistry))
+    var dependency: String
     
-    let targets = Key<String>("-t", "--targets", description: "List of targets which should depend on this dependency")
-    let noInteractive = Flag("-n", "--no-interactive", description: "Do not prompt for targets if none are supplied")
+    @Key("-t", "--targets", description: "List of targets which should depend on this dependency")
+    var targets: String?
     
-    let from = Key<Version>("-f", "--from", description: "The minimum version of the dependency to depend on; allows more recent versions")
-    let exact = Key<Version>("-e", "--exact", description: "The exact version of the dependency to depend on")
-    let branch = Key<String>("-b", "--branch", description: "The branch of the dependency to depend on")
-    let sha = Key<String>("-s", "--sha", description: "The commit hash of the dependency to depend on")
-    let local = Flag("-l", "--local", description: "Add this dependency as a local dependency")
+    @Flag("-n", "--no-interactive", description: "Do not prompt for targets if none are supplied")
+    var noInteractive: Bool
+    
+    @Key("-f", "--from", description: "The minimum version of the dependency to depend on; allows more recent versions")
+    var from: Version
+    
+    @Key("-e", "--exact", description: "The exact version of the dependency to depend on")
+    var exact: Version
+    
+    @Key("-b", "--branch", description: "The branch of the dependency to depend on")
+    var branch: String
+    
+    @Key("-s", "--sha", description: "The commit hash of the dependency to depend on")
+    var sha: String
+    
+    @Flag("-l", "--local", description: "Add this dependency as a local dependency")
+    var local: Bool
     
     var optionGroups: [OptionGroup] {
-        return [.atMostOne(from, exact, branch, sha, local)]
+        return [.atMostOne($from, $exact, $branch, $sha, $local)]
     }
     
     func execute() throws {
-        guard let ref = RepositoryReference(blob: dependency.value, registry: registry) else {
+        guard let ref = RepositoryReference(blob: dependency, registry: registry) else {
             throw IceError(message: "not a valid package reference")
         }
         
         Logger.verbose <<< "Resolving url: \(ref.url)"
         
         let requirement: Package.Dependency.Requirement
-        if let version = from.value {
+        if let version = from {
             requirement = .init(from: version)
-        } else if let exact = exact.value {
+        } else if let exact = exact {
             requirement = .exact(exact.string)
-        } else if let branch = branch.value {
+        } else if let branch = branch {
             requirement = .branch(branch)
-        } else if let sha = sha.value {
+        } else if let sha = sha {
             requirement = .revision(sha)
-        } else if local.value {
+        } else if local {
             requirement = .localPackage
         } else if let latestVersion = try ref.latestVersion() {
             requirement = .init(from: latestVersion)
@@ -75,7 +88,7 @@ class AddCommand: IceObject, Command {
         }
         
         for lib in libs {
-            if let targetString = targets.value {
+            if let targetString = targets {
                 for targetName in targetString.commaSeparated() {
                     guard let target = package.getTarget(named: targetName) else {
                         throw IceError(message: "target '\(targetName)' not found")
@@ -84,7 +97,7 @@ class AddCommand: IceObject, Command {
                 }
             } else if package.targets.count == 1 {
                 try package.addTargetDependency(for: package.targets[0], on: .byName(lib))
-            } else if !noInteractive.value {
+            } else if noInteractive == false {
                 stdout <<< ""
                 stdout <<< "Which targets depend on \(lib)?"
                 stdout <<< ""

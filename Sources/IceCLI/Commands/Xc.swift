@@ -13,13 +13,16 @@ class XcCommand: IceObject, Command {
     let name = "xc"
     let shortDescription = "Creates a new xcode project for the current package"
     
-    let noOpen = Flag("-n", "--no-open", description: "Don't open the Xcode project after generating it")
-    let codeCoverage = Flag("-c", "--code-coverage", description: "Generate Xcode project with code coverage")
+    @Flag("-n", "--no-open", description: "Don't open the Xcode project after generating it")
+    var noOpen: Bool
+    
+    @Flag("-c", "--code-coverage", description: "Generate Xcode project with code coverage")
+    var codeCoverage: Bool
     
     func execute() throws {
-        try SPM().generateXcodeProject(codeCoverage: codeCoverage.value)
+        try SPM().generateXcodeProject(codeCoverage: codeCoverage)
         
-        if noOpen.value || config.resolved.openAfterXc == false {
+        if noOpen || config.resolved.openAfterXc == false {
             return
         }
         

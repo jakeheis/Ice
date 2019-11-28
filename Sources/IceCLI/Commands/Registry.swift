@@ -24,15 +24,18 @@ private class AddEntryCommand: IceObject, Command {
     let name = "add"
     let shortDescription = "Add the given entry to your local registry"
     
-    let ref = Parameter(completion: .none)
-    let shortName = Parameter(completion: .none)
+    @Param(completion: .none)
+    var ref: String
+    
+    @Param(completion: .none)
+    var shortName: String
 
     func execute() throws {
-        guard let ref = RepositoryReference(blob: ref.value, registry: registry) else {
+        guard let ref = RepositoryReference(blob: ref, registry: registry) else {
             throw IceError(message: "invalid repository reference")
         }
         
-        try registry.add(name: shortName.value, url: ref.url)
+        try registry.add(name: shortName, url: ref.url)
     }
     
 }
@@ -42,10 +45,11 @@ private class RemoveEntryCommand: IceObject, Command {
     let name = "remove"
     let shortDescription = "Remove the given entry from your local registry"
     
-    let from = Parameter(completion: .none)
+    @Param(completion: .none)
+    var entry: String
     
     func execute() throws {
-        try registry.remove(from.value)
+        try registry.remove(entry)
     }
     
 }
@@ -55,11 +59,12 @@ private class LookupEntryCommand: IceObject, Command {
     let name = "lookup"
     let shortDescription = "Lookup an entry in the registry"
     
-    let from = Parameter(completion: .function(.listRegistry))
+    @Param(completion: .function(.listRegistry))
+    var entry: String
     
     func execute() throws {
-        guard let value = registry.get(from.value) else {
-            throw IceError(message: "couldn't find \(from.value)")
+        guard let value = registry.get(entry) else {
+            throw IceError(message: "couldn't find \(entry)")
         }
         stdout <<< value.url
     }

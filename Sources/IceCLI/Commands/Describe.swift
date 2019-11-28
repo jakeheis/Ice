@@ -14,13 +14,14 @@ class DescribeCommand: IceObject, Command {
     let name = "describe"
     let shortDescription = "Describes the given package"
 
-    let package = Parameter(completion: .function(.listRegistry))
+    @Param(completion: .function(.listRegistry))
+    var package: String
     
     func execute() throws {
-        if let entry = registry.get(package.value) {
+        if let entry = registry.get(package) {
             let ref = RepositoryReference(url: entry.url)
             try printRef(ref, description: entry.description)
-        } else if let ref = RepositoryReference(blob: package.value, registry: registry) {
+        } else if let ref = RepositoryReference(blob: package, registry: registry) {
             try printRef(ref)
         }
     }

@@ -17,16 +17,17 @@ class TestCommand: IceObject, Command {
     form [<test-target>].[<test-case>][/<test>] (e.g. `ice test IceKitTests.AddTests/testTargetAdd`)
     """
     
-    let filter = OptionalParameter()
+    @OptParam var filter: String?
     
-    let generate = Flag("--generate-list", description: "Generate Linux test list instead of testing")
+    @Flag("--generate-list", description: "Generate Linux test list instead of testing")
+    var generate: Bool
     
     func execute() throws {
-        if generate.value {
+        if generate {
             let package = try loadPackage()
             try SPM().generateTests(for: package.targets)
         } else {
-            try SPM().test(filter: filter.value)
+            try SPM().test(filter: filter)
         }
     }
     

@@ -35,23 +35,25 @@ class UpdateToolsVersion: IceObject, Command {
     let name = "update"
     let shortDescription = "Update the current project's Swift tools version and migrate Package.swift to the new version"
     
-    let tagged = Flag("-t", "--tagged", description: "Tag the new package file with the version; e.g. create Package@swift-5.0.swift rather than overwrite Package.swift")
+    @Flag("-t", "--tagged", description: "Tag the new package file with the version; e.g. create Package@swift-5.0.swift rather than overwrite Package.swift")
+    var tagged: Bool
     
-    let version = Parameter(completion: .values([
+    @Param(completion: .values([
         ("4.0", ""),
         ("4.2", ""),
         ("5.0", ""),
     ]))
+    var version: String
     
     func execute() throws {
-        guard let toolsVersion = SwiftToolsVersion(version.value) else {
+        guard let toolsVersion = SwiftToolsVersion(version) else {
             throw IceError(message: "invalid tools version")
         }
         
         var package = try loadPackage()
         package.toolsVersion = toolsVersion
         
-        let toolsVersionString = tagged.value ? toolsVersion.description : nil
+        let toolsVersionString = tagged ? toolsVersion.description : nil
         package.path = PackageFile.formPackagePath(in: package.path.parent(), versionTag: toolsVersionString)
         
         try package.sync()

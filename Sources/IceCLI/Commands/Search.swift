@@ -15,16 +15,18 @@ class SearchCommand: IceObject, Command {
     let name = "search"
     let shortDescription = "Searches for the given package"
     
-    let query = Parameter(completion: .none)
+    @Param(completion: .none)
+    var query: String
     
-    let onlyName = Flag("-n", "--name-only", description: "Only search for packages matching the name")
+    @Flag("-n", "--name-only", description: "Only search for packages matching the name")
+    var onlyName: Bool
     
     func execute() throws {
-        let entries = try registry.search(query: query.value, includeDescription: !onlyName.value)
+        let entries = try registry.search(query: query, includeDescription: !onlyName)
         
         if entries.isEmpty {
             stdout <<< "Warning: ".yellow + "no results found"
-            guard let githubQuery = query.value.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed) else {
+            guard let githubQuery = query.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed) else {
                 fatalError()
             }
             stdout <<< ""

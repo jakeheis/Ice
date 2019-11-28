@@ -13,7 +13,8 @@ class RemoveCommand: IceObject, Command {
     let name = "remove"
     let shortDescription = "Removes a dependency from the current package"
     
-    let dependency = Parameter(completion: .function(.listDependencies))
+    @Param(completion: .function(.listDependencies))
+    var dependency: String
     
     func execute() throws {
         // Resolve first so that .build/checkouts is populated for use in Package.retrieveLibrariesOfDependency
@@ -21,8 +22,8 @@ class RemoveCommand: IceObject, Command {
         
         var package = try loadPackage()
         
-        guard let dependency = package.getDependency(named: dependency.value) else {
-            throw IceError(message: "dependency '\(self.dependency.value)' not found")
+        guard let dependency = package.getDependency(named: dependency) else {
+            throw IceError(message: "dependency '\(self.dependency)' not found")
         }
         
         package.removeDependency(dependency)

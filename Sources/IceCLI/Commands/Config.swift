@@ -81,10 +81,11 @@ class GetConfigCommand: IceObject, Command {
     let name = "get"
     let shortDescription = "Gets the config for the given key"
     
-    let key = Parameter(completion: .values(configCompletions))
+    @Param(completion: .values(configCompletions))
+    var key: String
     
     func execute() throws {
-        guard let key = Config.Keys(rawValue: key.value) else {
+        guard let key = Config.Keys(rawValue: key) else {
             throw unrecognizedKeyError
         }
         let resolved = config.resolved
@@ -103,32 +104,38 @@ class SetConfigCommand: IceObject, Command {
     let name = "set"
     let shortDescription = "Sets the config for the given key"
     
-    let key = Parameter(completion: .values(configCompletions))
-    let value = Parameter(completion: .none)
+    @Param(completion: .values(configCompletions))
+    var key: String
     
-    let global = Flag("-g", "--global", description: "Update the global configuation; default")
-    let local = Flag("-l", "--local", description: "Update the local configuation")
+    @Param(completion: .none)
+    var value: String
+    
+    @Flag("-g", "--global", description: "Update the global configuation; default")
+    var global: Bool
+    
+    @Flag("-l", "--local", description: "Update the local configuation")
+    var local: Bool
     
     var configScope: ConfigManager.UpdateScope {
-        return (local.value ? .local : .global)
+        return (local ? .local : .global)
     }
     
     var optionGroups: [OptionGroup] {
-        return [.atMostOne(global, local)]
+        return [.atMostOne($global, $local)]
     }
     
     func execute() throws {
-        guard let key = Config.Keys(rawValue: key.value) else {
+        guard let key = Config.Keys(rawValue: key) else {
             throw unrecognizedKeyError
         }
         switch key {
         case .reformat:
-            guard let val = Bool.convert(from: value.value) else {
+            guard let val = Bool.convert(from: value) else {
                 throw IceError(message: "invalid value (must be true/false)")
             }
             try config.update(scope: configScope) { $0.reformat = val }
         case .openAfterXc:
-            guard let val = Bool.convert(from: value.value) else {
+            guard let val = Bool.convert(from: value) else {
                 throw IceError(message: "invalid value (must be true/false)")
             }
             try config.update(scope: configScope) { $0.openAfterXc = val }

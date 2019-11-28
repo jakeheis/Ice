@@ -33,18 +33,21 @@ class IceObject {
 
 class CreateProjectCommand: IceObject {
     
-    let library = Flag("-l", "--lib", description: "Create a new library project (default)")
-    let executable = Flag("-e", "--exec", description: "Create a new executable project")
+    @Flag("-l", "--lib", description: "Create a new library project (default)")
+    var library: Bool
+    
+    @Flag("-e", "--exec", description: "Create a new executable project")
+    var executable: Bool
     
     var optionGroups: [OptionGroup] {
-        return [.atMostOne(library, executable)]
+        return [.atMostOne($library, $executable)]
     }
     
     func createProject() throws {
         var type: SPM.InitType?
-        if library.value {
+        if library {
             type = .library
-        } else if executable.value {
+        } else if executable {
             type = .executable
         }
         try SPM().initPackage(type: type)
