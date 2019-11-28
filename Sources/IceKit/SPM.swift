@@ -198,7 +198,7 @@ public class SPM {
 //        switch mode {
 //        case .model:
             let content = try captureSwift(args: ["package", "dump-package"]).stdout
-            guard let jsonStart = content.ice_firstIndex(of: "{"), let data = String(content[jsonStart...]).data(using: .utf8) else {
+            guard let jsonStart = content.firstIndex(of: "{"), let data = String(content[jsonStart...]).data(using: .utf8) else {
                 throw IceError(message: "can't parse package")
             }
             return data

@@ -21,8 +21,8 @@ class ConfigGroup: IceObject, CommandGroup {
 }
 
 private let allKeys: String = {
-    let length = Config.Keys.all.reduce(0) { $1.rawValue.count > $0 ? $1.rawValue.count : $0 }
-    return Config.Keys.all.map {
+    let length = Config.Keys.allCases.reduce(0) { $1.rawValue.count > $0 ? $1.rawValue.count : $0 }
+    return Config.Keys.allCases.map {
         let padding = String(repeating: " ", count: length - $0.rawValue.count + 2)
         return "  \($0.rawValue)\(padding)\($0.shortDescription)"
     }.joined(separator: "\n")
@@ -34,7 +34,7 @@ Valid keys:
 
 \(allKeys)
 """)
-private let configCompletions = Config.Keys.all.map { ($0.rawValue, "") }
+private let configCompletions = Config.Keys.allCases.map { ($0.rawValue, "") }
 
 class ShowConfigCommand: IceObject, Command {
     
@@ -48,7 +48,7 @@ class ShowConfigCommand: IceObject, Command {
         let resolvedCol = TextTableColumn(header: "Resolved")
         var table = TextTable(columns: [keyCol, localCol, globalCol, resolvedCol])
         
-        Config.Keys.all.forEach { table.addRow(values: createRow(key: $0)) }
+        Config.Keys.allCases.forEach { table.addRow(values: createRow(key: $0)) }
         stdout <<< table.render()
     }
     

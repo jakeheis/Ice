@@ -60,7 +60,7 @@ public class Registry: RegistryType {
     }
     
     public func remove(_ name: String) throws {
-        guard let index = localRegistry.entries.ice_firstIndex(where: { $0.name == name })  else {
+        guard let index = localRegistry.entries.firstIndex(where: { $0.name == name })  else {
             throw IceError(message: "\(name) does not exist in the local registry")
         }
         localRegistry.entries.remove(at: index)
@@ -107,7 +107,7 @@ public class Registry: RegistryType {
         }
         
         var combined = localEntries + highEntries + middleEntries + bottomEntries
-        if let index = combined.ice_firstIndex(where: { $0.name.lowercased() == query.lowercased() } ) {
+        if let index = combined.firstIndex(where: { $0.name.lowercased() == query.lowercased() } ) {
             let perfectMatch = combined.remove(at: index)
             combined.insert(perfectMatch, at: 0)
         }

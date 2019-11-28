@@ -15,7 +15,7 @@ public struct ConfigFile: Codable {
 
 public struct Config {
     
-    public enum Keys: String {
+    public enum Keys: String, CaseIterable {
         case reformat
         case openAfterXc
         
@@ -25,8 +25,6 @@ public struct Config {
             case .openAfterXc: return "whether Ice should open Xcode the generated project after running `ice xc`; defaults to true"
             }
         }
-        
-        public static var all: [Keys] = [.reformat, openAfterXc]
     }
    
     public let reformat: Bool

@@ -10,7 +10,7 @@ import SwiftCLI
 
 public class Ice {
     
-    public static let version = Version(0, 8, 0)
+    public static let version = Version(0, 9, 0)
     public static let defaultRoot = Path.home + ".icebox"
     
     public let root: Path
