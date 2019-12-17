@@ -1,0 +1,27 @@
+name: Test
+
+on: [push]
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [macOS-latest, ubuntu-latest]
+        swift: [4.1.2, 5.0.1, 5.1.1]
+    runs-on: ${{ matrix.os }}
+    env:
+      SWIFT_VERSION: ${{ matrix.swift }}
+      SWIFT_EXEC: .swiftenv/shims/swift
+    steps:
+    - uses: actions/checkout@v1
+    - name: Install swift
+      run: |
+        git clone https://github.com/kylef/swiftenv.git ~/.swiftenv
+        ~/.swiftenv/bin/swiftenv install "$SWIFT_VERSION" || true
+    - name: Build
+      run: |
+        ~/$SWIFT_EXEC --version
+        ~/$SWIFT_EXEC build
+    - name: Run tests
+      run: |
+        ~/$SWIFT_EXEC test
