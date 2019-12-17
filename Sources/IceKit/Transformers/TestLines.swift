@@ -8,7 +8,7 @@
 import SwiftCLI
 
 final class AllTestsStartLine: Matcher, Matchable {
-    enum SuiteMode: String, ConvertibleFromString {
+    enum SuiteMode: String, Capturable {
         case all = "All tests"
         case selected = "Selected tests"
     }
@@ -22,7 +22,7 @@ final class PackageTestsStartLine: Matcher, Matchable {
 }
 
 final class TestSuiteLine: Matcher, Matchable {
-    enum Status: String, ConvertibleFromString {
+    enum Status: String, Capturable {
         case started
         case passed
         case failed
@@ -35,7 +35,7 @@ final class TestSuiteLine: Matcher, Matchable {
 #if os(macOS)
 
 final class TestCaseLine: Matcher, Matchable {
-    enum Status: String, ConvertibleFromString {
+    enum Status: String, Capturable {
         case started
         case passed
         case failed

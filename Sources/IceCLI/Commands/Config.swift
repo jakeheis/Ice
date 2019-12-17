@@ -130,12 +130,12 @@ class SetConfigCommand: IceObject, Command {
         }
         switch key {
         case .reformat:
-            guard let val = Bool.convert(from: value) else {
+            guard let val = Bool(input: value) else {
                 throw IceError(message: "invalid value (must be true/false)")
             }
             try config.update(scope: configScope) { $0.reformat = val }
         case .openAfterXc:
-            guard let val = Bool.convert(from: value) else {
+            guard let val = Bool(input: value) else {
                 throw IceError(message: "invalid value (must be true/false)")
             }
             try config.update(scope: configScope) { $0.openAfterXc = val }

@@ -8,14 +8,14 @@
 import Rainbow
 import SwiftCLI
 
-final class CompileSwiftLine: Matcher, Matchable {
-    static let regex = Regex("^(Compile|\\[\\d+/\\d+\\] Compiling) Swift Module '(.*)' (.*)$")
-    var module: String { return captures[1] }
-    var sourceCount: String { return captures[2] }
+final class CompileModuleLine: Matcher, Matchable {
+    static let regex = Regex("^(\\d+/\\d+)?(Compile|\\[\\d+/\\d+\\] Compiling) Swift Module '(.*)' (.*)$")
+    var module: String { return captures[2] }
+    var sourceCount: String { return captures[3] }
 }
 
-final class CompileCLine: Matcher, Matchable {
-    static let regex = Regex("^(Compile|\\[\\d+/\\d+\\] Compiling) ([^ ]*) .*\\.(c|m|cpp|mm)$")
+final class CompileFileLine: Matcher, Matchable {
+    static let regex = Regex("^(Compile|\\[\\d+/\\d+\\] Compiling) ([^ ]*) .*\\..*$")
     var module: String { return captures[1] }
 }
 
@@ -24,9 +24,14 @@ final class LinkLine: Matcher, Matchable {
     var product: String { return captures[1] }
 }
 
+final class MergeLine: Matcher, Matchable {
+    static let regex = Regex("^(\\[\\d+/\\d+\\] )?Merging module (.*)")
+    var module: String { return captures[1] }
+}
+
 final class BuildErrorLine: Matcher, Matchable, Equatable {
     
-    enum ErrorType: String, ConvertibleFromString {
+    enum ErrorType: String, Capturable {
         case error
         case warning
         case note

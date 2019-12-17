@@ -16,7 +16,16 @@ class TestTests: XCTestCase {
         let result = icebox.run("test", "--generate-list")
         
         Differentiate.byPlatform(mac: {
-            Differentiate.byVersion(swift5AndAbove: {
+            Differentiate.byVersion(swift5_1AndAbove: {
+                IceAssertEqual(result.exitStatus, 0)
+                IceAssertEqual(result.stderr, "")
+                IceAssertEqual(result.stdout, """
+                Compile Lib
+                Compile LibTests
+                Link LibPackageTests
+                
+                """)
+            }, swift5AndAbove: {
                 IceAssertEqual(result.exitStatus, 0)
                 IceAssertEqual(result.stderr, "")
                 IceAssertEqual(result.stdout, """

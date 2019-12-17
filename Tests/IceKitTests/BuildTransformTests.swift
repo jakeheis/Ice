@@ -28,6 +28,19 @@ class BuildTransformTests: XCTestCase {
         Compile Sup (1 sources)
 
         """)
+        
+        let build5_1 = createTest()
+        build5_1.send("""
+        [1/24] Compiling SwiftCLI ParameterFiller.swift
+        [2/24] Compiling SwiftCLI Path.swift
+        [3/24] Compiling OtherModule Path.swift
+        [4/24] Compiling SwiftCLI Path.swift
+        """)
+        build5_1.expect("""
+        Compile SwiftCLI
+        Compile OtherModule
+
+        """)
     }
     
     func testCompileC() {
@@ -70,6 +83,20 @@ class BuildTransformTests: XCTestCase {
         """)
         build5.expect("""
         Link ./.build/x86_64-apple-macosx/debug/ice
+
+        """)
+    }
+    
+    func testMerge() {
+        let merge = createTest()
+        merge.send("""
+        [23/25] Compiling SwiftCLI file.swift
+        [24/25] Merging module Other
+        [24/25] Merging module SwiftCLI
+        """)
+        merge.expect("""
+        Compile SwiftCLI
+        Compile Other
 
         """)
     }

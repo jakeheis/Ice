@@ -14,7 +14,7 @@ class RunCommand: Command {
     let name = "run"
     let shortDescription = "Runs the executable of the current package"
     
-    @OptParam(completion: .none)
+    @Param(completion: .none)
     var executable: String?
     
     @CollectedParam

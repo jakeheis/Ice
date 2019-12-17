@@ -79,7 +79,7 @@ final class InternalNoteLine: Matcher, Matchable {
 }
 
 final class DependencyActionLine: Matcher, Matchable {
-    enum Action: String, ConvertibleFromString {
+    enum Action: String, Capturable {
         case fetch = "Fetching"
         case update = "Updating"
         case clone = "Cloning"

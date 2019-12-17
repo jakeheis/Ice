@@ -7,6 +7,10 @@
 
 import SwiftCLI
 
+protocol Capturable: ConvertibleFromString {}
+extension String: Capturable {}
+extension Int: Capturable {}
+
 class Captures {
     
     let captures: [String?]
@@ -15,14 +19,14 @@ class Captures {
         self.captures = captures
     }
     
-    subscript<T: ConvertibleFromString>(index: Int) -> T? {
+    subscript<T: Capturable>(index: Int) -> T? {
         guard index < captures.count, let capture = captures[index] else {
             return nil
         }
-        return T.convert(from: capture)
+        return T(input: capture)
     }
     
-    subscript<T: ConvertibleFromString>(index: Int) -> T {
+    subscript<T: Capturable>(index: Int) -> T {
         guard let result: T = self[index] else {
             preconditionFailure("\(type(of: self)) error: didn't have required \(index) group")
         }

@@ -13,7 +13,7 @@ class UpdateCommand: IceObject, Command {
     let name = "update"
     let shortDescription = "Update package dependencies"
     
-    @OptParam(completion: .function(.listDependencies))
+    @Param(completion: .function(.listDependencies))
     var dependency: String?
     
     @Key("-f", "--from", description: "The minimum version of the dependency to depend on; allows more recent versions")

@@ -17,20 +17,24 @@ class BuildOut: BaseTransformer {
     
     private let errorTracker = ErrorTracker()
     
+    private var compilingModules = Set<String>()
+    
     public func go(stream: TransformStream) {
-        if let compileSwift = stream.match(CompileSwiftLine.self) {
-            stdout <<< "Compile ".dim + "\(compileSwift.module) \(compileSwift.sourceCount)"
-        } else if let compileC = stream.match(CompileCLine.self) {
-            stdout <<< "Compile ".dim + "\(compileC.module)"
-            
-            while stream.nextIs(CompileCLine.self, where: { $0.module == compileC.module }) {
-                stream.consume()
+        if let compileModule = stream.match(CompileModuleLine.self) {
+            stdout <<< "Compile ".dim + "\(compileModule.module) \(compileModule.sourceCount)"
+        } else if let compileFile = stream.match(CompileFileLine.self) {
+            if compilingModules.insert(compileFile.module).inserted {
+                stdout <<< "Compile ".dim + "\(compileFile.module)"
             }
         } else if let link = stream.match(LinkLine.self) {
             stdout <<< "Link ".blue + link.product
+        } else if let merge = stream.match(MergeLine.self) {
+            if compilingModules.insert(merge.module).inserted {
+                stdout <<< "Compile ".dim + "\(merge.module)"
+            }
         } else if stream.nextIs(BuildErrorLine.self) {
             Error(errorTracker: errorTracker).go(stream: stream)
-        } else if stream.nextIs(in: [WarningsGeneratedLine.self, UnderscoreLine.self]) {
+        } else if stream.nextIs(in: [MergeLine.self, WarningsGeneratedLine.self, UnderscoreLine.self]) {
             stream.consume()
         } else if let line = stream.match(UnknownErrorLine.self) {
             stdout.print(type: line.type, message: line.message)
@@ -68,7 +72,7 @@ class BuildErr: BaseTransformer {
 private class Error: Transformer {
     
     private let indentation = "    "
-    private let stopLines: [Line.Type] = [CompileSwiftLine.self, CompileCLine.self, BuildErrorLine.self, LinkLine.self, WarningsGeneratedLine.self]
+    private let stopLines: [Line.Type] = [CompileModuleLine.self, CompileFileLine.self, BuildErrorLine.self, LinkLine.self, WarningsGeneratedLine.self, MergeLine.self]
     
     let errorTracker: ErrorTracker
     

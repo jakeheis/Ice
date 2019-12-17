@@ -17,7 +17,7 @@ class TestCommand: IceObject, Command {
     form [<test-target>].[<test-case>][/<test>] (e.g. `ice test IceKitTests.AddTests/testTargetAdd`)
     """
     
-    @OptParam var filter: String?
+    @Param var filter: String?
     
     @Flag("--generate-list", description: "Generate Linux test list instead of testing")
     var generate: Bool

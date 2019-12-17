@@ -19,14 +19,24 @@ class GenerateTestListTests: XCTestCase {
             Differentiate.byVersion(swift5AndAbove: {
                 IceAssertEqual(result.exitStatus, 0)
                 IceAssertEqual(result.stderr, "")
-                IceAssertEqual(result.stdout!, """
-                Compile Lib (1 sources)
-                Compile LibTests (1 sources)
-                Link ./.build/x86_64-apple-macosx/debug/LibPackageTests.xctest/Contents/MacOS/LibPackageTests
                 
-                """)
+                Differentiate.byVersion(swift5_1AndAbove: {
+                    IceAssertEqual(result.stdout, """
+                    Compile Lib
+                    Compile LibTests
+                    Link LibPackageTests
+                    
+                    """)
+                }, swift4_0AndAbove: {
+                    IceAssertEqual(result.stdout, """
+                    Compile Lib (1 sources)
+                    Compile LibTests (1 sources)
+                    Link ./.build/x86_64-apple-macosx/debug/LibPackageTests.xctest/Contents/MacOS/LibPackageTests
+                    
+                    """)
+                })
                 
-                IceAssertEqual(icebox.fileContents("Tests/LinuxMain.swift")!, """
+                IceAssertEqual(icebox.fileContents("Tests/LinuxMain.swift"), """
                 import XCTest
                 
                 import LibTests
@@ -38,7 +48,7 @@ class GenerateTestListTests: XCTestCase {
 
                 """)
                 
-                IceAssertEqual(icebox.fileContents("Tests/LibTests/XCTestManifests.swift")!, """
+                IceAssertEqual(icebox.fileContents("Tests/LibTests/XCTestManifests.swift"), """
                 #if !canImport(ObjectiveC)
                 import XCTest
                 
