@@ -20,8 +20,12 @@ class TestTests: XCTestCase {
                 IceAssertEqual(result.exitStatus, 0)
                 IceAssertEqual(result.stderr, "")
                 IceAssertEqual(result.stdout, """
-                Compile Lib
-                Compile LibTests
+                
+                Compile Lib/Lib.swift
+                Merge Lib
+                
+                Compile LibTests/LibTests.swift
+                Merge LibTests
                 Link LibPackageTests
                 
                 """)

@@ -23,6 +23,7 @@ class TransformerTest {
         self.secondaryCapture = CaptureStream()
         
         TransformerConfig.rewindCharacter = "\n"
+        TransformerConfig.clearLineCharacter = "\n"
         Rainbow.enabled = false
         if isStdout {
             TransformerConfig.stdout = self.primaryCapture

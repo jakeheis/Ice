@@ -17,15 +17,42 @@ class BuildTests: XCTestCase {
         IceAssertEqual(result.stderr, "")
         
         Differentiate.byVersion(swift5_1AndAbove: {
-            IceAssertEqual(result.stdout, """
-            Fetch https://github.com/jakeheis/SwiftCLI
-            Clone https://github.com/jakeheis/SwiftCLI
-            Resolve https://github.com/jakeheis/SwiftCLI at 4.1.2
-            Compile SwiftCLI
-            Compile Exec
-            Link Exec
-            
-            """)
+            result.assertStdout { (t) in
+                t.equals("Fetch https://github.com/jakeheis/SwiftCLI")
+                t.equals("Clone https://github.com/jakeheis/SwiftCLI")
+                t.equals("Resolve https://github.com/jakeheis/SwiftCLI at 4.1.2")
+                t.equalsInAnyOrder(Set("""
+                    Compile SwiftCLI/ArgumentList.swift
+                    Compile SwiftCLI/ArgumentListManipulator.swift
+                    Compile SwiftCLI/CLI.swift
+                    Compile SwiftCLI/Command.swift
+                    Compile SwiftCLI/CommandSignature.swift
+                    Compile SwiftCLI/Compatibility.swift
+                    Compile SwiftCLI/CompletionGenerator.swift
+                    Compile SwiftCLI/Error.swift
+                    Compile SwiftCLI/HelpCommand.swift
+                    Compile SwiftCLI/HelpMessageGenerator.swift
+                    Compile SwiftCLI/Input.swift
+                    Compile SwiftCLI/Option.swift
+                    Compile SwiftCLI/ParameterFiller.swift
+                    Compile SwiftCLI/Path.swift
+                    Compile SwiftCLI/Router.swift
+                    Compile SwiftCLI/Term.swift
+                    Compile SwiftCLI/VersionCommand.swift
+                    Compile SwiftCLI/OptionGroup.swift
+                    Compile SwiftCLI/OptionRecognizer.swift
+                    Compile SwiftCLI/OptionRegistry.swift
+                    Compile SwiftCLI/Output.swift
+                    Compile SwiftCLI/OutputByteStream.swift
+                    Compile SwiftCLI/Parameter.swift
+                    """.split(separator: "\n").map(String.init)))
+                t.equals("Merge SwiftCLI")
+                t.equals("Compile Exec/main.swift")
+                t.equals("Merge Exec")
+                t.equals("Link Exec")
+                t.empty()
+                t.done()
+            }
         }, swift4_0AndAbove: {
             result.assertStdout { (v) in
                 v.equals("Fetch https://github.com/jakeheis/SwiftCLI")
@@ -50,7 +77,8 @@ class BuildTests: XCTestCase {
         IceAssertEqual(initial.stderr, "")
         Differentiate.byVersion(swift5_1AndAbove: {
             IceAssertEqual(initial.stdout, """
-            Compile Lib
+            Compile Lib/Lib.swift
+            Merge Lib
 
             """)
         }, swift4_0AndAbove: {
@@ -65,7 +93,8 @@ class BuildTests: XCTestCase {
         IceAssertEqual(followup.stderr, "")
         Differentiate.byVersion(swift5_1AndAbove: {
             IceAssertEqual(initial.stdout, """
-            Compile Lib
+            Compile Lib/Lib.swift
+            Merge Lib
 
             """)
         }, swift4_0AndAbove: {
@@ -86,8 +115,7 @@ class BuildTests: XCTestCase {
         IceAssertEqual(initial.stderr, "")
         Differentiate.byVersion(swift5_1AndAbove: {
             IceAssertEqual(initial.stdout, """
-            Compile Lib
-
+            Compile Lib/Lib.swift
             """)
         }, swift4_0AndAbove: {
             IceAssertEqual(initial.stdout, """
@@ -117,18 +145,12 @@ class BuildTests: XCTestCase {
         IceAssertEqual(result.stderr, "")
         
         Differentiate.byVersion(swift5_1AndAbove: {
-            IceAssertEqual(result.stdout, """
-            Fetch https://github.com/jakeheis/SwiftCLI
-            Clone https://github.com/jakeheis/SwiftCLI
-            Resolve https://github.com/jakeheis/SwiftCLI at 4.1.2
-            Compile SwiftCLI
-            Compile Exec
-
+            IceAssertEqual(result.stdout?.components(separatedBy: "\n").suffix(from: 29).joined(separator: "\n"), """
               ● Warning: expression implicitly coerced from 'String?' to 'Any'
 
                 print(str)
                       ^^^
-                at Sources/Exec/main.swift:2
+                at ./Sources/Exec/main.swift:2
 
                 Note: provide a default value to avoid this warning
 
@@ -136,7 +158,7 @@ class BuildTests: XCTestCase {
                       ^^^
                           ?? <#default value#>
 
-                at Sources/Exec/main.swift:2
+                at ./Sources/Exec/main.swift:2
 
                 Note: force-unwrap the value to avoid this warning
 
@@ -144,7 +166,7 @@ class BuildTests: XCTestCase {
                       ^^^
                          !
 
-                at Sources/Exec/main.swift:2
+                at ./Sources/Exec/main.swift:2
 
                 Note: explicitly cast to 'Any' with 'as Any' to silence this warning
 
@@ -152,14 +174,14 @@ class BuildTests: XCTestCase {
                       ^^^
                           as Any
 
-                at Sources/Exec/main.swift:2
+                at ./Sources/Exec/main.swift:2
 
 
               ● Error: cannot convert value of type 'String' to specified type 'Int'
 
                 let int: Int = "hello world"
                                ^^^^^^^^^^^^^
-                at Sources/Exec/main.swift:4
+                at ./Sources/Exec/main.swift:4
             
             
             """)
@@ -266,7 +288,8 @@ class BuildTests: XCTestCase {
         IceAssertEqual(success.stderr, "")
         Differentiate.byVersion(swift5_1AndAbove: {
             IceAssertEqual(success.stdout, """
-            Compile Lib
+            Compile Lib/Lib.swift
+            Merge Lib
 
             """)
         }, swift4_0AndAbove: {
@@ -292,12 +315,9 @@ class BuildTests: XCTestCase {
         IceAssertEqual(result.exitStatus, 0)
         IceAssertEqual(result.stderr, "")
         Differentiate.byVersion(swift5_1AndAbove: {
-            IceAssertEqual(result.stdout, """
-            Fetch https://github.com/jakeheis/SwiftCLI
-            Clone https://github.com/jakeheis/SwiftCLI
-            Resolve https://github.com/jakeheis/SwiftCLI at 4.1.2
-            Compile SwiftCLI
-            Compile Exec
+            IceAssertEqual(result.stdout?.components(separatedBy: "\n").suffix(from: 27).joined(separator: "\n"), """
+            Compile Exec/main.swift
+            Merge Exec
             Link Exec
             
             """)

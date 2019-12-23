@@ -37,9 +37,10 @@ class BuildTransformTests: XCTestCase {
         [4/24] Compiling SwiftCLI Path.swift
         """)
         build5_1.expect("""
-        Compile SwiftCLI
-        Compile OtherModule
-
+        Compile SwiftCLI/ParameterFiller.swift
+        Compile SwiftCLI/Path.swift
+        Compile OtherModule/Path.swift
+        Compile SwiftCLI/Path.swift
         """)
     }
     
@@ -51,8 +52,9 @@ class BuildTransformTests: XCTestCase {
         Compile RxCocoaRuntime _RXObjCRuntime.m
         """)
         build.expect("""
-        Compile RxCocoaRuntime
-
+        Compile RxCocoaRuntime/_RXDelegateProxy.m
+        Compile RxCocoaRuntime/_RXKVOObserver.m
+        Compile RxCocoaRuntime/_RXObjCRuntime.m
         """)
         
         let build5 = createTest()
@@ -60,10 +62,13 @@ class BuildTransformTests: XCTestCase {
         [1/10] Compiling RxCocoaRuntime _RXObjCRuntime.m
         [2/10] Compiling RxCocoaRuntime _RXKVOObserver.m
         [3/10] Compiling RxCocoaRuntime _RXDelegateProxy.m
+        [4/10] Compiling something.c
         """)
         build5.expect("""
-        Compile RxCocoaRuntime
-
+        Compile RxCocoaRuntime/_RXObjCRuntime.m
+        Compile RxCocoaRuntime/_RXKVOObserver.m
+        Compile RxCocoaRuntime/_RXDelegateProxy.m
+        Compile something.c
         """)
     }
     
@@ -95,8 +100,10 @@ class BuildTransformTests: XCTestCase {
         [24/25] Merging module SwiftCLI
         """)
         merge.expect("""
-        Compile SwiftCLI
-        Compile Other
+        
+        Compile SwiftCLI/file.swift
+        Merge Other
+        Merge SwiftCLI
 
         """)
     }

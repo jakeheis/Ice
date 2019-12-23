@@ -22,8 +22,12 @@ class GenerateTestListTests: XCTestCase {
                 
                 Differentiate.byVersion(swift5_1AndAbove: {
                     IceAssertEqual(result.stdout, """
-                    Compile Lib
-                    Compile LibTests
+                    
+                    Compile Lib/Lib.swift
+                    Merge Lib
+                    
+                    Compile LibTests/LibTests.swift
+                    Merge LibTests
                     Link LibPackageTests
                     
                     """)

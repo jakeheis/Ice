@@ -15,8 +15,9 @@ final class CompileModuleLine: Matcher, Matchable {
 }
 
 final class CompileFileLine: Matcher, Matchable {
-    static let regex = Regex("^(Compile|\\[\\d+/\\d+\\] Compiling) ([^ ]*) .*\\..*$")
-    var module: String { return captures[1] }
+    static let regex = Regex("^(Compile|\\[\\d+/\\d+\\] Compiling) (([^ ]*) )?([^ ]*)$")
+    var module: String? { return captures[2] }
+    var file: String { captures[3] }
 }
 
 final class LinkLine: Matcher, Matchable {

@@ -16,22 +16,25 @@ extension TransformerPair {
 class BuildOut: BaseTransformer {
     
     private let errorTracker = ErrorTracker()
-    
-    private var compilingModules = Set<String>()
+    private var requiresClear: Bool = false
     
     public func go(stream: TransformStream) {
-        if let compileModule = stream.match(CompileModuleLine.self) {
+        if requiresClear {
+            stdout.write("\(clearLineCharacter)")
+            requiresClear = false
+        }
+        
+        if let compileFile = stream.match(CompileFileLine.self) {
+            requiresClear = true
+            let compiling = (compileFile.module.map { $0 + "/" } ?? "") + compileFile.file
+            stdout.write("Compile ".dim + compiling)
+            fflush(Foundation.stdout)
+        } else if let compileModule = stream.match(CompileModuleLine.self) {
             stdout <<< "Compile ".dim + "\(compileModule.module) \(compileModule.sourceCount)"
-        } else if let compileFile = stream.match(CompileFileLine.self) {
-            if compilingModules.insert(compileFile.module).inserted {
-                stdout <<< "Compile ".dim + "\(compileFile.module)"
-            }
         } else if let link = stream.match(LinkLine.self) {
             stdout <<< "Link ".blue + link.product
         } else if let merge = stream.match(MergeLine.self) {
-            if compilingModules.insert(merge.module).inserted {
-                stdout <<< "Compile ".dim + "\(merge.module)"
-            }
+            stdout <<< "Merge ".dim + "\(merge.module)"
         } else if stream.nextIs(BuildErrorLine.self) {
             Error(errorTracker: errorTracker).go(stream: stream)
         } else if stream.nextIs(in: [MergeLine.self, WarningsGeneratedLine.self, UnderscoreLine.self]) {

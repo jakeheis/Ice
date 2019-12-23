@@ -15,15 +15,10 @@ protocol Transformer {
 }
 
 extension Transformer {
-    var stdout: WritableStream {
-        return TransformerConfig.stdout
-    }
-    var stderr: WritableStream {
-        return TransformerConfig.stderr
-    }
-    var rewindCharacter: String {
-        return TransformerConfig.rewindCharacter
-    }
+    var stdout: WritableStream { TransformerConfig.stdout }
+    var stderr: WritableStream { TransformerConfig.stderr }
+    var rewindCharacter: String { TransformerConfig.rewindCharacter }
+    var clearLineCharacter: String { TransformerConfig.clearLineCharacter }
 }
 
 protocol BaseTransformer: Transformer {}
@@ -59,6 +54,7 @@ struct TransformerConfig {
     static var stdout: WritableStream = WriteStream.stdout
     static var stderr: WritableStream = WriteStream.stderr
     static var rewindCharacter = Term.isTTY ? "\r" : "\n"
+    static var clearLineCharacter = Term.isTTY ? "\u{001B}[2K\r" : "\n"
     
     private init() {}
 }
