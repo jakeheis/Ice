@@ -16,47 +16,25 @@ class NewTests: XCTestCase {
         let result = icebox.run("new", "MyNewLib", "--lib")
         IceAssertEqual(result.exitStatus, 0)
         IceAssertEqual(result.stderr, "")
+        IceAssertEqual(result.stdout, """
         
-        Differentiate.byVersion(swift4_1AndAbove: {
-            IceAssertEqual(result.stdout, """
-            
-            Creating library package: MyNewLib
+        Creating library package: MyNewLib
 
-                create Package.swift
-                create README.md
-                create .gitignore
-                create Sources/
-                create Sources/MyNewLib/MyNewLib.swift
-                create Tests/
-                create Tests/LinuxMain.swift
-                create Tests/MyNewLibTests/
-                create Tests/MyNewLibTests/MyNewLibTests.swift
-                create Tests/MyNewLibTests/XCTestManifests.swift
+            create Package.swift
+            create README.md
+            create .gitignore
+            create Sources/
+            create Sources/MyNewLib/MyNewLib.swift
+            create Tests/
+            create Tests/LinuxMain.swift
+            create Tests/MyNewLibTests/
+            create Tests/MyNewLibTests/MyNewLibTests.swift
+            create Tests/MyNewLibTests/XCTestManifests.swift
 
-            Run: cd MyNewLib && ice build
-            
-            
-            """)
-        }, swift4_0AndAbove: {
-            IceAssertEqual(result.stdout, """
-            
-            Creating library package: MyNewLib
-            
-                create Package.swift
-                create README.md
-                create .gitignore
-                create Sources/
-                create Sources/MyNewLib/MyNewLib.swift
-                create Tests/
-                create Tests/LinuxMain.swift
-                create Tests/MyNewLibTests/
-                create Tests/MyNewLibTests/MyNewLibTests.swift
-            
-            Run: cd MyNewLib && ice build
-            
-            
-            """)
-        })
+        Run: cd MyNewLib && ice build
+        
+        
+        """)
         
         XCTAssertTrue(icebox.fileExists("MyNewLib"))
         XCTAssertTrue(icebox.fileExists("MyNewLib/Package.swift"))
@@ -68,44 +46,25 @@ class NewTests: XCTestCase {
         let result = icebox.run("new", "MyNewExec", "--exec")
         IceAssertEqual(result.exitStatus, 0)
         IceAssertEqual(result.stderr, "")
+        IceAssertEqual(result.stdout, """
         
-        Differentiate.byVersion(swift4_2AndAbove: {
-            IceAssertEqual(result.stdout, """
-            
-            Creating executable package: MyNewExec
+        Creating executable package: MyNewExec
 
-                create Package.swift
-                create README.md
-                create .gitignore
-                create Sources/
-                create Sources/MyNewExec/main.swift
-                create Tests/
-                create Tests/LinuxMain.swift
-                create Tests/MyNewExecTests/
-                create Tests/MyNewExecTests/MyNewExecTests.swift
-                create Tests/MyNewExecTests/XCTestManifests.swift
+            create Package.swift
+            create README.md
+            create .gitignore
+            create Sources/
+            create Sources/MyNewExec/main.swift
+            create Tests/
+            create Tests/LinuxMain.swift
+            create Tests/MyNewExecTests/
+            create Tests/MyNewExecTests/MyNewExecTests.swift
+            create Tests/MyNewExecTests/XCTestManifests.swift
 
-            Run: cd MyNewExec && ice build
-            
-            
-            """)
-        }, swift4_0AndAbove: {
-            IceAssertEqual(result.stdout, """
-            
-            Creating executable package: MyNewExec
-
-                create Package.swift
-                create README.md
-                create .gitignore
-                create Sources/
-                create Sources/MyNewExec/main.swift
-                create Tests/
-
-            Run: cd MyNewExec && ice build
-            
-            
-            """)
-        })
+        Run: cd MyNewExec && ice build
+        
+        
+        """)
         
         XCTAssertTrue(icebox.fileExists("MyNewExec"))
         XCTAssertTrue(icebox.fileExists("MyNewExec/Package.swift"))

@@ -36,8 +36,8 @@ public class Differentiate {
         differentiate.byPlatform(mac: mac, linux: linux)
     }
     
-    public static func byVersion(swift5_1AndAbove: Assertion? = nil, swift5AndAbove: Assertion? = nil, swift4_2AndAbove: Assertion? = nil, swift4_1AndAbove: Assertion? = nil, swift4_0AndAbove: Assertion) {
-        differentiate.byVersion(swift5_1AndAbove: swift5_1AndAbove, swift5AndAbove: swift5AndAbove, swift4_2AndAbove: swift4_2AndAbove, swift4_1AndAbove: swift4_1AndAbove, swift4_0AndAbove: swift4_0AndAbove)
+    public static func byVersion(swift5_1AndAbove: Assertion) {
+        differentiate.byVersion(swift5_1AndAbove: swift5_1AndAbove)
     }
     
     private static let differentiate = Differentiate()
@@ -50,18 +50,7 @@ public class Differentiate {
         platform = "Linux"
         #endif
         
-        let version: String
-        #if swift(>=5.0.50)
-        version = "5.1 (and above)"
-        #elseif swift(>=5.0)
-        version = "5.0"
-        #elseif swift(>=4.1.50)
-        version = "4.2"
-        #elseif swift(>=4.1)
-        version = "4.1"
-        #else
-        version = "4.0"
-        #endif
+        let version: String = "5.1 (and above)"
         
         print()
         print("Differentiate: running tests on \(platform), Swift version \(version)")
@@ -76,46 +65,8 @@ public class Differentiate {
         #endif
     }
     
-    private func byVersion(swift5_1AndAbove: Assertion?, swift5AndAbove: Assertion?, swift4_2AndAbove: Assertion?, swift4_1AndAbove: Assertion?, swift4_0AndAbove: Assertion) {
-        #if swift(>=5.0.50)
-        if let swift5_1AndAbove = swift5_1AndAbove {
-            swift5_1AndAbove()
-        } else if let swift5AndAbove = swift5AndAbove {
-            swift5AndAbove()
-        } else if let swift4_2AndAbove = swift4_2AndAbove {
-            swift4_2AndAbove()
-        } else if let swift4_1AndAbove = swift4_1AndAbove {
-            swift4_1AndAbove()
-        } else {
-            swift4_0AndAbove()
-        }
-        #elseif swift(>=5.0)
-        if let swift5AndAbove = swift5AndAbove {
-            swift5AndAbove()
-        } else if let swift4_2AndAbove = swift4_2AndAbove {
-            swift4_2AndAbove()
-        } else if let swift4_1AndAbove = swift4_1AndAbove {
-            swift4_1AndAbove()
-        } else {
-            swift4_0AndAbove()
-        }
-        #elseif swift(>=4.1.50)
-        if let swift4_2AndAbove = swift4_2AndAbove {
-            swift4_2AndAbove()
-        } else if let swift4_1AndAbove = swift4_1AndAbove {
-            swift4_1AndAbove()
-        } else {
-            swift4_0AndAbove()
-        }
-        #elseif swift(>=4.1)
-        if let swift4_1AndAbove = swift4_1AndAbove {
-        swift4_1AndAbove()
-        } else {
-        swift4_0AndAbove()
-        }
-        #else
-        swift4_0AndAbove()
-        #endif
+    private func byVersion(swift5_1AndAbove: Assertion) {
+        swift5_1AndAbove()
     }
     
 }

@@ -100,7 +100,6 @@ class BuildTransformTests: XCTestCase {
         [24/25] Merging module SwiftCLI
         """)
         merge.expect("""
-        
         Compile SwiftCLI/file.swift
         Merge Other
         Merge SwiftCLI

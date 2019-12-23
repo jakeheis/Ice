@@ -16,47 +16,16 @@ class TestTests: XCTestCase {
         let result = icebox.run("test", "--generate-list")
         
         Differentiate.byPlatform(mac: {
-            Differentiate.byVersion(swift5_1AndAbove: {
-                IceAssertEqual(result.exitStatus, 0)
-                IceAssertEqual(result.stderr, "")
-                IceAssertEqual(result.stdout, """
-                
-                Compile Lib/Lib.swift
-                Merge Lib
-                
-                Compile LibTests/LibTests.swift
-                Merge LibTests
-                Link LibPackageTests
-                
-                """)
-            }, swift5AndAbove: {
-                IceAssertEqual(result.exitStatus, 0)
-                IceAssertEqual(result.stderr, "")
-                IceAssertEqual(result.stdout, """
-                Compile Lib (1 sources)
-                Compile LibTests (1 sources)
-                Link ./.build/x86_64-apple-macosx/debug/LibPackageTests.xctest/Contents/MacOS/LibPackageTests
-                
-                """)
-            }, swift4_1AndAbove: {
-                IceAssertEqual(result.exitStatus, 0)
-                IceAssertEqual(result.stderr, "")
-                IceAssertEqual(result.stdout, """
-                Compile Lib (1 sources)
-                Compile LibTests (1 sources)
-                Link ./.build/x86_64-apple-macosx10.10/debug/LibPackageTests.xctest/Contents/MacOS/LibPackageTests
-                
-                """)
-            }, swift4_0AndAbove: {
-                IceAssertEqual(result.exitStatus, 1)
-                IceAssertEqual(result.stdout, "")
-                IceAssertEqual(result.stderr, """
-                
-                Error: test list generation only supported for Swift 4.1 and above
-                
-                
-                """)
-            })
+            IceAssertEqual(result.exitStatus, 0)
+            IceAssertEqual(result.stderr, "")
+            IceAssertEqual(result.stdout, """
+            Compile Lib/Lib.swift
+            Merge Lib
+            Compile LibTests/LibTests.swift
+            Merge LibTests
+            Link LibPackageTests
+            
+            """)
         }, linux: {
             IceAssertEqual(result.exitStatus, 1)
             IceAssertEqual(result.stdout, "")

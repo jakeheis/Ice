@@ -127,36 +127,18 @@ class AddTests: XCTestCase {
         IceAssertEqual(result.exitStatus, 0)
         IceAssertEqual(result.stderr, "")
         
-        Differentiate.byVersion(swift4_2AndAbove: {
-            result.assertStdout { (t) in
-                t.equals("Fetch https://github.com/jakeheis/SwiftCLI")
-                t.equals("Fetch https://github.com/jakeheis/Regex")
-                t.equalsInAnyOrder([
-                    "Clone https://github.com/jakeheis/Regex",
-                    "Resolve https://github.com/jakeheis/Regex at 1.2.0",
-                    "Clone https://github.com/jakeheis/SwiftCLI",
-                    "Resolve https://github.com/jakeheis/SwiftCLI at 4.1.2"
-                ])
-                t.empty()
-                t.done()
-            }
-        }, swift4_1AndAbove: {
-            IceAssertEqual(result.stdout, """
-            Update https://github.com/jakeheis/SwiftCLI
-            Fetch https://github.com/jakeheis/Regex
-            Clone https://github.com/jakeheis/Regex
-            Resolve https://github.com/jakeheis/Regex at 1.2.0
-            
-            """)
-        }, swift4_0AndAbove: {
-            IceAssertEqual(result.stdout, """
-            Fetch https://github.com/jakeheis/Regex
-            Update https://github.com/jakeheis/SwiftCLI
-            Clone https://github.com/jakeheis/Regex
-            Resolve https://github.com/jakeheis/Regex at 1.2.0
-            
-            """)
-        })
+        result.assertStdout { (t) in
+            t.equals("Fetch https://github.com/jakeheis/SwiftCLI")
+            t.equals("Fetch https://github.com/jakeheis/Regex")
+            t.equalsInAnyOrder([
+                "Clone https://github.com/jakeheis/Regex",
+                "Resolve https://github.com/jakeheis/Regex at 1.2.0",
+                "Clone https://github.com/jakeheis/SwiftCLI",
+                "Resolve https://github.com/jakeheis/SwiftCLI at 4.1.2"
+            ])
+            t.empty()
+            t.done()
+        }
         
         IceAssertEqual(icebox.fileContents("Package.swift"), """
         // swift-tools-version:4.0
@@ -256,37 +238,18 @@ class AddTests: XCTestCase {
         let result = icebox.run("add", "jakeheis/IceLibTest")
         IceAssertEqual(result.exitStatus, 0)
         IceAssertEqual(result.stderr, "")
-        
-        Differentiate.byVersion(swift4_2AndAbove: {
-            result.assertStdout { (t) in
-                t.equals("Fetch https://github.com/jakeheis/SwiftCLI")
-                t.equals("Fetch https://github.com/jakeheis/IceLibTest")
-                t.equalsInAnyOrder([
-                    "Clone https://github.com/jakeheis/IceLibTest",
-                    "Resolve https://github.com/jakeheis/IceLibTest at 1.0.0",
-                    "Clone https://github.com/jakeheis/SwiftCLI",
-                    "Resolve https://github.com/jakeheis/SwiftCLI at 4.1.2"
-                ])
-                t.empty()
-                t.done()
-            }
-        }, swift4_1AndAbove: {
-            IceAssertEqual(result.stdout, """
-            Update https://github.com/jakeheis/SwiftCLI
-            Fetch https://github.com/jakeheis/IceLibTest
-            Clone https://github.com/jakeheis/IceLibTest
-            Resolve https://github.com/jakeheis/IceLibTest at 1.0.0
-            
-            """)
-        }, swift4_0AndAbove: {
-            IceAssertEqual(result.stdout, """
-            Fetch https://github.com/jakeheis/IceLibTest
-            Update https://github.com/jakeheis/SwiftCLI
-            Clone https://github.com/jakeheis/IceLibTest
-            Resolve https://github.com/jakeheis/IceLibTest at 1.0.0
-            
-            """)
-        })
+        result.assertStdout { (t) in
+            t.equals("Fetch https://github.com/jakeheis/SwiftCLI")
+            t.equals("Fetch https://github.com/jakeheis/IceLibTest")
+            t.equalsInAnyOrder([
+                "Clone https://github.com/jakeheis/IceLibTest",
+                "Resolve https://github.com/jakeheis/IceLibTest at 1.0.0",
+                "Clone https://github.com/jakeheis/SwiftCLI",
+                "Resolve https://github.com/jakeheis/SwiftCLI at 4.1.2"
+            ])
+            t.empty()
+            t.done()
+        }
         
         IceAssertEqual(icebox.fileContents("Package.swift"), """
         // swift-tools-version:4.0
