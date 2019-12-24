@@ -1,6 +1,6 @@
 # Ice
 
-[![Build Status](https://travis-ci.org/jakeheis/Ice.svg?branch=master)](https://travis-ci.org/jakeheis/Ice)
+[![Build Status](https://github.com/jakeheis/Ice/workflows/Test/badge.svg)](https://github.com/jakeheis/Ice/actions)
 
 ❄️ A developer friendly package manager for Swift; 100% compatible with Swift Package Manager
 
@@ -16,6 +16,7 @@ A few features Ice has that SPM lacks:
 - Short command names for the most used commands
 
 ## Installation
+
 ### [Mint](https://github.com/yonaskolb/mint) (recommended)
 
 ```bash
