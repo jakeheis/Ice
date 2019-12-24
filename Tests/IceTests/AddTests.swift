@@ -239,9 +239,9 @@ class AddTests: XCTestCase {
         IceAssertEqual(result.exitStatus, 0)
         IceAssertEqual(result.stderr, "")
         result.assertStdout { (t) in
-            t.equals("Fetch https://github.com/jakeheis/SwiftCLI")
-            t.equals("Fetch https://github.com/jakeheis/IceLibTest")
             t.equalsInAnyOrder([
+                "Fetch https://github.com/jakeheis/SwiftCLI",
+                "Fetch https://github.com/jakeheis/IceLibTest",
                 "Clone https://github.com/jakeheis/IceLibTest",
                 "Resolve https://github.com/jakeheis/IceLibTest at 1.0.0",
                 "Clone https://github.com/jakeheis/SwiftCLI",
