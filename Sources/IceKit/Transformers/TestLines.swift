@@ -57,7 +57,7 @@ final class AssertionFailureLine: Matcher, Matchable {
 #else
 
 final class TestCaseLine: Matcher, Matchable {
-    enum Status: String, ConvertibleFromString {
+    enum Status: String, Capturable {
         case started
         case passed
         case failed
