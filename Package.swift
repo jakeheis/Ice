@@ -13,7 +13,7 @@ let package = Package(
         .package(url: "https://github.com/jakeheis/Icebox", from: "0.0.6"),
         .package(url: "https://github.com/kylef/PathKit", from: "0.9.0"),
         .package(url: "https://github.com/onevcat/Rainbow", from: "3.1.1"),
-        .package(path: "../SwiftCLI"),
+        .package(url: "https://github.com/jakeheis/SwiftCLI", from: "6.0.1"),
         .package(url: "https://github.com/scottrhoyt/SwiftyTextTable", from: "0.9.0"),
     ],
     targets: [
