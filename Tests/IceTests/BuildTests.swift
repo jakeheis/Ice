@@ -94,7 +94,7 @@ class BuildTests: XCTestCase {
     }
     
     func testBuildErrors() {
-        let icebox = IceBox(template: .exec)
+        let icebox = IceBox(template: .lib)
         
         let contents = """
         let str: String? = "text"
@@ -103,17 +103,26 @@ class BuildTests: XCTestCase {
         let int: Int = "hello world"
 
         """
-        icebox.createFile(path: "Sources/Exec/main.swift", contents: contents)
+        icebox.createFile(path: "Sources/Lib/Lib.swift", contents: contents)
         
         let result = icebox.run("build")
         IceAssertEqual(result.exitStatus, 1)
         IceAssertEqual(result.stderr, "")
-        IceAssertEqual(result.stdout?.components(separatedBy: "\n").suffix(from: 29).joined(separator: "\n"), """
+        IceAssertEqual(result.stdout, """
+        Compile Lib/Lib.swift
+
+          ● Error: expressions are not allowed at the top level
+        
+            print(str)
+            ^
+            at ./Sources/Lib/Lib.swift:2
+        
+        
           ● Warning: expression implicitly coerced from 'String?' to 'Any'
 
             print(str)
                   ^^^
-            at ./Sources/Exec/main.swift:2
+            at ./Sources/Lib/Lib.swift:2
 
             Note: provide a default value to avoid this warning
 
@@ -121,7 +130,7 @@ class BuildTests: XCTestCase {
                   ^^^
                       ?? <#default value#>
 
-            at ./Sources/Exec/main.swift:2
+            at ./Sources/Lib/Lib.swift:2
 
             Note: force-unwrap the value to avoid this warning
 
@@ -129,7 +138,7 @@ class BuildTests: XCTestCase {
                   ^^^
                      !
 
-            at ./Sources/Exec/main.swift:2
+            at ./Sources/Lib/Lib.swift:2
 
             Note: explicitly cast to 'Any' with 'as Any' to silence this warning
 
@@ -137,14 +146,14 @@ class BuildTests: XCTestCase {
                   ^^^
                       as Any
 
-            at ./Sources/Exec/main.swift:2
+            at ./Sources/Lib/Lib.swift:2
 
 
           ● Error: cannot convert value of type 'String' to specified type 'Int'
 
             let int: Int = "hello world"
                            ^^^^^^^^^^^^^
-            at ./Sources/Exec/main.swift:4
+            at ./Sources/Lib/Lib.swift:4
         
         
         """)
@@ -182,18 +191,32 @@ class BuildTests: XCTestCase {
         
         """)
         
-        let result2 = IceBox(template: .exec).run("build", "--product=Prod")
+        let result2 = IceBox(template: .lib).run("build", "--product=Prod")
         IceAssertEqual(result2.exitStatus, 1)
-        IceAssertEqual(result2.stdout, """
-        Fetch https://github.com/jakeheis/SwiftCLI
-        Clone https://github.com/jakeheis/SwiftCLI
-        Resolve https://github.com/jakeheis/SwiftCLI at 4.1.2
-        
-        """)
+        IceAssertEqual(result2.stdout, "")
         IceAssertEqual(result2.stderr, """
         
         Error: no product named 'Prod'
 
+        
+        """)
+    }
+    
+    func testBuildForward() {
+        let result = IceBox(template: .lib).run("build", "--Xswiftc", "-swift-version", "--Xswiftc", "3")
+        IceAssertEqual(result.exitStatus, 1)
+        IceAssertEqual(result.stderr, "")
+        IceAssertEqual(result.stdout, """
+        Compile Lib/Lib.swift
+
+          ● Error: invalid value '3' in '-swift-version 3'
+
+            at <unknown>:0
+
+            Note: valid arguments to '-swift-version' are '4', '4.2', '5'
+
+            at <unknown>:0
+        
         
         """)
     }

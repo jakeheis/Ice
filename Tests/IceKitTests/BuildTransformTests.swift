@@ -284,9 +284,13 @@ class BuildTransformTests: XCTestCase {
 
           ● Error: PCH was compiled with module cache path '/foo/.build/x86_64-apple-macosx10.10/debug/ModuleCache/F6Q938U2LW28', but the path is currently '/bar/.build/x86_64-apple-macosx10.10/debug/ModuleCache/F6Q938U2LW28'
 
+            at <unknown>:0
 
+        
           ● Error: missing required module 'SwiftShims'
 
+            at <unknown>:0
+        
         
         """)
     }
@@ -323,6 +327,8 @@ class BuildTransformTests: XCTestCase {
 
           ● Error: link command failed with exit code 1 (use -v to see invocation)
 
+            at <unknown>:0
+        
         
         """)
     }

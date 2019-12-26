@@ -39,8 +39,6 @@ class BuildOut: BaseTransformer {
             Error(errorTracker: errorTracker).go(stream: stream)
         } else if stream.nextIs(in: [MergeLine.self, WarningsGeneratedLine.self, UnderscoreLine.self]) {
             stream.consume()
-        } else if let line = stream.match(UnknownErrorLine.self) {
-            stdout.print(type: line.type, message: line.message)
         } else if let linkerError = stream.match(LinkerErrorStartLine.self) {
             stdout <<< linkerError.text
             while stream.isOpen() && !stream.nextIs(LinkerErrorEndLine.self) {
@@ -102,7 +100,7 @@ private class Error: Transformer {
             out <<< ""
         }
         
-        if metadataLine.type == .note && (stream.nextIs(in: stopLines) || !stream.isOpen()) {
+        if stream.nextIs(in: stopLines) || !stream.isOpen() {
             return
         }
         

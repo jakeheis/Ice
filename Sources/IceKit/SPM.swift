@@ -75,7 +75,7 @@ public class SPM {
         case product(String)
     }
     
-    public func build(release: Bool, buildOption: BuildOption? = nil) throws {
+    public func build(release: Bool = false, buildOption: BuildOption? = nil, forwardArguments: [String] = []) throws {
         // Resolve verbosely first because for some reason, SPM does not flush pipe
         // when printing package resolution info
         try resolve()
@@ -91,6 +91,7 @@ public class SPM {
             case let .product(product): args += ["--product", product]
             }
         }
+        args += forwardArguments
         try runSwift(args: args, transformer: .build)
     }
     
@@ -106,13 +107,15 @@ public class SPM {
         try Task.execvp("swift", arguments: arguments, directory: directory.string)
     }
     
-    public func test(filter: String?) throws {
+    public func test(filter: String? = nil, forwardArguments: [String] = []) throws {
         try build(release: false, buildOption: .includeTests)
         
         var args = ["test"]
         if let filter = filter {
             args += ["--filter", filter]
         }
+        args += forwardArguments
+
         try runSwift(args: args, transformer: .test)
     }
     
@@ -231,10 +234,12 @@ public class SPM {
             return data
         }*/
     }
-        
+    
     // MARK: - Helpers
     
     private func runSwift(args: [String], transformer: TransformerPair? = nil) throws {
+        Logger.verbose <<< "Running: swift \(args.joined(separator: " "))"
+        
         let stdout: WritableStream = transformer?.stdout ?? WriteStream.stdout
         let stderr: WritableStream = transformer?.stderr ?? WriteStream.stderr
         let task = Task(executable: "swift", arguments: args, directory: directory.string, stdout: stdout, stderr: stderr)
@@ -247,6 +252,8 @@ public class SPM {
     }
     
     private func captureSwift(args: [String]) throws -> CaptureResult {
+        Logger.verbose <<< "Capturing: swift \(args.joined(separator: " "))"
+        
         do {
             return try Task.capture("swift", arguments: args, directory: directory.string)
         } catch let error as CaptureError {

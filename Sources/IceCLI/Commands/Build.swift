@@ -8,16 +8,16 @@
 import IceKit
 import SwiftCLI
 
-class BuildCommand: Command {
+class BuildCommand: ForwardFlagsCommand, Command {
     
     let name = "build"
     let shortDescription = "Builds the current project"
     
     @Key("-t", "--target", description: "The individual target to build; cannot be used with --product")
-    var target: String
+    var target: String?
     
     @Key("-p", "--product", description: "The individual product to build; cannot be used with --target")
-    var product: String
+    var product: String?
     
     @Flag("-c", "--clean", description: "Clean the build folder before building")
     var clean: Bool
@@ -54,7 +54,7 @@ class BuildCommand: Command {
     
     func build(spm: SPM) throws {
         let buildOption: SPM.BuildOption? = target.flatMap { .target($0) } ?? product.flatMap { .product($0) }
-        try spm.build(release: release, buildOption: buildOption)
+        try spm.build(release: release, buildOption: buildOption, forwardArguments: forwardArguments)
     }
     
 }

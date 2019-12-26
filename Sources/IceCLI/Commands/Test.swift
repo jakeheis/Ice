@@ -8,7 +8,7 @@
 import IceKit
 import SwiftCLI
 
-class TestCommand: IceObject, Command {
+class TestCommand: ForwardFlagsCommand, Command {
     
     let name = "test"
     let shortDescription = "Tests the current package"
@@ -19,7 +19,7 @@ class TestCommand: IceObject, Command {
     
     @Param var filter: String?
     
-    @Flag("--generate-list", description: "Generate Linux test list instead of testing")
+    @Flag("-g", "--generate-list", description: "Generate Linux test list instead of testing")
     var generate: Bool
     
     func execute() throws {
@@ -27,7 +27,7 @@ class TestCommand: IceObject, Command {
             let package = try loadPackage()
             try SPM().generateTests(for: package.targets)
         } else {
-            try SPM().test(filter: filter)
+            try SPM().test(filter: filter, forwardArguments: forwardArguments)
         }
     }
     

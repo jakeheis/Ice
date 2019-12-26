@@ -59,3 +59,30 @@ class CreateProjectCommand: IceObject {
     }
     
 }
+
+class ForwardFlagsCommand: IceObject {
+    static let keys = ["--Xcc", "--Xcxx", "--Xlinker", "--Xswiftc"]
+    
+    @VariadicKey(keys[0], description: "Pass flag through to all C compiler invocations")
+    var cCompilerOptions: [String]
+    
+    @VariadicKey(keys[1], description: "Pass flag through to all C++ compiler invocations")
+    var cxxCompilerOptions: [String]
+    
+    @VariadicKey(keys[2], description: "Pass flag through to all linker invocations")
+    var linkerOptions: [String]
+    
+    @VariadicKey(keys[3], description: "Pass flag through to all Swift compiler invocations")
+    var swiftCompilerOptions: [String]
+    
+    var forwardArguments: [String] {
+        var args: [String] = []
+        
+        args += cCompilerOptions.flatMap { [String(Self.keys[0].dropFirst()), $0]  }
+        args += cxxCompilerOptions.flatMap { [String(Self.keys[1].dropFirst()), $0]  }
+        args += linkerOptions.flatMap { [String(Self.keys[2].dropFirst()), $0]  }
+        args += swiftCompilerOptions.flatMap { [String(Self.keys[3].dropFirst()), $0]  }
+        
+        return args
+    }
+}

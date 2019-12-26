@@ -37,7 +37,7 @@ public enum Logger {
     private static func timestampedStream(for destination: WritableStream) -> WritableStream {
         let formatter = DateFormatter()
         formatter.dateStyle = .short
-        formatter.timeStyle = .short
+        formatter.timeStyle = .medium
         return LineStream(each: { (line) in
             destination <<< formatter.string(from: Date()) + ": " + line
         })

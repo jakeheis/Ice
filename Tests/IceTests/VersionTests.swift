@@ -11,7 +11,7 @@ import XCTest
 class VersionTests: XCTestCase {
     
     func testVersion() {
-        let result = IceBox(template: .exec).run("--version")
+        let result = IceBox(template: .lib).run("--version")
         IceAssertEqual(result.exitStatus, 0)
         IceAssertEqual(result.stderr, "")
         

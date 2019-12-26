@@ -26,7 +26,7 @@ public class IceCLI {
         let cli = CLI(name: IceCLI.name, version: Ice.version.string, description: IceCLI.description)
         cli.commands = [
             AddCommand(ice: ice),
-            BuildCommand(),
+            BuildCommand(ice: ice),
             CleanCommand(),
             ConfigGroup(ice: ice),
             DescribeCommand(ice: ice),
@@ -52,8 +52,10 @@ public class IceCLI {
             XcCommand(ice: ice)
         ]
         
+        cli.parser.responders.insert(ForwardCompilerOptionResponse(), at: 0)
         cli.versionCommand = nil
         cli.globalOptions = [Logger.verboseFlag]
+        cli.helpMessageGenerator = DefaultHelpMessageGenerator(colorError: true, boldError: true)
         
         cli.goAndExit()
     }
@@ -73,4 +75,37 @@ public class IceCLI {
         return ice
     }
     
+}
+
+class ForwardCompilerOptionResponse: ParserResponse {
+
+    func canRespond(to arguments: ArgumentList, state: Parser.State) -> Bool {
+        guard case let .routed(cmd, _) = state.routeState, cmd.command is ForwardFlagsCommand else {
+            return false
+        }
+        return ForwardFlagsCommand.keys.contains(arguments.peek())
+    }
+    
+    func respond(to arguments: ArgumentList, state: Parser.State) throws -> Parser.State {
+        let keyName = arguments.pop()
+        
+        guard let key = state.optionRegistry.key(for: keyName) else {
+            assertionFailure()
+            return state
+        }
+        
+        guard arguments.hasNext() else {
+             throw OptionError(command: state.command, kind: .expectedValueAfterKey(keyName))
+        }
+        
+        let result = key.update(to: arguments.pop())
+        if case let .failure(error) = result {
+           throw OptionError(command: state.command, kind: .invalidKeyValue(key, keyName, error))
+        }
+
+        return state
+    }
+
+    func cleanUp(arguments: ArgumentList, state: Parser.State) throws -> Parser.State { state }
+
 }
