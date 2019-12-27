@@ -6,8 +6,8 @@
         "repositoryURL": "https://github.com/jakeheis/Icebox",
         "state": {
           "branch": null,
-          "revision": "87f1118dc14d26cecf958d502c2cc4cda40f5c9d",
-          "version": "0.0.6"
+          "revision": "7e1e9e8da2848fcefc6a182be8e811911d9dd694",
+          "version": "0.0.7"
         }
       },
       {
@@ -15,8 +15,8 @@
         "repositoryURL": "https://github.com/kylef/PathKit",
         "state": {
           "branch": null,
-          "revision": "e2f5be30e4c8f531c9c1e8765aa7b71c0a45d7a0",
-          "version": "0.9.2"
+          "revision": "73f8e9dca9b7a3078cb79128217dc8f2e585a511",
+          "version": "1.0.0"
         }
       },
       {
