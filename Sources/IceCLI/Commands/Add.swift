@@ -24,16 +24,16 @@ class AddCommand: IceObject, Command {
     var noInteractive: Bool
     
     @Key("-f", "--from", description: "The minimum version of the dependency to depend on; allows more recent versions")
-    var from: Version
+    var from: Version?
     
     @Key("-e", "--exact", description: "The exact version of the dependency to depend on")
-    var exact: Version
+    var exact: Version?
     
     @Key("-b", "--branch", description: "The branch of the dependency to depend on")
-    var branch: String
+    var branch: String?
     
     @Key("-s", "--sha", description: "The commit hash of the dependency to depend on")
-    var sha: String
+    var sha: String?
     
     @Flag("-l", "--local", description: "Add this dependency as a local dependency")
     var local: Bool
