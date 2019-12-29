@@ -182,8 +182,12 @@ public struct Package {
     
     // MARK: -
     
+    public func checkoutDirectories(forDependency dependency: Dependency) -> [Path] {
+        return (path.parent() + ".build" + "checkouts").glob("\(dependency.name)*")
+    }
+    
     public func retrieveLibraries(ofDependency dependency: Dependency) -> [String] {
-        let glob = (path.parent() + ".build" + "checkouts").glob("\(dependency.name)*")
+        let glob = checkoutDirectories(forDependency: dependency)
         
         guard let dependencyDirectory = glob.first,
             let packageFile = PackageFile(directory: dependencyDirectory, compilerVersion: toolsVersion) else {

@@ -28,6 +28,8 @@ class ResolveErr: BaseTransformer {
     func go(stream: TransformStream) {
         if stream.nextIs(CompletedResolution.self) {
             stream.consume()
+        } else if let internalError = stream.match(InternalErrorLine.self) {
+            internalError.print(to: stderr)
         } else {
             stderr <<< stream.require(AnyLine.self).text
         }

@@ -6,6 +6,7 @@
 //
 
 import IceKit
+import PathKit
 import SwiftCLI
 
 class RemoveCommand: IceObject, Command {
@@ -17,13 +18,17 @@ class RemoveCommand: IceObject, Command {
     var dependency: String
     
     func execute() throws {
-        // Resolve first so that .build/checkouts is populated for use in Package.retrieveLibrariesOfDependency
-        try SPM().resolve(silent: true)
-        
         var package = try loadPackage()
         
         guard let dependency = package.getDependency(named: dependency) else {
             throw IceError(message: "dependency '\(self.dependency)' not found")
+        }
+        
+        if package.checkoutDirectories(forDependency: dependency).isEmpty {
+            Logger.verbose <<< "Checking out dependency so it can be fully removed"
+            do {
+                try SPM().resolve(silent: true)
+            } catch {}
         }
         
         package.removeDependency(dependency)

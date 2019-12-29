@@ -23,6 +23,8 @@ class AddCommand: IceObject, Command {
     @Flag("-n", "--no-interactive", description: "Do not prompt for targets if none are supplied")
     var noInteractive: Bool
     
+    // Dependency requirement
+    
     @Key("-f", "--from", description: "The minimum version of the dependency to depend on; allows more recent versions")
     var from: Version?
     
@@ -42,6 +44,8 @@ class AddCommand: IceObject, Command {
         return [.atMostOne($from, $exact, $branch, $sha, $local)]
     }
     
+    // Execution
+    
     func execute() throws {
         guard let ref = RepositoryReference(blob: dependency, registry: registry) else {
             throw IceError(message: "not a valid package reference")
@@ -60,7 +64,7 @@ class AddCommand: IceObject, Command {
             requirement = .revision(sha)
         } else if local {
             requirement = .localPackage
-        } else if let latestVersion = try ref.latestVersion() {
+        } else if let latestVersion = try? ref.latestVersion() {
             requirement = .init(from: latestVersion)
         } else {
             throw IceError(message: "no tagged versions found; manually specify version with --from, --exact, --branch, or --sha")
@@ -79,7 +83,9 @@ class AddCommand: IceObject, Command {
         let newDependency = package.addDependency(url: ref.url, requirement: requirement)
         try package.sync()
         
-        try SPM().resolve()
+        do {
+            try SPM().resolve()
+        } catch {}
         
         let libs = package.retrieveLibraries(ofDependency: newDependency)
         if libs.count > 1 {
