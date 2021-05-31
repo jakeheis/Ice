@@ -47,7 +47,7 @@ class BuildOut: BaseTransformer {
             }
         } else if stream.nextIs(BuildErrorLine.self) {
             Error(errorTracker: errorTracker).go(stream: stream)
-        } else if stream.nextIs(in: [WarningsGeneratedLine.self, UnderscoreLine.self]) {
+        } else if stream.nextIs(in: [WarningsGeneratedLine.self, UnderscoreLine.self, WrapASTLine.self]) {
             stream.consume()
         } else if let linkerError = stream.match(LinkerErrorStartLine.self) {
             stdout <<< linkerError.text

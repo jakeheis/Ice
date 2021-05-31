@@ -42,6 +42,10 @@ final class EmptyLine: Matcher, Matchable {
     static let regex = Regex("^$")
 }
 
+final class WrapASTLine: Matcher, Matchable {
+    static let regex = Regex("^(\\[\\d+/\\d+\\] )?Wrapping AST (.*)")
+}
+
 final class BuildErrorLine: Matcher, Matchable, Equatable {
     
     enum ErrorType: String, Capturable {

@@ -132,6 +132,14 @@ class BuildTransformTests: XCTestCase {
         buildCompleted.expect("")
     }
     
+    func testWrapAST() {
+        let wrapAST = createTest()
+        wrapAST.send("""
+        [28/29] Wrapping AST for Exec for debugging
+        """)
+        wrapAST.expect("")
+    }
+    
     func testError() {
         let build = createTest()
         build.send("""
