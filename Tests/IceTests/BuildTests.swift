@@ -184,7 +184,7 @@ class BuildTests: XCTestCase {
         let result = IceBox(template: .exec).run("build", "--product=Exec")
         IceAssertEqual(result.exitStatus, 0)
         IceAssertEqual(result.stderr, "")
-        IceAssertEqual(result.stdout?.components(separatedBy: "\n").suffix(from: 27).joined(separator: "\n"), """
+        IceAssertEqual(result.stdout?.components(separatedBy: "\n").suffix(4).joined(separator: "\n"), """
         Compile Exec/main.swift
         Merge Exec
         Link Exec

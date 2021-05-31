@@ -28,10 +28,8 @@ class InitTests: XCTestCase {
             create Sources/
             create Sources/MyNewLib/MyNewLib.swift
             create Tests/
-            create Tests/LinuxMain.swift
             create Tests/MyNewLibTests/
             create Tests/MyNewLibTests/MyNewLibTests.swift
-            create Tests/MyNewLibTests/XCTestManifests.swift
 
         Run: ice build
         
@@ -58,10 +56,8 @@ class InitTests: XCTestCase {
             create Sources/
             create Sources/MyNewExec/main.swift
             create Tests/
-            create Tests/LinuxMain.swift
             create Tests/MyNewExecTests/
             create Tests/MyNewExecTests/MyNewExecTests.swift
-            create Tests/MyNewExecTests/XCTestManifests.swift
 
         Run: ice build
         

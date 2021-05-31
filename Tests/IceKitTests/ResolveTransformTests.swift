@@ -14,11 +14,13 @@ class ResolveTransformTests: XCTestCase {
         let fetch = createTest()
         fetch.send("""
         Fetching https://github.com/jakeheis/SwiftCLI
+        Fetching https://github.com/jakeheis/SwiftCLI from cache
         Garbage that should be
         ignored
         
         """)
         fetch.expect("""
+        Fetch https://github.com/jakeheis/SwiftCLI
         Fetch https://github.com/jakeheis/SwiftCLI
 
         """)

@@ -382,12 +382,12 @@ extension PackageDataV5_0.Target.Dependency: Codable {
     
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        if let targets = try? container.decode([String].self, forKey: .target), let target = targets.first {
+        if let targets = try? container.decode([String?].self, forKey: .target), let targetWrapped = targets.first, let target = targetWrapped {
             self = .target(target)
-        } else if let products = try? container.decode([String?].self, forKey: .product), let firstProduct = products.first, let product = firstProduct {
+        } else if let products = try? container.decode([String?].self, forKey: .product), let productWrapped = products.first, let product = productWrapped {
             let package = products.count > 1 ? products[1] : nil
             self = .product(product, package)
-        } else if let byNames = try? container.decode([String].self, forKey: .byName), let byName = byNames.first {
+        } else if let byNames = try? container.decode([String?].self, forKey: .byName), let byNameWrapped = byNames.first, let byName = byNameWrapped {
             self = .byName(byName)
         } else {
             throw DecodingError.dataCorrupted(.init(codingPath: decoder.codingPath, debugDescription: "target dependency type not recognized"))

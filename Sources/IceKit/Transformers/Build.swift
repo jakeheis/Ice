@@ -17,6 +17,7 @@ class BuildOut: BaseTransformer {
     
     private let errorTracker = ErrorTracker()
     private var requiresClear: Bool = false
+    private var linkedLines: Set<String> = []
     
     public func go(stream: TransformStream) {
         if requiresClear {
@@ -32,12 +33,21 @@ class BuildOut: BaseTransformer {
         } else if let compileModule = stream.match(CompileModuleLine.self) {
             stdout <<< "Compile ".dim + "\(compileModule.module) \(compileModule.sourceCount)"
         } else if let link = stream.match(LinkLine.self) {
-            stdout <<< "Link ".blue + link.product
+            if linkedLines.insert(link.product).inserted {
+                stdout <<< "Link ".blue + link.product
+            }
+            if stream.nextIs(WhitespaceLine.self) {
+                stream.consume()
+            }
         } else if let merge = stream.match(MergeLine.self) {
             stdout <<< "Merge ".dim + "\(merge.module)"
+        } else if stream.match(PlanBuildLine.self) != nil || stream.match(BuildCompletedLine.self) != nil {
+            if stream.nextIs(WhitespaceLine.self) {
+                stream.consume()
+            }
         } else if stream.nextIs(BuildErrorLine.self) {
             Error(errorTracker: errorTracker).go(stream: stream)
-        } else if stream.nextIs(in: [MergeLine.self, WarningsGeneratedLine.self, UnderscoreLine.self]) {
+        } else if stream.nextIs(in: [WarningsGeneratedLine.self, UnderscoreLine.self]) {
             stream.consume()
         } else if let linkerError = stream.match(LinkerErrorStartLine.self) {
             stdout <<< linkerError.text

@@ -80,7 +80,7 @@ public class SPM {
         // when printing package resolution info
         try resolve()
         
-        var args = ["build"]
+        var args = ["build", "-Xswiftc", "-no-color-diagnostics"]
         if release {
             args += ["-c", "release"]
         }
@@ -110,7 +110,7 @@ public class SPM {
     public func test(filter: String? = nil, forwardArguments: [String] = []) throws {
         try build(release: false, buildOption: .includeTests)
         
-        var args = ["test"]
+        var args = ["test", "-Xswiftc", "-no-color-diagnostics"]
         if let filter = filter {
             args += ["--filter", filter]
         }
@@ -142,16 +142,7 @@ public class SPM {
     public func update() throws {
         try runSwift(args: ["package", "update"], transformer: .resolve)
     }
-    
-    public func generateXcodeProject(codeCoverage: Bool) throws {
-        if codeCoverage {
-            try runSwift(args: ["package", "generate-xcodeproj", "--enable-code-coverage"], transformer: .xc)
-        }
-        else {
-            try runSwift(args: ["package", "generate-xcodeproj"], transformer: .xc)
-        }
-    }
-    
+
     public func generateTests(for packageTargets: [Package.Target]) throws {
         #if os(macOS)
         guard let version = SwiftExecutable.version, version >= SwiftToolsVersion(major: 4, minor: 1, patch: 0) else {

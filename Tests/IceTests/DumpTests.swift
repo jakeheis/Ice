@@ -22,6 +22,8 @@ class DumpTests: XCTestCase {
               "cxxLanguageStandard" : null,
               "dependencies" : [
                 {
+                  "name" : "SwiftCLI",
+                  "productFilter" : null,
                   "requirement" : {
                     "range" : [
                       {
@@ -30,11 +32,11 @@ class DumpTests: XCTestCase {
                       }
                     ]
                   },
-                  "url" : "https:\\/\\/github.com\\/jakeheis\\/SwiftCLI"
+                  "url" : "https://github.com/jakeheis/SwiftCLI"
                 }
               ],
-              "manifestVersion" : "v4",
               "name" : "Exec",
+              "packageKind" : "root",
               "pkgConfig" : null,
               "platforms" : [
 
@@ -49,7 +51,8 @@ class DumpTests: XCTestCase {
                   "dependencies" : [
                     {
                       "byName" : [
-                        "SwiftCLI"
+                        "SwiftCLI",
+                        null
                       ]
                     }
                   ],
@@ -57,12 +60,18 @@ class DumpTests: XCTestCase {
 
                   ],
                   "name" : "Exec",
+                  "resources" : [
+            
+                  ],
                   "settings" : [
 
                   ],
                   "type" : "regular"
                 }
-              ]
+              ],
+              "toolsVersion" : {
+                "_version" : "4.0.0"
+              }
             }
             """)
         }, linux: {

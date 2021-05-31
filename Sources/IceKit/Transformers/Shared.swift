@@ -74,28 +74,3 @@ final class InternalNoteLine: Matcher, Matchable {
     static let regex = Regex("^note: (.*)$")
     var message: String { return captures[0] }
 }
-
-final class DependencyActionLine: Matcher, Matchable {
-    enum Action: String, Capturable {
-        case fetch = "Fetching"
-        case update = "Updating"
-        case clone = "Cloning"
-    }
-    static let regex = Regex("(Fetching|Updating|Cloning) ([^ ]+)$")
-    var action: Action { return captures[0] }
-    var url: String { return captures[1] }
-    
-    func print(to out: WritableStream) {
-        out <<< String(describing: action).capitalized.dim + " " + url
-    }
-}
-
-final class ResolveLine: Matcher, Matchable {
-    static let regex = Regex("Resolving ([^ ]+) at (.*)$")
-    var url: String { return captures[0] }
-    var version: String { return captures[1] }
-    
-    func print(to out: WritableStream) {
-        out <<< "Resolve ".dim + "\(url) at \(version)"
-    }
-}

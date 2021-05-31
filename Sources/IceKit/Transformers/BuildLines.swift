@@ -30,6 +30,18 @@ final class MergeLine: Matcher, Matchable {
     var module: String { return captures[1] }
 }
 
+final class PlanBuildLine: Matcher, Matchable {
+    static let regex = Regex("^(\\[\\d+/\\d+\\] )?Planning build")
+}
+
+final class BuildCompletedLine: Matcher, Matchable {
+    static let regex = Regex("^\\* Build Completed!")
+}
+
+final class EmptyLine: Matcher, Matchable {
+    static let regex = Regex("^$")
+}
+
 final class BuildErrorLine: Matcher, Matchable, Equatable {
     
     enum ErrorType: String, Capturable {

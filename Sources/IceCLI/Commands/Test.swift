@@ -19,16 +19,8 @@ class TestCommand: ForwardFlagsCommand, Command {
     
     @Param var filter: String?
     
-    @Flag("-g", "--generate-list", description: "Generate Linux test list instead of testing")
-    var generate: Bool
-    
     func execute() throws {
-        if generate {
-            let package = try loadPackage()
-            try SPM().generateTests(for: package.targets)
-        } else {
-            try SPM().test(filter: filter, forwardArguments: forwardArguments)
-        }
+        try SPM().test(filter: filter, forwardArguments: forwardArguments)
     }
     
 }

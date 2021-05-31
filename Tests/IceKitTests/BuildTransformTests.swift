@@ -90,6 +90,16 @@ class BuildTransformTests: XCTestCase {
         Link ./.build/x86_64-apple-macosx/debug/ice
 
         """)
+        
+        let duplicate = createTest()
+        duplicate.send("""
+        [27/27] Linking Exec
+        [27/27] Linking Exec
+        """)
+        duplicate.expect("""
+        Link Exec
+
+        """)
     }
     
     func testMerge() {
@@ -105,6 +115,21 @@ class BuildTransformTests: XCTestCase {
         Merge SwiftCLI
 
         """)
+    }
+    
+    func testUnnecessarySwift54Lines() {
+        let planBuild = createTest()
+        planBuild.send("""
+        [1/1] Planning build
+        [1/1] Planning build
+        """)
+        planBuild.expect("")
+        
+        let buildCompleted = createTest()
+        buildCompleted.send("""
+        * Build Completed!
+        """)
+        buildCompleted.expect("")
     }
     
     func testError() {

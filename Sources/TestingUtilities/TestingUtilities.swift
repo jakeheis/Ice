@@ -77,5 +77,20 @@ public func IceAssertEqual<T: Equatable>(_ first: T?, _ second: T?, file: Static
     } else {
         XCTAssertEqual(first, second, file: file, line: line)
     }
+}
+
+public func IceAssertLinesEqual(_ first: String?, _ second: String?, file: StaticString = #file, line: UInt = #line) {
+    if first == second {
+        return
+    }
+    guard let first = first, let second = second else {
+        XCTAssertEqual(first, second, file: file, line: line)
+        return
+    }
     
+    let firstLines = first.components(separatedBy: "\n")
+    let secondLines = second.components(separatedBy: "\n")
+    for (num, (first, second)) in zip(firstLines, secondLines).enumerated() {
+        XCTAssertEqual(first, second, "(line \(num))", file: file, line: line)
+    }
 }
